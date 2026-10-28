@@ -1,0 +1,56 @@
+.button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-bounce),
+    box-shadow var(--duration-fast) var(--ease-bounce);
+}
+
+.ink {
+  width: 52px;
+  height: 52px;
+  border: none;
+  background: var(--color-ink);
+  color: var(--color-white);
+  box-shadow: var(--shadow-hard-on-ink-sm);
+}
+
+.ink:active {
+  transform: translateY(var(--press-depth-sm));
+  box-shadow: none;
+}
+
+.cream,
+.white {
+  width: 44px;
+  height: 44px;
+  border: var(--border-chunky) solid var(--color-ink);
+  color: var(--color-ink);
+}
+
+.cream {
+  background: var(--color-cream);
+}
+
+.white {
+  background: var(--color-white);
+}
+
+.cream:active,
+.white:active {
+  transform: scale(0.92);
+}
+
+.white svg {
+  stroke-width: 3;
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--color-terracotta);
+  outline-offset: 3px;
+}

@@ -5,6 +5,21 @@
 - **User flow v2:** Figma, personal team, "Leitner App - User Flow v2"
 - **Wireframes v1 (superseded):** https://www.figma.com/design/ygJ6Z5KvZcLt3unBvblHsf
 - **Tokens:** [tokens.md](tokens.md) ↔ `src/styles/tokens.css`
+- **UI kit (code):** `src/ui/`. See every component on one page with `npm run dev`, then open http://localhost:5173/leitner-app/?kit (add `&open=bottom` or `&open=dialog` to start with a sheet open). Dev only; never on the live site.
+
+## UI kit (roadmap 7.7)
+
+| Component     | Variants                                                                            |
+| ------------- | ----------------------------------------------------------------------------------- |
+| `Button`      | `primary` (ink), `secondary` (cream, "Not yet"), `text` (underlined)                |
+| `IconButton`  | `ink` 52px (top bar +), `cream` 44px (pencil), `white` 44px (sheet ✕); spoken label |
+| `Pill`        | `stat` (top bar), `tag` (similar words), `label` (cream / aqua); `AddPill` dashed   |
+| `Card`        | White word card; `CardStack` adds the tilted aqua + peach cards behind              |
+| `BottomPanel` | `orange` / `aqua`, `compact` / `tall`, optional peeking mascot                      |
+| `Sheet`       | `bottom` (add / edit, round ✕ closes it) / `dialog` (duplicate word, mascot circle) |
+| `TopBar`      | Option A: words-learned pill, streak pill, + button                                 |
+
+Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as its content and grows as fields are added, up to 76px from the top, then scrolls (decided 2026-10-28; the canvas shows it full height): page behind is `inert`, Tab stays inside, Esc / overlay / ✕ close it, focus returns to the opener.
 
 ## Screen rules (v2)
 

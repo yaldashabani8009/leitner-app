@@ -17,6 +17,8 @@
   --color-error: #b5502e;
   --color-white: #fff;
   --color-black: #000; /* only for the shadow under ink buttons */
+  --color-line: #d9c3ae; /* sheet handle, empty-field outline, soft dividers */
+  --color-overlay: rgb(43 29 22 / 45%); /* ink at 45%, behind sheets and dialogs */
 
   /* Type */
   --font-ui: 'Nunito', system-ui, sans-serif;
@@ -26,7 +28,9 @@
 
   /* Radius */
   --radius-card: 40px;
-  --radius-panel: 54px; /* bottom colour panels, 52–56 on the canvas */
+  --radius-panel: 52px; /* review / practice bottom panels */
+  --radius-panel-tall: 56px; /* session complete / all done bottom panels */
+  --radius-sheet: 44px; /* add / edit bottom sheet */
   --radius-input: 22px;
   --radius-pill: 999px;
 
@@ -35,8 +39,12 @@
 
   /* Squishy button */
   --press-depth: 5px;
+  --press-depth-sm: 4px; /* round + button */
   --shadow-hard: 0 var(--press-depth) 0 var(--color-ink);
   --shadow-hard-on-ink: 0 var(--press-depth) 0 var(--color-black); /* ink buttons (Save word, Sign in) */
+  --shadow-hard-sm: 0 3px 0 var(--color-ink); /* top-bar stat pills */
+  --shadow-hard-on-ink-sm: 0 var(--press-depth-sm) 0 var(--color-black); /* round + button */
+  --shadow-card: 0 6px 0 var(--color-ink); /* word card, dialog card */
 
   /* Spacing (4px base) */
   --space-1: 4px;
