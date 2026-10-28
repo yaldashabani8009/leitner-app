@@ -1,0 +1,129 @@
+.screen {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+  padding: max(var(--space-7), env(safe-area-inset-top)) var(--space-5)
+    max(var(--space-6), env(safe-area-inset-bottom));
+}
+
+.column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.wordmark {
+  margin: var(--space-6) 0 0;
+  font-size: 44px;
+  font-weight: var(--weight-black);
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+.dot {
+  color: var(--color-terracotta);
+}
+
+.title {
+  margin: var(--space-4) 0 0;
+  font-size: 30px;
+  font-weight: var(--weight-black);
+  letter-spacing: -0.3px;
+}
+
+.subtitle {
+  margin: calc(-1 * var(--space-2)) 0 0;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1) var(--space-4);
+}
+
+/* A problem that belongs to the whole form (e.g. wrong password), not one field. */
+.formError {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-chunky) solid var(--color-error);
+  border-radius: var(--radius-input);
+  background: var(--color-white);
+  color: var(--color-error);
+  font-weight: var(--weight-bold);
+}
+
+/* "Check your inbox" and other good news. */
+.notice {
+  margin: 0;
+  padding: var(--space-4);
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-input);
+  background: var(--color-aqua);
+  font-weight: var(--weight-bold);
+}
+
+.confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sparkle {
+  position: absolute;
+  top: 72px;
+  left: 28px;
+  fill: var(--color-ink);
+}
+
+.triangle {
+  position: absolute;
+  top: 120px;
+  right: 32px;
+  fill: var(--color-aqua);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.dotTerracotta,
+.dotInk {
+  position: absolute;
+  border-radius: var(--radius-pill);
+}
+
+.dotTerracotta {
+  top: 40px;
+  right: 96px;
+  width: 16px;
+  height: 16px;
+  border: var(--border-chunky) solid var(--color-ink);
+  background: var(--color-terracotta);
+}
+
+.dotInk {
+  top: 36px;
+  left: 128px;
+  width: 10px;
+  height: 10px;
+  background: var(--color-ink);
+}

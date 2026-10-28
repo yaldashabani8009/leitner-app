@@ -243,6 +243,11 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       return db.profile.toCollection().first();
     },
 
+    /** How many live cards are in the box. */
+    countCards(): Promise<number> {
+      return db.cards.filter((card) => card.deletedAt === null).count();
+    },
+
     async getCard(cardId: string): Promise<CardWithEntries | undefined> {
       const card = await db.cards.get(cardId);
       if (!card || card.deletedAt !== null) return undefined;

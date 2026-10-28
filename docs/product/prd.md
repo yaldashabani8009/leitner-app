@@ -22,6 +22,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 - Review sessions: see the word, flip, mark "Knew it!" / "Not yet"
 - Leitner scheduling as below, including mastered cards
 - Sign in once per device (email + password); sign up and forgot password screens exist, public sign-ups off
+- Sign up takes the time zone quietly from the phone; it can be changed in the profile later (decided 2026-10-28)
 - Sync between devices through Supabase
 - Fully offline for 30+ days, syncing on reconnect
 - Mascot and playful animation
@@ -29,7 +30,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 
 **Out of v1:** native store apps; sharing decks; showing box numbers, counters or due dates; reviewing mastered cards; deleting cards.
 
-**Future ideas:** review mastered cards every 2 weeks or a quick exam; statistics; native wrapper; open to other users.
+**Future ideas:** review mastered cards every 2 weeks or a quick exam; statistics; native wrapper; open to other users; **Sign out** (left out of v1 on purpose, decided 2026-10-28; place it together with Export/Import).
 
 ## Card structure
 
@@ -118,7 +119,7 @@ See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (di
 
 - [ ] Keep "Think first… then tap the card" (front) and "That's okay. You'll see it again tomorrow." (swipe left)?
 - [ ] Session complete: show a score ("17 of 20") or not?
-- [ ] Sign-in / sign-up / forgot-password screens need drawing in the v2 style.
+- [x] Sign-in / sign-up / forgot-password screens: designed in code in the v2 style, reviewed by Yali from screenshots (2026-10-28). Mascot added in 7.8.
 - [ ] Where Export/Import lives (small settings screen or top-bar menu).
 - [ ] Laptop screens redrawn in v2 style.
 - [ ] Motion for the new mascot.

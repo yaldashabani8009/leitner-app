@@ -16,6 +16,7 @@
   --color-text-secondary: #6e5648;
   --color-error: #b5502e;
   --color-white: #fff;
+  --color-black: #000; /* only for the shadow under ink buttons */
 
   /* Type */
   --font-ui: 'Nunito', system-ui, sans-serif;
@@ -35,6 +36,7 @@
   /* Squishy button */
   --press-depth: 5px;
   --shadow-hard: 0 var(--press-depth) 0 var(--color-ink);
+  --shadow-hard-on-ink: 0 var(--press-depth) 0 var(--color-black); /* ink buttons (Save word, Sign in) */
 
   /* Spacing (4px base) */
   --space-1: 4px;

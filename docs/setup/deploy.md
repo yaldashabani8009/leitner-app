@@ -4,8 +4,12 @@
 
 - [x] Free project `leitner-app` created (ref `lkyqktrpwhzsfkgaqiuo`, us-east-1).
 - [x] Both migrations in `supabase/migrations/` applied; security advisor clean.
-- [ ] **Authentication → Sign In / Providers:** Email enabled. Turn **off** "Allow new users to sign up" (ADR-010). _(Dashboard only, the owner does this.)_
-- [ ] **Authentication → Users → Add user → Create new user:** your email + password, tick **Auto Confirm User**. A profile row is created automatically; set `display_name` (e.g. Yali) and `time_zone` (e.g. America/New_York) in **Table Editor → profiles**.
+- [x] **Authentication → Sign In / Providers:** Email enabled. Turn **off** "Allow new users to sign up" (ADR-010). _(Dashboard only, the owner does this.)_
+- [x] **Authentication → Users → Add user → Create new user:** your email + password, tick **Auto Confirm User**. A profile row is created automatically; set `display_name` (e.g. Yali) and `time_zone` (e.g. America/New_York) in **Table Editor → profiles**.
+
+- [ ] **Authentication → URL Configuration:** set **Site URL** to `https://yaldashabani8009.github.io/leitner-app/` and add the same address under **Redirect URLs** (plus `http://localhost:5173/leitner-app/` for local testing). Without this, the reset-password email links to the wrong place.
+
+> Supabase's built-in email sends only a few emails per hour, and only to members of your Supabase team. Fine for you; add free custom SMTP before opening sign-ups (ADR-004).
 
 Project URL: `https://lkyqktrpwhzsfkgaqiuo.supabase.co` · publishable key: Project Settings → API Keys (`sb_publishable_…`).
 
