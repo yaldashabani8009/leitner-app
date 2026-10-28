@@ -3,6 +3,8 @@ import { BottomPanel } from '../ui/BottomPanel';
 import { Button } from '../ui/Button';
 import { Card, CardStack } from '../ui/Card';
 import { IconButton } from '../ui/IconButton';
+import { Mascot } from '../ui/Mascot/Mascot';
+import { MASCOT_POSES } from '../ui/Mascot/poses';
 import { BookIcon, FlameIcon, FlipIcon, PencilIcon, PlusIcon } from '../ui/icons';
 import { AddPill, Pill } from '../ui/Pill';
 import { Sheet } from '../ui/Sheet';
@@ -25,6 +27,29 @@ export function KitPage() {
   return (
     <main className={styles.page}>
       <TopBar wordsLearned={128} streak={12} onAdd={() => setSheet('bottom')} />
+
+      <Section title="Mascot" id="mascot">
+        <div className={styles.mascotGrid}>
+          {MASCOT_POSES.map((pose, i) => (
+            <figure key={pose} className={styles.mascotTile}>
+              <Mascot pose={pose} size="large" />
+              <figcaption>
+                {i + 1} · {pose}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+        <div className={styles.row}>
+          <figure className={styles.mascotTile}>
+            <Mascot pose="idle" size="small" />
+            <figcaption>small, no legs</figcaption>
+          </figure>
+          <figure className={styles.mascotTile}>
+            <Mascot pose="idle" size="small" body="white" />
+            <figcaption>practice: white body</figcaption>
+          </figure>
+        </div>
+      </Section>
 
       <Section title="Buttons">
         <Button>Save word</Button>
@@ -75,7 +100,7 @@ export function KitPage() {
       </Section>
 
       <Section title="Bottom panels" className={styles.panels}>
-        <BottomPanel color="orange" mascot={<MascotStandIn />}>
+        <BottomPanel color="orange" mascot={<Mascot pose="idle" size="small" decorative />}>
           <div className={`${styles.row} ${styles.grow}`}>
             <Button variant="secondary">Not yet</Button>
             <Button>Knew it!</Button>
@@ -106,7 +131,7 @@ export function KitPage() {
         open={sheet === 'bottom'}
         onClose={close}
         title="New word"
-        mascot={<MascotStandIn />}
+        mascot={<Mascot pose="write" size="small" decorative />}
         footer={<Button onClick={close}>Save word</Button>}
       >
         <TextField label="The word" defaultValue="meticulous" />
@@ -125,7 +150,7 @@ export function KitPage() {
         onClose={close}
         variant="dialog"
         title="Oh! You already have “meticulous”"
-        mascot={<MascotStandIn />}
+        mascot={<Mascot pose="idle" size="small" decorative />}
         footer={
           <>
             <Button onClick={close}>Open my card</Button>
@@ -145,22 +170,19 @@ export function KitPage() {
 
 function Section({
   title,
+  id,
   className,
   children,
 }: {
   title: string;
+  id?: string;
   className?: string;
   children: ReactNode;
 }) {
   return (
-    <section className={[styles.section, className].filter(Boolean).join(' ')}>
+    <section id={id} className={[styles.section, className].filter(Boolean).join(' ')}>
       <h2 className={styles.sectionTitle}>{title}</h2>
       {children}
     </section>
   );
-}
-
-/** Placeholder until the real mascot arrives in roadmap 7.8. */
-function MascotStandIn() {
-  return <div className={styles.mascot} />;
 }
