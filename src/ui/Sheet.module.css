@@ -29,28 +29,15 @@
   animation: slide-up var(--duration-base) ease-out;
 }
 
-/* The grab handle is a real 44px-tall button, so it can be tapped (and reached by VoiceOver) to close. */
+/* Decorative grab handle; the round ✕ in the header is what closes the sheet. */
 .handle {
-  display: flex;
   flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
   align-self: center;
-  width: 88px;
-  height: 32px;
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-pill);
-  background: transparent;
-  cursor: pointer;
-}
-
-.handle::before {
   width: 44px;
   height: 6px;
+  margin: var(--space-3) 0 var(--space-2);
   border-radius: var(--radius-pill);
   background: var(--color-line);
-  content: '';
 }
 
 .bottomMascot {
@@ -71,7 +58,14 @@
   overscroll-behavior: contain;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .title {
+  flex-grow: 1;
   margin: 0;
   font-size: 30px;
   font-weight: var(--weight-black);

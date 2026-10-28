@@ -96,7 +96,7 @@ describe('Sheet', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('has a grab handle that closes the bottom sheet', async () => {
+  it('has a round ✕ that closes the bottom sheet', async () => {
     const onClose = vi.fn();
     await openSheet({ onClose });
     await userEvent.click(screen.getByRole('button', { name: 'Close' }));
@@ -105,7 +105,7 @@ describe('Sheet', () => {
 
   it('keeps Tab inside the sheet, both ways', async () => {
     await openSheet();
-    const handle = screen.getByRole('button', { name: 'Close' });
+    const close = screen.getByRole('button', { name: 'Close' });
     const input = screen.getByLabelText('The word');
     const save = screen.getByRole('button', { name: 'Save word' });
 
@@ -114,13 +114,13 @@ describe('Sheet', () => {
     expect(save).toHaveFocus();
     // From the last control, Tab wraps to the first.
     await userEvent.tab();
-    expect(handle).toHaveFocus();
+    expect(close).toHaveFocus();
     await userEvent.tab();
     expect(input).toHaveFocus();
     await userEvent.tab();
     expect(save).toHaveFocus();
     // From the first control, Shift+Tab wraps to the last.
-    handle.focus();
+    close.focus();
     await userEvent.tab({ shift: true });
     expect(save).toHaveFocus();
   });
@@ -143,7 +143,7 @@ describe('Sheet', () => {
     expect(screen.getByRole('dialog')).toHaveFocus();
   });
 
-  it('shows the dialog look without a grab handle', async () => {
+  it('shows the dialog look without the ✕', async () => {
     await openSheet({ variant: 'dialog' });
     expect(screen.getByRole('dialog').className).toMatch(/dialog/);
     expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();

@@ -9,17 +9,17 @@
 
 ## UI kit (roadmap 7.7)
 
-| Component     | Variants                                                                           |
-| ------------- | ---------------------------------------------------------------------------------- |
-| `Button`      | `primary` (ink), `secondary` (cream, "Not yet"), `text` (underlined)               |
-| `IconButton`  | `ink` 52px (top bar +), `cream` 44px (pencil); always has a spoken label           |
-| `Pill`        | `stat` (top bar), `tag` (similar words), `label` (cream / aqua); `AddPill` dashed  |
-| `Card`        | White word card; `CardStack` adds the tilted aqua + peach cards behind             |
-| `BottomPanel` | `orange` / `aqua`, `compact` / `tall`, optional peeking mascot                     |
-| `Sheet`       | `bottom` (add / edit, handle closes it) / `dialog` (duplicate word, mascot circle) |
-| `TopBar`      | Option A: words-learned pill, streak pill, + button                                |
+| Component     | Variants                                                                            |
+| ------------- | ----------------------------------------------------------------------------------- |
+| `Button`      | `primary` (ink), `secondary` (cream, "Not yet"), `text` (underlined)                |
+| `IconButton`  | `ink` 52px (top bar +), `cream` 44px (pencil), `white` 44px (sheet ✕); spoken label |
+| `Pill`        | `stat` (top bar), `tag` (similar words), `label` (cream / aqua); `AddPill` dashed   |
+| `Card`        | White word card; `CardStack` adds the tilted aqua + peach cards behind              |
+| `BottomPanel` | `orange` / `aqua`, `compact` / `tall`, optional peeking mascot                      |
+| `Sheet`       | `bottom` (add / edit, round ✕ closes it) / `dialog` (duplicate word, mascot circle) |
+| `TopBar`      | Option A: words-learned pill, streak pill, + button                                 |
 
-Sheet is hand-built (decided 2026-10-28): page behind is `inert`, Tab stays inside, Esc / overlay / handle close it, focus returns to the opener.
+Sheet is hand-built (decided 2026-10-28): page behind is `inert`, Tab stays inside, Esc / overlay / ✕ close it, focus returns to the opener.
 
 ## Screen rules (v2)
 

@@ -8,8 +8,12 @@ interface IconButtonProps extends Omit<
   /** What the button does, for screen readers ("Add word", "Edit word"). Required: there is no visible text. */
   label: string;
   icon: ReactNode;
-  /** "ink": 52px round ink button (top bar +). "cream": 44px round cream button (pencil on the card back). */
-  variant?: 'ink' | 'cream';
+  /**
+   * "ink": 52px round ink button (top bar +).
+   * "cream": 44px round cream button (pencil on the card back).
+   * "white": 44px round white button (✕ in the add / edit sheet).
+   */
+  variant?: 'ink' | 'cream' | 'white';
 }
 
 /** Round icon-only button; squishes like the big pill buttons. */

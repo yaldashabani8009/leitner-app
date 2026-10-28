@@ -43,6 +43,11 @@ describe('IconButton', () => {
     expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it.each(['cream', 'white'] as const)('has a %s variant', (variant) => {
+    render(<IconButton label="Close" icon={<PlusIcon />} variant={variant} />);
+    expect(screen.getByRole('button', { name: 'Close' }).className).toMatch(variant);
+  });
+
   it('has a cream variant and calls onClick', async () => {
     const onClick = vi.fn();
     render(<IconButton label="Edit word" icon={<PlusIcon />} variant="cream" onClick={onClick} />);

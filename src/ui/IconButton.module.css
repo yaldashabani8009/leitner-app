@@ -25,16 +25,29 @@
   box-shadow: none;
 }
 
-.cream {
+.cream,
+.white {
   width: 44px;
   height: 44px;
   border: var(--border-chunky) solid var(--color-ink);
-  background: var(--color-cream);
   color: var(--color-ink);
 }
 
-.cream:active {
+.cream {
+  background: var(--color-cream);
+}
+
+.white {
+  background: var(--color-white);
+}
+
+.cream:active,
+.white:active {
   transform: scale(0.92);
+}
+
+.white svg {
+  stroke-width: 3;
 }
 
 .button:focus-visible {

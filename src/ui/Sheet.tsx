@@ -7,11 +7,13 @@ import {
   type RefObject,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { IconButton } from './IconButton';
+import { CloseIcon } from './icons';
 import styles from './Sheet.module.css';
 
 interface SheetProps {
   open: boolean;
-  /** Called on Esc, a tap on the dim overlay, or the handle. The parent sets open to false. */
+  /** Called on Esc, a tap on the dim overlay, or the round ✕ (bottom sheet). The parent sets open to false. */
   onClose: () => void;
   /** Shown as the heading and read out when the sheet opens. */
   title: string;
@@ -86,13 +88,20 @@ export function Sheet({
             {mascot}
           </div>
         )}
-        {isBottom && (
-          <button type="button" className={styles.handle} aria-label="Close" onClick={onClose} />
-        )}
+        {isBottom && <div className={styles.handle} aria-hidden="true" />}
         <div className={isBottom ? styles.body : styles.dialogBody}>
-          <h2 id={titleId} className={isBottom ? styles.title : styles.dialogTitle}>
-            {title}
-          </h2>
+          {isBottom ? (
+            <div className={styles.header}>
+              <h2 id={titleId} className={styles.title}>
+                {title}
+              </h2>
+              <IconButton label="Close" variant="white" icon={<CloseIcon />} onClick={onClose} />
+            </div>
+          ) : (
+            <h2 id={titleId} className={styles.dialogTitle}>
+              {title}
+            </h2>
+          )}
           {children}
         </div>
         {footer && <div className={isBottom ? styles.footer : styles.dialogFooter}>{footer}</div>}
