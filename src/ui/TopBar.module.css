@@ -1,0 +1,16 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: max(18px, env(safe-area-inset-top)) 20px 6px;
+}
+
+/* The + sits on the right, in thumb reach. */
+.add {
+  margin-left: auto;
+}
+
+/* The + stroke is a little heavier than the pill icons on the canvas. */
+.add svg {
+  stroke-width: 3;
+}

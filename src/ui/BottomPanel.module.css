@@ -1,0 +1,43 @@
+.panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  color: var(--color-ink);
+  text-align: center;
+}
+
+.orange {
+  background: var(--color-orange);
+}
+
+.aqua {
+  background: var(--color-aqua);
+}
+
+/* Review / practice: actions or a short hint. */
+.compact {
+  min-height: 124px;
+  padding: var(--space-4) var(--space-5) max(28px, env(safe-area-inset-bottom));
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+}
+
+/* Session complete / all done: title, text, then the buttons at the bottom. */
+.tall {
+  justify-content: flex-start;
+  min-height: 330px;
+  padding: 40px 28px max(var(--space-5), env(safe-area-inset-bottom));
+  border-radius: var(--radius-panel-tall) var(--radius-panel-tall) 0 0;
+}
+
+/* The mascot overlaps the panel edge by 20px, like on the canvas. */
+.mascot {
+  position: absolute;
+  bottom: calc(100% - 20px);
+  left: 22px;
+  line-height: 0;
+  pointer-events: none;
+}

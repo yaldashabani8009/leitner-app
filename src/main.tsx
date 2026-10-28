@@ -22,8 +22,21 @@ const services = {
 // ADR-002: ask the browser to keep our data (matters most on iPhone).
 void requestPersistentStorage();
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App services={services} />
-  </StrictMode>,
-);
+const root = createRoot(document.getElementById('root')!);
+
+// Roadmap 7.7: a gallery of the UI kit at ?kit, only on the dev server (never in the built site).
+if (import.meta.env.DEV && new URLSearchParams(location.search).has('kit')) {
+  void import('./dev/KitPage').then(({ KitPage }) =>
+    root.render(
+      <StrictMode>
+        <KitPage />
+      </StrictMode>,
+    ),
+  );
+} else {
+  root.render(
+    <StrictMode>
+      <App services={services} />
+    </StrictMode>,
+  );
+}

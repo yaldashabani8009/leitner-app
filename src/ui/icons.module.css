@@ -1,0 +1,14 @@
+.icon {
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.flame {
+  fill: var(--color-orange);
+  stroke: var(--color-ink);
+  stroke-width: 2.2;
+}

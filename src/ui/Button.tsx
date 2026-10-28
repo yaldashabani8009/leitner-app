@@ -2,8 +2,12 @@ import type { ButtonHTMLAttributes } from 'react';
 import styles from './Button.module.css';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  /** "primary": the big ink pill (Save word, Sign in). "text": a quiet link-style button. */
-  variant?: 'primary' | 'text';
+  /**
+   * "primary": the big ink pill (Save word, Sign in, Knew it!).
+   * "secondary": the cream pill with an ink outline (Not yet).
+   * "text": a quiet link-style button.
+   */
+  variant?: 'primary' | 'secondary' | 'text';
 }
 
 /** Squishy pill button (docs/design: drops 5px and loses its shadow when pressed). */

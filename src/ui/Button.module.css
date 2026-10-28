@@ -1,27 +1,42 @@
-.primary {
+/* Shared by primary + secondary: a full-width chunky pill that squishes when pressed. */
+.primary,
+.secondary {
   width: 100%;
   min-height: 56px;
   padding: var(--space-4) var(--space-5);
   border: var(--border-chunky) solid var(--color-ink);
   border-radius: var(--radius-pill);
-  background: var(--color-ink);
-  color: var(--color-white);
   font-family: inherit;
   font-size: 18px;
   font-weight: var(--weight-black);
-  box-shadow: var(--shadow-hard-on-ink);
   cursor: pointer;
   transition:
     transform var(--duration-fast) var(--ease-bounce),
     box-shadow var(--duration-fast) var(--ease-bounce);
 }
 
-.primary:active {
+/* Ink pill: Save word, Sign in, Knew it! */
+.primary {
+  background: var(--color-ink);
+  color: var(--color-white);
+  box-shadow: var(--shadow-hard-on-ink);
+}
+
+/* Cream pill with an ink outline: Not yet (neutral, never red). */
+.secondary {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-hard);
+}
+
+.primary:active,
+.secondary:active {
   transform: translateY(var(--press-depth));
   box-shadow: none;
 }
 
-.primary[aria-busy='true'] {
+.primary[aria-busy='true'],
+.secondary[aria-busy='true'] {
   cursor: progress;
 }
 
@@ -42,6 +57,7 @@
 }
 
 .primary:focus-visible,
+.secondary:focus-visible,
 .text:focus-visible {
   outline: 3px solid var(--color-terracotta);
   outline-offset: 3px;
