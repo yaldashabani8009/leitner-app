@@ -14,9 +14,9 @@ Project URL: `https://lkyqktrpwhzsfkgaqiuo.supabase.co` · publishable key: Proj
 ## 2. GitHub Pages (automatic build + deploy, ADR-011)
 
 - [x] `.github/workflows/deploy.yml` builds, checks and publishes on every push to `main`.
-- [ ] Repo **Settings → General → Danger Zone → Change visibility → Public** (free plan requirement).
-- [ ] Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-- [ ] Re-run the latest "Deploy to GitHub Pages" run in the **Actions** tab (or push anything).
+- [x] Repo **Settings → General → Danger Zone → Change visibility → Public** (free plan requirement).
+- [x] Repo **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+- [x] Re-run the latest "Deploy to GitHub Pages" run in the **Actions** tab (or push anything).
 
 Live URL: **https://yaldashabani8009.github.io/leitner-app/**
 
