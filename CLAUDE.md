@@ -35,7 +35,8 @@ npm run coverage    # tests + coverage for src/domain (fails below 100%)
 - Leitner numbers live only in `src/domain/leitner/config.ts`.
 - Styles: CSS Modules, camelCase classes, **only `var(--token)`** for colours/radii/shadows/fonts. New design values go into `tokens.css` and `docs/design/tokens.md` together.
 - UI reads data with `useLiveQuery`; avoid `useEffect` for data fetching.
-- Every local write goes through the repository layer, which also writes to the sync outbox (ADR-003).
+- Every local write goes through the repository layer (`src/data/repository.ts`), which also writes to the sync outbox in the same transaction (ADR-003).
+- Each account has its own on-device database, `leitner-<userId>` (ADR-012).
 - IDs are `crypto.randomUUID()` created on the device. Timestamps are UTC ISO strings.
 - Never show box number, counter or due date in the UI.
 - Persian text: `lang="fa"` (RTL + Vazirmatn via global CSS).
