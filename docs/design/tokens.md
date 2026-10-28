@@ -15,6 +15,8 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 | `--color-ink`            | #2B1D16 | Text, outlines, primary button                                      |
 | `--color-text-secondary` | #6E5648 | Labels, helper text                                                 |
 | `--color-error`          | #B5502E | Validation messages                                                 |
+| `--color-white`          | #FFFFFF | Inputs, pills, text on ink buttons                                  |
+| `--color-black`          | #000000 | Only the shadow under ink buttons                                   |
 
 ## Type
 
@@ -27,15 +29,16 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 
 ## Shape & depth
 
-| Token             | Value       |
-| ----------------- | ----------- |
-| `--radius-card`   | 40px        |
-| `--radius-panel`  | 54px        |
-| `--radius-input`  | 22px        |
-| `--radius-pill`   | 999px       |
-| `--border-chunky` | 2.5px       |
-| `--press-depth`   | 5px         |
-| `--shadow-hard`   | 0 5px 0 ink |
+| Token                  | Value                       |
+| ---------------------- | --------------------------- |
+| `--radius-card`        | 40px                        |
+| `--radius-panel`       | 54px                        |
+| `--radius-input`       | 22px                        |
+| `--radius-pill`        | 999px                       |
+| `--border-chunky`      | 2.5px                       |
+| `--press-depth`        | 5px                         |
+| `--shadow-hard`        | 0 5px 0 ink                 |
+| `--shadow-hard-on-ink` | 0 5px 0 black (ink buttons) |
 
 ## Spacing
 

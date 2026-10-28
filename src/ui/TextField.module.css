@@ -1,0 +1,52 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 15px;
+  font-weight: var(--weight-black);
+}
+
+.input {
+  width: 100%;
+  padding: 13px 18px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-input);
+  background: var(--color-white);
+  color: var(--color-ink);
+  font-family: inherit;
+
+  /* 17px+ also stops iPhone Safari from zooming in on focus. */
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.input:focus-visible {
+  outline: 3px solid var(--color-terracotta);
+  outline-offset: 2px;
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-error);
+  border-width: 3px;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--color-error);
+  font-size: 14px;
+  font-weight: var(--weight-bold);
+}
+
+.icon {
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
