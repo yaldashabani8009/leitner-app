@@ -23,5 +23,6 @@ Once **Accepted**, an ADR is not edited. To change a decision, write a new ADR t
 | [009](0009-leitner-engine-pure-module.md)     | Leitner engine as a pure, tested module          | Accepted          |
 | [010](0010-multi-user-ready-rls.md)           | Multi-user ready: RLS now, sign-ups closed       | Accepted          |
 | [011](0011-hosting-github-pages.md)           | GitHub Pages auto-deploy (until >10 users)       | Accepted          |
+| [012](0012-one-local-database-per-account.md) | One on-device database per account               | Accepted          |
 
 Template: [template.md](template.md)

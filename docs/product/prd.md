@@ -41,6 +41,8 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 | Example sentences ("in a sentence") | Back  | ≥ 1 required |                          |
 
 - Editing never changes the box or due date.
+- Editing the word into a word another card already has is blocked, with an error under the word field (decided 2026-10-28).
+- Capitals and extra spaces don't make a different word ("Happy" = " happy ").
 - **Duplicate word:** warn, open the existing card instead, and move it back to box 1, due tomorrow. This applies to mastered cards too: they are un-mastered and reviewed again (decided 2026-10-28).
 - Validation: Save is never disabled; the error appears under the empty field.
 
