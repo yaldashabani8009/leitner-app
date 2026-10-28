@@ -122,4 +122,4 @@ See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (di
 - [x] Sign-in / sign-up / forgot-password screens: designed in code in the v2 style, reviewed by Yali from screenshots (2026-10-28). Mascot added in 7.8.
 - [ ] Where Export/Import lives (small settings screen or top-bar menu).
 - [ ] Laptop screens redrawn in v2 style.
-- [ ] Motion for the new mascot.
+- [ ] Motion for the new mascot: first calm version built in 7.8 (see docs/design/README.md); Yali to review and refine.

@@ -37,15 +37,17 @@ Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as it
 
 A rounded card box (aqua front #BFE7EA, darker back wall #8FD0D6), three index cards inside (terracotta, orange, cream), cream label slot. Dot eyes, ^ ^ happy eyes, orange blush, stick arms/legs (2.5–3.5px ink). Small mascots have no legs. Built from separate shapes so parts animate independently.
 
-| #   | Pose                | App moment                               |
-| --- | ------------------- | ---------------------------------------- |
-| 1   | wave                | Loading                                  |
-| 2   | idle                | Card showing, practice, duplicate dialog |
-| 3   | happy               | Knew it                                  |
-| 4   | cheer (holds heart) | Not yet                                  |
-| 5   | celebrate           | Session complete                         |
-| 6   | flame               | Streak                                   |
-| 7   | sleep               | All done for today                       |
-| 8   | write               | Add / edit word                          |
+| #   | Pose                | App moment                               | Motion (first version, 2026-10-28) |
+| --- | ------------------- | ---------------------------------------- | ---------------------------------- |
+| 1   | wave                | Loading                                  | Right arm waves (loops)            |
+| 2   | idle                | Card showing, practice, duplicate dialog | Slow gentle bob (loops)            |
+| 3   | happy               | Knew it                                  | One hop                            |
+| 4   | cheer (holds heart) | Not yet                                  | One warm nod                       |
+| 5   | celebrate           | Session complete                         | Two hops                           |
+| 6   | flame               | Streak                                   | Flame flickers (loops)             |
+| 7   | sleep               | All done for today                       | z z z float up (loops)             |
+| 8   | write               | Add / edit word                          | Pencil scribbles (loops)           |
 
-On the practice screen the mascot body is white. Mascot SVGs still need exporting from the canvas into `src/assets/mascot/`.
+In code: `<Mascot pose="wave" />` from `src/ui/Mascot/` (roadmap 7.8). Options: `size` large (190px, legs) or small (84px, no legs), `body` aqua or white (practice screen), `decorative`, `still`. All motion stops when the phone's "Reduce motion" is on.
+
+The drawing lives only in `src/ui/Mascot/poses.tsx` (one entry per pose: arms, legs, card tilts, eyes, mouth, extras). To redraw the mascot later, change that file; no screen needs to change. For a brand-new character, draw it with each part on its own named layer (body, back wall, cards, eyes, mouth, left arm, right arm, legs, extras) and all 8 poses.

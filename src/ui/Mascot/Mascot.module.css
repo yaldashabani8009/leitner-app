@@ -1,0 +1,265 @@
+.mascot {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* ---------- Colours (tokens only) ---------- */
+
+.limb,
+.line,
+.cardLines,
+.confettiLine {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.limb,
+.line {
+  stroke: var(--color-ink);
+}
+
+.ink {
+  fill: var(--color-ink);
+  stroke: var(--color-ink);
+}
+
+.orange {
+  fill: var(--color-orange);
+}
+
+.backWall {
+  fill: var(--color-aqua-dark);
+  stroke: var(--color-ink);
+}
+
+.cards {
+  stroke: var(--color-ink);
+  stroke-linejoin: round;
+}
+
+.cardTerracotta {
+  fill: var(--color-terracotta);
+}
+
+.cardOrange {
+  fill: var(--color-orange);
+}
+
+.cardCream {
+  fill: var(--color-bg);
+}
+
+.cardLines {
+  stroke: var(--color-line);
+}
+
+.front {
+  fill: var(--color-aqua);
+  stroke: var(--color-ink);
+}
+
+.whiteBody .front {
+  fill: var(--color-white);
+}
+
+.slot {
+  fill: var(--color-bg);
+  stroke: var(--color-ink);
+}
+
+.tongue,
+.heart {
+  fill: var(--color-terracotta);
+  stroke: var(--color-ink);
+  stroke-linejoin: round;
+}
+
+.shadow {
+  fill: var(--color-line);
+}
+
+.confettiLine {
+  stroke: var(--color-terracotta);
+}
+
+.confettiTriangle {
+  fill: var(--color-aqua);
+  stroke: var(--color-ink);
+}
+
+.glow {
+  fill: var(--color-cream);
+}
+
+.flameOuter {
+  fill: var(--color-orange);
+  stroke: var(--color-ink);
+  stroke-linejoin: round;
+}
+
+.flameInner {
+  fill: var(--color-bg);
+}
+
+.z {
+  fill: var(--color-ink);
+  font-family: var(--font-ui);
+  font-weight: var(--weight-black);
+}
+
+.pencilBody {
+  fill: var(--color-orange);
+  stroke: var(--color-ink);
+}
+
+.pencilEraser {
+  fill: var(--color-terracotta);
+  stroke: var(--color-ink);
+}
+
+.pencilTip {
+  fill: var(--color-bg);
+  stroke: var(--color-ink);
+  stroke-linejoin: round;
+}
+
+/*
+ * ---------- Motion (decided 2026-10-28: small and calm) ----------
+ * The pose class is only added when motion is allowed (see Mascot.tsx), and the media
+ * query below is a second safety net for "Reduce motion".
+ */
+
+.body,
+.armRight,
+.flameShape,
+.pencil,
+.z,
+.waveLines {
+  transform-box: fill-box;
+}
+
+/* 1 · wave (loading): the right arm waves from the shoulder. */
+.wave .armRight {
+  transform-origin: left bottom;
+  animation: wave-arm 0.5s ease-in-out infinite alternate;
+}
+
+.wave .waveLines {
+  animation: fade-pulse 0.5s ease-in-out infinite alternate;
+}
+
+/* 2 · idle (card showing): a slow, gentle bob. */
+.idle .body {
+  animation: bob 2.4s ease-in-out infinite;
+}
+
+/* 3 · happy (knew it): one little hop. */
+.happy .body {
+  animation: hop 0.5s var(--ease-bounce);
+}
+
+/* 4 · cheer (not yet): one warm nod. */
+.cheer .body {
+  transform-origin: center bottom;
+  animation: nod 0.7s ease-in-out;
+}
+
+/* 5 · celebrate (session complete): two hops. */
+.celebrate .body {
+  animation: hop 0.5s var(--ease-bounce) 2;
+}
+
+/* 6 · flame (streak): the flame flickers. */
+.flame .flameShape {
+  transform-origin: center bottom;
+  animation: flicker 0.8s ease-in-out infinite alternate;
+}
+
+/* 7 · sleep (all done): z z z float up one after another. */
+.sleep .z {
+  animation: drift 2.4s ease-in-out infinite;
+}
+
+.sleep .z:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.sleep .z:nth-child(3) {
+  animation-delay: 0.8s;
+}
+
+/* 8 · write (add / edit): the pencil scribbles. */
+.write .pencil {
+  transform-origin: center bottom;
+  animation: scribble 0.4s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot * {
+    animation: none !important;
+  }
+}
+
+@keyframes wave-arm {
+  from {
+    transform: rotate(-10deg);
+  }
+
+  to {
+    transform: rotate(12deg);
+  }
+}
+
+@keyframes fade-pulse {
+  from {
+    opacity: 0.3;
+  }
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes hop {
+  40% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes nod {
+  40% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes flicker {
+  to {
+    transform: scale(1.08, 1.12);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(2px);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes scribble {
+  from {
+    transform: rotate(-5deg);
+  }
+
+  to {
+    transform: rotate(5deg);
+  }
+}
