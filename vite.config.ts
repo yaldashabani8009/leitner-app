@@ -47,6 +47,12 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.{ts,tsx}'],
-    coverage: { include: ['src/domain/**'], reporter: ['text', 'html'] },
+    coverage: {
+      include: ['src/domain/**'],
+      exclude: ['src/domain/**/*.test.ts'],
+      reporter: ['text', 'html'],
+      // Roadmap 7.1 DoD: the pure domain stays fully covered; CI fails below this.
+      thresholds: { statements: 100, branches: 100, functions: 100, lines: 100 },
+    },
   },
 });

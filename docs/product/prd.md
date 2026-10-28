@@ -41,7 +41,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 | Example sentences ("in a sentence") | Back  | ≥ 1 required |                          |
 
 - Editing never changes the box or due date.
-- **Duplicate word:** warn, open the existing card instead, and move it back to box 1, due tomorrow.
+- **Duplicate word:** warn, open the existing card instead, and move it back to box 1, due tomorrow. This applies to mastered cards too: they are un-mastered and reviewed again (decided 2026-10-28).
 - Validation: Save is never disabled; the error appears under the empty field.
 
 ## Leitner algorithm
