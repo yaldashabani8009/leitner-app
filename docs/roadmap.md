@@ -1,17 +1,17 @@
 # Roadmap
 
-| Step                           | Status                                                                                                  |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| 1. Requirements (PRD)          | ✅ Done                                                                                                 |
-| 2. Domain & algorithm spec     | ✅ Done                                                                                                 |
-| 3. User flows                  | ✅ Done                                                                                                 |
-| 3b. Screen design (iPhone, v2) | ✅ Done (laptop not yet redrawn)                                                                        |
-| 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; mascot motion not built                                     |
-| 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                      |
-| 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                      |
-| 7. Build the MVP               | ⏭️ **Next**                                                                                             |
-| 8. Deploy & install            | 🟡 Supabase project live; GitHub Pages pipeline ready, needs 2 repo settings ([setup](setup/deploy.md)) |
-| 9. Use & iterate               | ⬜                                                                                                      |
+| Step                           | Status                                                                                                                                                          |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Requirements (PRD)          | ✅ Done                                                                                                                                                         |
+| 2. Domain & algorithm spec     | ✅ Done                                                                                                                                                         |
+| 3. User flows                  | ✅ Done                                                                                                                                                         |
+| 3b. Screen design (iPhone, v2) | ✅ Done (laptop not yet redrawn)                                                                                                                                |
+| 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; mascot motion not built                                                                                             |
+| 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                                                                              |
+| 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                                              |
+| 7. Build the MVP               | ⏭️ **Next**                                                                                                                                                     |
+| 8. Deploy & install            | 🟡 Site live at https://yaldashabani8009.github.io/leitner-app/ (auto-deploys). Still to do: Supabase sign-ups off + create own user ([setup](setup/deploy.md)) |
+| 9. Use & iterate               | ⬜                                                                                                                                                              |
 
 ## Step 7 tasks (in order)
 
