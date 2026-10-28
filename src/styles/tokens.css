@@ -1,0 +1,55 @@
+/*
+ * Design tokens: the ONLY place raw colours, radii and shadows are written.
+ * Every other stylesheet uses var(--token). Stylelint enforces this.
+ * Source of truth: docs/design/tokens.md (mirrors the v2 Claude Design canvas).
+ */
+
+:root {
+  /* Colour */
+  --color-bg: #fff3e4;
+  --color-cream: #ffead3;
+  --color-aqua: #bfe7ea;
+  --color-aqua-dark: #8fd0d6;
+  --color-orange: #e89b5b;
+  --color-terracotta: #d46743;
+  --color-ink: #2b1d16;
+  --color-text-secondary: #6e5648;
+  --color-error: #b5502e;
+  --color-white: #fff;
+
+  /* Type */
+  --font-ui: 'Nunito', system-ui, sans-serif;
+  --font-persian: 'Vazirmatn', 'Nunito', sans-serif;
+  --weight-bold: 800; /* ExtraBold: labels, buttons */
+  --weight-black: 900; /* Black: big words, titles */
+
+  /* Radius */
+  --radius-card: 40px;
+  --radius-panel: 54px; /* bottom colour panels, 52–56 on the canvas */
+  --radius-input: 22px;
+  --radius-pill: 999px;
+
+  /* Outline */
+  --border-chunky: 2.5px;
+
+  /* Squishy button */
+  --press-depth: 5px;
+  --shadow-hard: 0 var(--press-depth) 0 var(--color-ink);
+
+  /* Spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Layout */
+  --column-desktop: 560px;
+
+  /* Motion */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 120ms;
+  --duration-base: 240ms;
+}

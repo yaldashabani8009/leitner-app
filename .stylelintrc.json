@@ -1,0 +1,21 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "plugins": ["stylelint-declaration-strict-value"],
+  "rules": {
+    "selector-class-pattern": "^[a-z][a-zA-Z0-9]*$",
+    "import-notation": "string",
+    "scale-unlimited/declaration-strict-value": [
+      ["/color$/", "fill", "stroke", "background", "border-radius", "box-shadow", "font-family"],
+      {
+        "ignoreValues": ["transparent", "inherit", "currentcolor", "none", "0", "initial", "unset"],
+        "message": "Use a design token (var(--...)) from src/styles/tokens.css instead of a raw value."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/styles/tokens.css"],
+      "rules": { "scale-unlimited/declaration-strict-value": null }
+    }
+  ]
+}

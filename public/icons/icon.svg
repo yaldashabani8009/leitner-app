@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Placeholder app icon (simple card box). Replace with the final mascot icon later. -->
+  <rect width="512" height="512" fill="#FFF3E4"/>
+  <rect x="120" y="150" width="272" height="230" rx="52" fill="#8FD0D6" stroke="#2B1D16" stroke-width="12"/>
+  <rect x="165" y="110" width="80" height="140" rx="16" fill="#D46743" stroke="#2B1D16" stroke-width="12"/>
+  <rect x="220" y="95" width="80" height="150" rx="16" fill="#E89B5B" stroke="#2B1D16" stroke-width="12"/>
+  <rect x="275" y="115" width="80" height="135" rx="16" fill="#FFEAD3" stroke="#2B1D16" stroke-width="12"/>
+  <rect x="100" y="215" width="312" height="200" rx="60" fill="#BFE7EA" stroke="#2B1D16" stroke-width="12"/>
+  <circle cx="210" cy="300" r="12" fill="#2B1D16"/>
+  <circle cx="302" cy="300" r="12" fill="#2B1D16"/>
+  <circle cx="180" cy="330" r="16" fill="#E89B5B" opacity=".7"/>
+  <circle cx="332" cy="330" r="16" fill="#E89B5B" opacity=".7"/>
+  <path d="M236 330 q20 22 40 0" fill="none" stroke="#2B1D16" stroke-width="10" stroke-linecap="round"/>
+</svg>
