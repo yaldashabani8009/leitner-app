@@ -19,7 +19,7 @@
 | `Sheet`       | `bottom` (add / edit, round ✕ closes it) / `dialog` (duplicate word, mascot circle) |
 | `TopBar`      | Option A: words-learned pill, streak pill, + button                                 |
 
-Sheet is hand-built (decided 2026-10-28): page behind is `inert`, Tab stays inside, Esc / overlay / ✕ close it, focus returns to the opener.
+Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as its content and grows as fields are added, up to 76px from the top, then scrolls (decided 2026-10-28; the canvas shows it full height): page behind is `inert`, Tab stays inside, Esc / overlay / ✕ close it, focus returns to the opener.
 
 ## Screen rules (v2)
 
