@@ -68,7 +68,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 1. Up to **20** due cards per session; opening again the same day gives the next 20.
 2. **Daily cap: 100** scheduled reviews (practice repeats don't count).
 3. At the cap → "All done for today"; leftovers roll over.
-4. Order: most overdue first, then lowest box.
+4. Order: most overdue first, then lowest box. Cards with the same due date and box are shuffled, with the same order all day (decided 2026-10-28).
 5. Wrong answer → rescheduled (box 1, tomorrow) **and** repeated once at the end as practice.
 6. Practice answers change nothing.
 7. Leaving mid-session: unanswered cards stay due.
@@ -76,7 +76,10 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 ## Streak and progress (top bar)
 
 - Two floating pills (words learned, streak) + a round + button.
-- **Streak:** a day counts when at least one full session of 20 is finished.
+- **Streak:** a day counts when any one is true (decided 2026-10-28):
+  1. 20 scheduled reviews were done that day, across any number of sessions (practice doesn't count);
+  2. fewer than 20 cards were due, and all of them were reviewed;
+  3. no cards were due at all, and a new word was added. The All done screen nudges you to add a word to keep the streak.
 - **Words learned:** cards that have passed box 1 at least once (never goes down).
 - Session progress: chunky pill bar, no numbers.
 
