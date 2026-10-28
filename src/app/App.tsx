@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { AuthService, SessionClient } from '../data/auth';
 import { openDatabase } from '../data/db';
+import type { SyncRemote } from '../data/sync/remote';
+import { useSync } from '../data/sync/useSync';
 import { refreshProfile, type ProfileSource } from '../data/profileSync';
 import { createRepository } from '../data/repository';
 import { ForgotPassword } from '../screens/Auth/ForgotPassword';
@@ -17,6 +19,8 @@ export interface AppServices {
   session: SessionClient;
   auth: AuthService;
   profiles: ProfileSource;
+  /** The cloud copy of the cards (sync, ADR-003). */
+  remote: SyncRemote;
   fromRecoveryLink: boolean;
   /** Tests shorten this; see START_TIMEOUT_MS. */
   startTimeoutMs?: number;
@@ -68,7 +72,14 @@ export function App({ services }: { services: AppServices }) {
     case 'starting':
       return <Starting />;
     case 'app':
-      return <SignedIn key={view.userId} userId={view.userId} profiles={services.profiles} />;
+      return (
+        <SignedIn
+          key={view.userId}
+          userId={view.userId}
+          profiles={services.profiles}
+          remote={services.remote}
+        />
+      );
     case 'setNewPassword':
       return (
         <SetNewPassword
@@ -89,9 +100,17 @@ export function App({ services }: { services: AppServices }) {
   }
 }
 
-/** Opens this account's own on-device database (ADR-012) and refreshes the profile copy. */
-function SignedIn({ userId, profiles }: { userId: string; profiles: ProfileSource }) {
-  const repo = useMemo(() => createRepository(openDatabase(userId)), [userId]);
+interface SignedInProps {
+  userId: string;
+  profiles: ProfileSource;
+  remote: SyncRemote;
+}
+
+/** Opens this account's own on-device database (ADR-012), keeps it in sync and refreshes the profile copy. */
+function SignedIn({ userId, profiles, remote }: SignedInProps) {
+  const db = useMemo(() => openDatabase(userId), [userId]);
+  const repo = useMemo(() => createRepository(db), [db]);
+  useSync(db, remote);
 
   useEffect(() => {
     // Not a UI data read: copies the profile to the device; the screen reads it with useLiveQuery.

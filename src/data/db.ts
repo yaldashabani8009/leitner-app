@@ -57,6 +57,12 @@ export interface OutboxRow {
   queuedAt: string;
 }
 
+/** Small device-only facts, e.g. where each table's last pull stopped (sync, ADR-013). */
+export interface MetaRow {
+  key: string;
+  value: unknown;
+}
+
 /** Saved on the device at sign-in so "today" works offline. */
 export interface ProfileRow {
   userId: string;
@@ -71,6 +77,7 @@ export class LeitnerDb extends Dexie {
   reviewLogs!: EntityTable<ReviewLogRow, 'id'>;
   outbox!: EntityTable<OutboxRow, 'key'>;
   profile!: EntityTable<ProfileRow, 'userId'>;
+  meta!: EntityTable<MetaRow, 'key'>;
 
   constructor(name: string) {
     super(name);
@@ -81,6 +88,8 @@ export class LeitnerDb extends Dexie {
       outbox: 'key, queuedAt',
       profile: 'userId',
     });
+    // v2 (roadmap 7.6): sync cursors.
+    this.version(2).stores({ meta: 'key' });
   }
 }
 

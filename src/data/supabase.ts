@@ -2,6 +2,7 @@ import { createClient, isAuthRetryableFetchError } from '@supabase/supabase-js';
 import { createSupabaseAuth, type SessionClient } from './auth';
 import type { Database } from './database.types';
 import type { ProfileSource } from './profileSync';
+import { createSupabaseRemote } from './sync/remote';
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -63,3 +64,6 @@ export const sessionClient: SessionClient = {
     return () => data.subscription.unsubscribe();
   },
 };
+
+/** The cloud side of sync (ADR-003, ADR-013). */
+export const syncRemote = createSupabaseRemote(supabase);

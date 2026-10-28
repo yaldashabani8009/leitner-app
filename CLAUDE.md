@@ -47,6 +47,7 @@ npm run coverage    # tests + coverage for src/domain (fails below 100%)
 - Project: `leitner-app`, ref **`lkyqktrpwhzsfkgaqiuo`** (us-east-1, free plan), URL `https://lkyqktrpwhzsfkgaqiuo.supabase.co`.
 - Schema changes: add a new file in `supabase/migrations/` (named `<version>_<name>.sql` to match the remote version), apply it with the Supabase MCP `apply_migration`, then run the security + performance advisors and regenerate `src/data/database.types.ts`. Never edit an applied migration.
 - RLS requires a card to exist before its entries/logs: sync pushes `cards` first, then `card_entries`, then `review_logs`.
+- Sync (`src/data/sync/`, ADR-013): pulls use `server_updated_at` (set by the server, never sent by the app); the database skips updates older than the stored `updated_at`.
 - Use the publishable key (`sb_publishable_…`) in the app; never the secret/service key.
 
 ## Folder layout
