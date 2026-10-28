@@ -47,6 +47,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.{ts,tsx}'],
+    // Screen tests opt into a browser-like page with `// @vitest-environment jsdom`.
+    setupFiles: ['src/test/setup.ts'],
     coverage: {
       include: ['src/domain/**'],
       exclude: ['src/domain/**/*.test.ts'],
