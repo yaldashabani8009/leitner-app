@@ -3,12 +3,19 @@ import { createRoot } from 'react-dom/client';
 import './styles/global.css';
 import { App } from './app/App';
 import { requestPersistentStorage } from './data/storage';
-import { auth, openedFromRecoveryLink, profileSource, sessionClient } from './data/supabase';
+import {
+  auth,
+  openedFromRecoveryLink,
+  profileSource,
+  sessionClient,
+  syncRemote,
+} from './data/supabase';
 
 const services = {
   session: sessionClient,
   auth,
   profiles: profileSource,
+  remote: syncRemote,
   fromRecoveryLink: openedFromRecoveryLink,
 };
 

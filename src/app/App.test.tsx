@@ -3,6 +3,7 @@ import 'fake-indexeddb/auto';
 import { act, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AuthService, SessionClient } from '../data/auth';
+import { createFakeCloud } from '../test/fakeCloud';
 import { App, type AppServices } from './App';
 import { readLastUser } from './lastUser';
 
@@ -35,6 +36,7 @@ function services(
         updated_at: '2026-10-28T10:00:00Z',
       }),
     },
+    remote: createFakeCloud(),
     fromRecoveryLink: false,
     ...extra,
   };
@@ -57,6 +59,28 @@ describe('App start-up', () => {
     expect(await screen.findByRole('heading', { name: "Yali's Leitner." })).toBeInTheDocument();
     expect(await screen.findByText(/0 words in your box/)).toBeInTheDocument();
     expect(readLastUser()).toBe(userId);
+  });
+
+  it('syncs on open: a card added on another device shows up', async () => {
+    const cloud = createFakeCloud();
+    await cloud.upsertCards([
+      {
+        id: crypto.randomUUID(),
+        word: 'brave',
+        box: 1,
+        due_date: '2026-03-11',
+        mastered_at: null,
+        created_at: '2026-03-10T08:00:00.000Z',
+        updated_at: '2026-03-10T08:00:00.000Z',
+        deleted_at: null,
+      },
+    ]);
+    const { value } = services(
+      { userId: `u-${crypto.randomUUID()}`, offline: false },
+      { remote: cloud },
+    );
+    render(<App services={value} />);
+    expect(await screen.findByText(/1 word in your box/)).toBeInTheDocument();
   });
 
   it('offline with an expired session → still opens the box of the last account', async () => {
