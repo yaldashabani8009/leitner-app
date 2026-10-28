@@ -4,33 +4,44 @@ import { Pill } from './Pill';
 import styles from './TopBar.module.css';
 
 interface TopBarProps {
-  /** Cards that have passed box 1 at least once (PRD: never goes down). */
-  wordsLearned: number;
-  /** Days in a row (PRD streak rule). */
-  streak: number;
-  onAdd: () => void;
+  /** Cards that have passed box 1 at least once (PRD: never goes down). Hidden when not given. */
+  wordsLearned?: number;
+  /** Days in a row (PRD streak rule). Hidden when not given. */
+  streak?: number;
+  /** Opens "add a word". The + is hidden when not given. */
+  onAdd?: () => void;
 }
 
-/** Option A from the canvas: two floating pills (words learned, streak) and a round + button. */
+/**
+ * Option A from the canvas: two floating pills (words learned, streak) and a round + button.
+ * Parts that aren't built yet are simply left out (7.9: pills come in 7.11, + in 7.10);
+ * the bar keeps its height so screens don't jump when they arrive.
+ */
 export function TopBar({ wordsLearned, streak, onAdd }: TopBarProps) {
   return (
     <header className={styles.bar}>
-      <Pill
-        variant="stat"
-        icon={<BookIcon />}
-        srLabel={wordsLearned === 1 ? '1 word learned' : `${wordsLearned} words learned`}
-      >
-        {wordsLearned}
-      </Pill>
-      <Pill variant="stat" icon={<FlameIcon />} srLabel={`${streak}-day streak`}>
-        {streak}
-      </Pill>
-      <IconButton
-        label="Add word"
-        icon={<PlusIcon size={26} />}
-        onClick={onAdd}
-        className={styles.add}
-      />
+      {wordsLearned !== undefined && (
+        <Pill
+          variant="stat"
+          icon={<BookIcon />}
+          srLabel={wordsLearned === 1 ? '1 word learned' : `${wordsLearned} words learned`}
+        >
+          {wordsLearned}
+        </Pill>
+      )}
+      {streak !== undefined && (
+        <Pill variant="stat" icon={<FlameIcon />} srLabel={`${streak}-day streak`}>
+          {streak}
+        </Pill>
+      )}
+      {onAdd && (
+        <IconButton
+          label="Add word"
+          icon={<PlusIcon size={26} />}
+          onClick={onAdd}
+          className={styles.add}
+        />
+      )}
     </header>
   );
 }

@@ -9,8 +9,8 @@ import { ForgotPassword } from '../screens/Auth/ForgotPassword';
 import { SetNewPassword } from '../screens/Auth/SetNewPassword';
 import { SignIn, type AuthScreen } from '../screens/Auth/SignIn';
 import { SignUp } from '../screens/Auth/SignUp';
-import { PlaceholderHome } from '../screens/Home/PlaceholderHome';
-import styles from './App.module.css';
+import { LoadingScreen } from '../screens/Loading/LoadingScreen';
+import { StudyFlow } from '../screens/Study/StudyFlow';
 import { readLastUser, writeLastUser } from './lastUser';
 import { decideStart, settleWithin, START_TIMEOUT_MS } from './startup';
 
@@ -24,6 +24,8 @@ export interface AppServices {
   fromRecoveryLink: boolean;
   /** Tests shorten this; see START_TIMEOUT_MS. */
   startTimeoutMs?: number;
+  /** Tests pass 0; see MIN_LOADING_MS. */
+  minLoadingMs?: number;
 }
 
 type View =
@@ -70,7 +72,7 @@ export function App({ services }: { services: AppServices }) {
 
   switch (view.kind) {
     case 'starting':
-      return <Starting />;
+      return <LoadingScreen />;
     case 'app':
       return (
         <SignedIn
@@ -78,6 +80,7 @@ export function App({ services }: { services: AppServices }) {
           userId={view.userId}
           profiles={services.profiles}
           remote={services.remote}
+          minLoadingMs={services.minLoadingMs}
         />
       );
     case 'setNewPassword':
@@ -104,10 +107,11 @@ interface SignedInProps {
   userId: string;
   profiles: ProfileSource;
   remote: SyncRemote;
+  minLoadingMs?: number;
 }
 
 /** Opens this account's own on-device database (ADR-012), keeps it in sync and refreshes the profile copy. */
-function SignedIn({ userId, profiles, remote }: SignedInProps) {
+function SignedIn({ userId, profiles, remote, minLoadingMs }: SignedInProps) {
   const db = useMemo(() => openDatabase(userId), [userId]);
   const repo = useMemo(() => createRepository(db), [db]);
   useSync(db, remote);
@@ -117,16 +121,5 @@ function SignedIn({ userId, profiles, remote }: SignedInProps) {
     void refreshProfile(profiles, repo, userId);
   }, [profiles, repo, userId]);
 
-  return <PlaceholderHome repo={repo} />;
-}
-
-/** The split second while the saved session loads. The real Loading screen comes in roadmap 7.9. */
-function Starting() {
-  return (
-    <main className={styles.screen} aria-busy="true">
-      <p className={styles.title}>
-        Leitner<span className={styles.dot}>.</span>
-      </p>
-    </main>
-  );
+  return <StudyFlow repo={repo} minLoadingMs={minLoadingMs} />;
 }

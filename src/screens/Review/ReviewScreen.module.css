@@ -1,0 +1,297 @@
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---------- Progress / practice banner ---------- */
+
+.progress {
+  position: relative;
+  height: 16px;
+  margin: var(--space-3) 28px 0;
+  overflow: hidden;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+}
+
+.progressFill {
+  height: 100%;
+  border-right: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-orange);
+  transition: width var(--duration-base) ease-out;
+}
+
+.practiceBanner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px var(--space-5) 0;
+  padding: 10px var(--space-4);
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua);
+  font-size: 15px;
+  font-weight: var(--weight-black);
+}
+
+.practiceTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.practiceLeft {
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  font-size: 14px;
+}
+
+/* ---------- Card ---------- */
+
+/* Space for the card; the mascot peeks over the panel below it. */
+.stage {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 44px 0 72px;
+}
+
+.stackFront,
+.stackBack {
+  flex: 1;
+  min-height: 0;
+  max-height: 440px;
+}
+
+.stackFront {
+  margin: 0 34px;
+}
+
+.stackBack {
+  margin: 0 26px;
+}
+
+.frontCard {
+  padding: 0;
+}
+
+/* The whole front is one big button: tap to flip. */
+.front {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 28px var(--space-5);
+  border: none;
+  border-radius: var(--radius-card);
+  background: transparent;
+  color: var(--color-ink);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.front:focus-visible {
+  outline: 3px solid var(--color-terracotta);
+  outline-offset: -8px;
+}
+
+.word {
+  font-size: 42px;
+  font-weight: var(--weight-black);
+  letter-spacing: -0.5px;
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  font-weight: var(--weight-bold);
+}
+
+/* The back follows the finger: horizontal drags swipe, vertical drags still scroll. */
+.swipeable {
+  position: relative;
+  height: 100%;
+  touch-action: pan-y;
+  transform: translateX(var(--swipe-x)) rotate(var(--swipe-turn));
+  transition: transform var(--duration-base) var(--ease-bounce);
+  animation: flip-in var(--duration-base) ease-out;
+  user-select: none;
+}
+
+.dragging {
+  transition: none;
+}
+
+.leaveRight,
+.leaveLeft {
+  transition: transform 220ms ease-in;
+}
+
+.leaveRight {
+  transform: translateX(140%) rotate(20deg);
+}
+
+.leaveLeft {
+  transform: translateX(-140%) rotate(-20deg);
+}
+
+.back {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  outline: none;
+}
+
+.backHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.backWord {
+  flex-grow: 1;
+  margin: 0;
+  font-size: 28px;
+  font-weight: var(--weight-black);
+  letter-spacing: -0.3px;
+  overflow-wrap: anywhere;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: var(--weight-bold);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.persian {
+  padding: 10px var(--space-4);
+  border-radius: var(--radius-input);
+  background: var(--color-cream);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.persian p {
+  margin: 0;
+}
+
+.sentence {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.mark {
+  padding: 0 3px;
+  border-radius: var(--radius-highlight);
+  background: var(--color-cream);
+  color: inherit;
+}
+
+/* KNEW IT! / NOT YET fade in as the card is pulled (canvas 04 / 05). */
+.stamp {
+  position: absolute;
+  top: 45%;
+  padding: var(--space-2) 18px;
+  border: 3px solid var(--color-ink);
+  border-radius: var(--radius-stamp);
+  font-size: 28px;
+  font-weight: var(--weight-black);
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+
+.stampRight {
+  left: 22px;
+  background: var(--color-aqua);
+  opacity: var(--stamp-right);
+  transform: rotate(-16deg);
+}
+
+.stampLeft {
+  right: 22px;
+  background: var(--color-cream);
+  opacity: var(--stamp-left);
+  transform: rotate(16deg);
+}
+
+.leaveRight .stampRight,
+.leaveLeft .stampLeft {
+  opacity: 1;
+}
+
+/* ---------- Bottom panel ---------- */
+
+.panel {
+  flex-shrink: 0;
+  gap: var(--space-1);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: var(--weight-black);
+}
+
+.panelText {
+  max-width: 280px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.reassure {
+  margin: 0 0 var(--space-2);
+  font-size: 15px;
+  font-weight: var(--weight-bold);
+}
+
+.answers {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.answers > * {
+  flex: 1;
+}
+
+@keyframes flip-in {
+  from {
+    transform: perspective(900px) rotateY(80deg);
+  }
+}

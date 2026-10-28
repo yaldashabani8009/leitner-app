@@ -2,6 +2,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: calc(52px + 24px);
   padding: max(18px, env(safe-area-inset-top)) 20px 6px;
 }
 

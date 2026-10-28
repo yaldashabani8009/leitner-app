@@ -15,6 +15,7 @@ import {
 } from '../domain/card/validate';
 import { answer, newCard, resetToBox1 } from '../domain/leitner/engine';
 import { pickSessionCards, reviewsDoneToday } from '../domain/session/pick';
+import { isOnOrBefore } from '../domain/time/calendarDate';
 import { dateInZone, resolveTimeZone } from '../domain/time/zonedDate';
 import type {
   CardRow,
@@ -46,6 +47,9 @@ const KIND_OF: Record<ListField, EntryKind> = {
 
 /** Longest possible distance between UTC and a local midnight (+14h) plus a day, with margin. */
 const LOOKBACK_MS = 48 * 60 * 60 * 1000;
+
+/** UTC+14 (Kiribati): the first place where a new day starts. */
+const LATEST_TIME_ZONE = 'Etc/GMT-14';
 
 export type AddCardResult =
   | { status: 'created'; cardId: string }
@@ -261,22 +265,40 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
     /** The card ids for the next session; empty means "All done for today". */
     async nextSessionCardIds(): Promise<string[]> {
       const now = deps.now();
-      const date = await today(now);
-      const cards = await db.cards
-        .where('dueDate')
-        .belowOrEqual(date)
-        .filter((card) => card.deletedAt === null)
-        .toArray();
-      return pickSessionCards(cards, await countReviewsToday(), date);
+      // Every read starts before the first await, so useLiveQuery sees all of them and
+      // refreshes after each answer. (Dexie only tracks reads that start inside its live
+      // query; awaiting a plain async helper first would hide the later ones.)
+      const [profile, maybeDue, recent] = await Promise.all([
+        db.profile.toCollection().first(),
+        // The latest "today" anywhere on Earth; narrowed to the profile's day below.
+        db.cards
+          .where('dueDate')
+          .belowOrEqual(dateInZone(now, LATEST_TIME_ZONE))
+          .filter((card) => card.deletedAt === null)
+          .toArray(),
+        recentLogs(now),
+      ]);
+      const zone = resolveTimeZone(profile?.timeZone);
+      const date = dateInZone(now, zone);
+      const due = maybeDue.filter((card) => isOnOrBefore(card.dueDate, date));
+      return pickSessionCards(due, reviewsDoneToday(recent, now, zone), date);
     },
   };
+
+  /** Review logs recent enough to include the whole of "today" in any time zone. */
+  function recentLogs(now: string) {
+    const since = new Date(Date.parse(now) - LOOKBACK_MS).toISOString();
+    return db.reviewLogs.where('reviewedAt').aboveOrEqual(since).toArray();
+  }
 
   /** Scheduled reviews done on the profile's "today". */
   async function countReviewsToday(): Promise<number> {
     const now = deps.now();
-    const since = new Date(Date.parse(now) - LOOKBACK_MS).toISOString();
-    const recent = await db.reviewLogs.where('reviewedAt').aboveOrEqual(since).toArray();
-    return reviewsDoneToday(recent, now, await timeZone());
+    const [profile, recent] = await Promise.all([
+      db.profile.toCollection().first(),
+      recentLogs(now),
+    ]);
+    return reviewsDoneToday(recent, now, resolveTimeZone(profile?.timeZone));
   }
 
   async function addEntry(

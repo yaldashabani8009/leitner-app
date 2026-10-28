@@ -1,7 +1,7 @@
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { ComponentPropsWithRef, ReactNode } from 'react';
 import styles from './Card.module.css';
 
-type CardProps = HTMLAttributes<HTMLDivElement>;
+type CardProps = ComponentPropsWithRef<'div'>;
 
 /**
  * The white word card: 40px corners, chunky ink outline, 6px hard shadow.

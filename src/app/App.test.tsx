@@ -38,6 +38,7 @@ function services(
     },
     remote: createFakeCloud(),
     fromRecoveryLink: false,
+    minLoadingMs: 0,
     ...extra,
   };
   return { value, emit: (userId: string | null) => act(() => listener(userId)) };
@@ -53,11 +54,13 @@ describe('App start-up', () => {
     expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
   });
 
-  it('signed in → the box, with the profile name copied onto the device', async () => {
+  it('signed in → loading with the profile name copied onto the device, then the box', async () => {
     const userId = `u-${crypto.randomUUID()}`;
-    render(<App services={services({ userId, offline: false }).value} />);
+    render(<App services={services({ userId, offline: false }, { minLoadingMs: 300 }).value} />);
     expect(await screen.findByRole('heading', { name: "Yali's Leitner." })).toBeInTheDocument();
-    expect(await screen.findByText(/0 words in your box/)).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Nothing to review yet' }),
+    ).toBeInTheDocument();
     expect(readLastUser()).toBe(userId);
   });
 
@@ -80,13 +83,16 @@ describe('App start-up', () => {
       { remote: cloud },
     );
     render(<App services={value} />);
-    expect(await screen.findByText(/1 word in your box/)).toBeInTheDocument();
+    // Due in the past → its review card shows.
+    expect(await screen.findByText('brave')).toBeInTheDocument();
   });
 
   it('offline with an expired session → still opens the box of the last account', async () => {
     localStorage.setItem('leitner:lastUserId', 'u-offline');
     render(<App services={services({ userId: null, offline: true }).value} />);
-    expect(await screen.findByText("You're signed in")).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Nothing to review yet' }),
+    ).toBeInTheDocument();
   });
 
   it('offline and Supabase never answers → opens the last account’s box after the wait', async () => {
@@ -94,7 +100,9 @@ describe('App start-up', () => {
     const { value } = services({ userId: null, offline: false }, { startTimeoutMs: 50 });
     value.session.load = () => new Promise(() => {});
     render(<App services={value} />);
-    expect(await screen.findByText("You're signed in")).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Nothing to review yet' }),
+    ).toBeInTheDocument();
   });
 
   it('from a reset email → choose a new password, even once the link signs in', async () => {
@@ -114,13 +122,15 @@ describe('App sign-in changes', () => {
     render(<App services={value} />);
     await screen.findByRole('heading', { name: 'Welcome back' });
     await emit(`u-${crypto.randomUUID()}`);
-    expect(await screen.findByText("You're signed in")).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Nothing to review yet' }),
+    ).toBeInTheDocument();
   });
 
   it('a session that ends goes back to Sign in and forgets the account', async () => {
     const { value, emit } = services({ userId: `u-${crypto.randomUUID()}`, offline: false });
     render(<App services={value} />);
-    await screen.findByText("You're signed in");
+    await screen.findByRole('heading', { name: 'Nothing to review yet' });
     await emit(null);
     expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
     expect(readLastUser()).toBeNull();

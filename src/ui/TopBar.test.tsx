@@ -24,4 +24,9 @@ describe('TopBar', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Add word' }));
     expect(onAdd).toHaveBeenCalledOnce();
   });
+
+  it('leaves out the parts it is not given', () => {
+    render(<TopBar />);
+    expect(screen.getByRole('banner')).toBeEmptyDOMElement();
+  });
 });

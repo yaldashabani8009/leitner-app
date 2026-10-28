@@ -90,10 +90,10 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 
 1. Open app. First launch on a device → Sign in (or Sign up).
 2. Loading (~1s, cold start): waving mascot + "{display_name}'s Leitner." (no name → "Leitner.") + streak pill.
-3. Cards due and under cap → review card. Otherwise → "All done for today" (sleeping mascot, Add a new word).
+3. Cards due and under cap → review card. Otherwise → "All done for today" (sleeping mascot, Add a new word). An empty box says "Nothing to review yet".
 4. Card front (word) → tap → back (similar words, in Persian, in a sentence, pencil to edit).
 5. Answer: swipe right = Knew it, left = Not yet, or tap buttons. No swiping on the front.
-6. After 20: practice round for misses → "Session complete" (celebrating mascot; streak counts).
+6. After 20: practice round for misses → "Session complete" (celebrating mascot; streak counts). "Next N words" shows only when more are due and under the cap. "I'm done for now" while more are due → a calm resting screen ("Nice work! More words are waiting whenever you're ready." + "Keep going"); otherwise → All done (decided 2026-10-28).
 7. Add word: bottom sheet (top bar + or All done). Save checks required fields and duplicates.
 8. Edit: pencil on card back → same sheet, pre-filled.
 
@@ -117,8 +117,8 @@ See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (di
 
 ## Open questions
 
-- [ ] Keep "Think first… then tap the card" (front) and "That's okay. You'll see it again tomorrow." (swipe left)?
-- [ ] Session complete: show a score ("17 of 20") or not?
+- [x] Keep "Think first… then tap the card" on the front: yes (Yali, 2026-10-28). "That's okay. You'll see it again tomorrow." shows while swiping left / after "Not yet", as on the canvas (not in the practice round, where nothing is rescheduled).
+- [x] Session complete: no score (Yali, 2026-10-28): "You went through 20 words. Nice work."
 - [x] Sign-in / sign-up / forgot-password screens: designed in code in the v2 style, reviewed by Yali from screenshots (2026-10-28). Mascot added in 7.8.
 - [ ] Where Export/Import lives (small settings screen or top-bar menu).
 - [ ] Laptop screens redrawn in v2 style.
