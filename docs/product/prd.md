@@ -97,6 +97,7 @@ Laptop: Space flips, ← / → answer, E edits, Esc closes; centred 560px column
 
 - Timestamps in UTC; "today" = now in the profile time zone; due dates are calendar dates in that zone.
 - The phone's own time-zone setting never decides "today"; only the profile time zone does. Must work for any IANA time zone. (Owner tests by setting the phone to a different zone, currently Asia/Tehran.)
+- If the profile time zone is missing or not a real zone, the app uses UTC (the database default), never the phone's zone (decided 2026-10-28).
 - Daily cap resets at local midnight (profile time zone).
 - Service worker caches the whole app after the first online launch.
 - Sign-in kept permanently; an expired session never blocks local cards.
