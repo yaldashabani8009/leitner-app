@@ -16,3 +16,6 @@ export type Box = 1 | 2 | 3 | 4 | 5;
 export function gapForBox(box: Box): number {
   return BOX_GAPS_DAYS[box - 1];
 }
+
+/** Scheduled reviews in one day that always earn a streak day (Yali's decision, 2026-10-28). */
+export const STREAK_DAILY_REVIEWS = 20;
