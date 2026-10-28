@@ -25,9 +25,9 @@ React 19 + TypeScript (strict) + Vite Â· Dexie (IndexedDB) + dexie-react-hooks Â
 ## Commands
 ```bash
 npm run dev         # local dev server
-npm run check       # typecheck + lint + css lint + tests + build (run before every commit)
+npm run check       # typecheck + lint + css lint + tests with coverage + build (run before every commit)
 npm run test        # unit tests (Vitest)
-npm run coverage    # coverage for src/domain
+npm run coverage    # tests + coverage for src/domain (fails below 100%)
 ```
 
 ## Code rules
