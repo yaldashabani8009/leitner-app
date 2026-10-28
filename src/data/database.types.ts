@@ -19,6 +19,7 @@ export type Database = {
           text: string;
           updated_at: string;
           user_id: string;
+          server_updated_at: string;
         };
         Insert: {
           card_id: string;
@@ -29,6 +30,7 @@ export type Database = {
           text: string;
           updated_at?: string;
           user_id?: string;
+          server_updated_at?: string;
         };
         Update: {
           card_id?: string;
@@ -39,6 +41,7 @@ export type Database = {
           text?: string;
           updated_at?: string;
           user_id?: string;
+          server_updated_at?: string;
         };
         Relationships: [
           {
@@ -61,6 +64,7 @@ export type Database = {
           updated_at: string;
           user_id: string;
           word: string;
+          server_updated_at: string;
         };
         Insert: {
           box?: number;
@@ -72,6 +76,7 @@ export type Database = {
           updated_at?: string;
           user_id?: string;
           word: string;
+          server_updated_at?: string;
         };
         Update: {
           box?: number;
@@ -83,6 +88,7 @@ export type Database = {
           updated_at?: string;
           user_id?: string;
           word?: string;
+          server_updated_at?: string;
         };
         Relationships: [];
       };
@@ -121,6 +127,7 @@ export type Database = {
           is_practice: boolean;
           reviewed_at: string;
           user_id: string;
+          server_updated_at: string;
         };
         Insert: {
           box_after?: number | null;
@@ -132,6 +139,7 @@ export type Database = {
           is_practice?: boolean;
           reviewed_at: string;
           user_id?: string;
+          server_updated_at?: string;
         };
         Update: {
           box_after?: number | null;
@@ -143,6 +151,7 @@ export type Database = {
           is_practice?: boolean;
           reviewed_at?: string;
           user_id?: string;
+          server_updated_at?: string;
         };
         Relationships: [
           {
