@@ -1,17 +1,17 @@
 # Roadmap
 
-| Step                           | Status                                                                                                                                                          |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Requirements (PRD)          | ✅ Done                                                                                                                                                         |
-| 2. Domain & algorithm spec     | ✅ Done                                                                                                                                                         |
-| 3. User flows                  | ✅ Done                                                                                                                                                         |
-| 3b. Screen design (iPhone, v2) | ✅ Done (laptop not yet redrawn)                                                                                                                                |
-| 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; mascot motion not built                                                                                             |
-| 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                                                                              |
-| 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                                              |
-| 7. Build the MVP               | 🟡 In progress: 7.1–7.4 done                                                                                                                                    |
-| 8. Deploy & install            | 🟡 Site live at https://yaldashabani8009.github.io/leitner-app/ (auto-deploys). Still to do: Supabase sign-ups off + create own user ([setup](setup/deploy.md)) |
-| 9. Use & iterate               | ⬜                                                                                                                                                              |
+| Step                           | Status                                                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Requirements (PRD)          | ✅ Done                                                                                                                                                                               |
+| 2. Domain & algorithm spec     | ✅ Done                                                                                                                                                                               |
+| 3. User flows                  | ✅ Done                                                                                                                                                                               |
+| 3b. Screen design (iPhone, v2) | ✅ Done (laptop not yet redrawn)                                                                                                                                                      |
+| 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; mascot motion not built                                                                                                                   |
+| 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                                                                                                    |
+| 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                                                                    |
+| 7. Build the MVP               | 🟡 In progress: 7.1–7.4 done                                                                                                                                                          |
+| 8. Deploy & install            | 🟡 Site live at https://yaldashabani8009.github.io/leitner-app/ (auto-deploys). Sign-ups off and own user created. Still to do: reset-link URL in Supabase ([setup](setup/deploy.md)) |
+| 9. Use & iterate               | ⬜                                                                                                                                                                                    |
 
 ## Step 7 tasks (in order)
 
@@ -23,7 +23,7 @@ Each task = one branch + one pull request. CI must be green before merging.
 | 7.2 ✅ | Time helpers (today in profile TZ, add days)                                 | Tests for TZ edges (midnight, DST) **and device TZ ≠ profile TZ** (e.g. phone on Asia/Tehran, profile on America/New_York and vice versa): "today", due cards and the daily cap must follow the profile TZ, never the phone |
 | 7.3 ✅ | Session builder (20 cards, cap 100, order, practice queue)                   | Tests for cap, ordering, practice not counting                                                                                                                                                                              |
 | 7.4 ✅ | Dexie schema + repositories (cards, entries, logs, outbox)                   | Tests with fake-indexeddb                                                                                                                                                                                                   |
-| 7.5    | Supabase client + auth screens (sign in, sign up, forgot)                    | Can sign in on iPhone PWA and stay signed in                                                                                                                                                                                |
+| 7.5 🟡 | Supabase client + auth screens (sign in, sign up, forgot)                    | Can sign in on iPhone PWA and stay signed in                                                                                                                                                                                |
 | 7.6    | Sync module (push outbox, pull since, LWW)                                   | Merge rules unit-tested; manual two-device test                                                                                                                                                                             |
 | 7.7    | UI kit: Button, Pill, Card, BottomPanel, Sheet, TopBar                       | Matches canvas; tokens only (Stylelint green)                                                                                                                                                                               |
 | 7.8    | Mascot component (8 poses as SVG parts)                                      | All poses render; reduced-motion respected                                                                                                                                                                                  |
