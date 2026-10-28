@@ -11,7 +11,7 @@ A playful Leitner flashcard app for learning English vocabulary. An installable 
 | Setup & deploy | [docs/setup/deploy.md](docs/setup/deploy.md) |
 
 ## Stack
-React 19 · TypeScript · Vite · Dexie · Supabase · CSS Modules + tokens · vite-plugin-pwa · Vitest · Cloudflare Pages
+React 19 · TypeScript · Vite · Dexie · Supabase · CSS Modules + tokens · vite-plugin-pwa · Vitest · GitHub Pages
 
 ## Run locally
 ```bash
@@ -21,4 +21,4 @@ npm run dev
 npm run check                # everything CI runs
 ```
 
-Deploys automatically to Cloudflare Pages on every push to `main`.
+Live: https://yaldashabani8009.github.io/leitner-app/ (deploys automatically on every push to `main`).

@@ -20,7 +20,7 @@ A playful Leitner flashcard PWA for learning English vocabulary (iPhone + Androi
 - Hard constraints: **free tools only**, **works on iPhone Safari and Android Chrome**, **offline 30+ days**, **multi-user ready** (RLS).
 
 ## Stack (see ADRs)
-React 19 + TypeScript (strict) + Vite · Dexie (IndexedDB) + dexie-react-hooks · Supabase (Postgres + Auth, email+password) · CSS Modules + tokens + Stylelint · vite-plugin-pwa · Vitest (+ Playwright later) · GitHub + Cloudflare Pages auto-deploy.
+React 19 + TypeScript (strict) + Vite · Dexie (IndexedDB) + dexie-react-hooks · Supabase (Postgres + Auth, email+password) · CSS Modules + tokens + Stylelint · vite-plugin-pwa · Vitest (+ Playwright later) · GitHub Pages auto-deploy via GitHub Actions (ADR-011; move to a proper host before >10 users).
 
 ## Commands
 ```bash
@@ -61,7 +61,8 @@ docs/                  prd, adr, design, setup, roadmap
 ```
 
 ## Git workflow
-- `main` is always deployable; Cloudflare deploys it automatically.
+- `main` is always deployable; `.github/workflows/deploy.yml` runs all checks and publishes it to https://yaldashabani8009.github.io/leitner-app/ automatically.
+- The repo is **public**: never commit secrets.
 - One branch per roadmap task: `feat/7-1-leitner-engine`, `fix/…`, `docs/…`.
 - Conventional commits: `feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`.
 - Open a PR, make sure CI is green, explain the change in plain words for Yali, then merge.

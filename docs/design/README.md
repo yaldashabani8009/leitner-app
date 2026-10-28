@@ -7,6 +7,7 @@
 - **Tokens:** [tokens.md](tokens.md) ↔ `src/styles/tokens.css`
 
 ## Screen rules (v2)
+
 - Very round: cards 40px, bottom panels 52–56px top radius, inputs 22px, every button/tag a full pill.
 - Chunky 2.5px ink outlines on cards, pills, buttons.
 - Squishy buttons: hard shadow `0 5px 0`; on press, drop 5px and lose the shadow.
@@ -18,17 +19,18 @@
 - "Not yet" is neutral, never red. Never small white text on terracotta.
 
 ## Mascot
+
 A rounded card box (aqua front #BFE7EA, darker back wall #8FD0D6), three index cards inside (terracotta, orange, cream), cream label slot. Dot eyes, ^ ^ happy eyes, orange blush, stick arms/legs (2.5–3.5px ink). Small mascots have no legs. Built from separate shapes so parts animate independently.
 
-| # | Pose | App moment |
-|---|---|---|
-| 1 | wave | Loading |
-| 2 | idle | Card showing, practice, duplicate dialog |
-| 3 | happy | Knew it |
-| 4 | cheer (holds heart) | Not yet |
-| 5 | celebrate | Session complete |
-| 6 | flame | Streak |
-| 7 | sleep | All done for today |
-| 8 | write | Add / edit word |
+| #   | Pose                | App moment                               |
+| --- | ------------------- | ---------------------------------------- |
+| 1   | wave                | Loading                                  |
+| 2   | idle                | Card showing, practice, duplicate dialog |
+| 3   | happy               | Knew it                                  |
+| 4   | cheer (holds heart) | Not yet                                  |
+| 5   | celebrate           | Session complete                         |
+| 6   | flame               | Streak                                   |
+| 7   | sleep               | All done for today                       |
+| 8   | write               | Add / edit word                          |
 
 On the practice screen the mascot body is white. Mascot SVGs still need exporting from the canvas into `src/assets/mascot/`.

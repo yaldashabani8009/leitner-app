@@ -1,9 +1,10 @@
 name: CI
 
-# Runs on every push and pull request. Cloudflare deploys separately;
-# this workflow is the quality gate (a red X on GitHub means: don't merge).
+# Quality gate for branches and pull requests (a red X means: don't merge).
+# main is checked by deploy.yml, which also publishes the site.
 on:
   push:
+    branches-ignore: [main]
   pull_request:
 
 jobs:

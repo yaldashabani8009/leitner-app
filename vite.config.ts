@@ -3,8 +3,13 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// ADR-011: hosted on GitHub Pages at https://yaldashabani8009.github.io/leitner-app/
+// so every URL lives under this sub-folder. Change BASE (and nothing else) when moving hosts.
+const BASE = '/leitner-app/';
+
 // ADR-007: vite-plugin-pwa generates the service worker + manifest.
 export default defineConfig({
+  base: BASE,
   plugins: [
     react(),
     VitePWA({
@@ -18,12 +23,14 @@ export default defineConfig({
         background_color: '#FFF3E4',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
+        id: BASE,
+        start_url: BASE,
+        scope: BASE,
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
           {
-            src: '/icons/icon-512-maskable.png',
+            src: 'icons/icon-512-maskable.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
@@ -33,7 +40,7 @@ export default defineConfig({
       workbox: {
         // Cache the whole app shell (incl. fonts) so it opens offline for 30+ days.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        navigateFallback: '/index.html',
+        navigateFallback: `${BASE}index.html`,
       },
     }),
   ],

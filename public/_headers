@@ -1,8 +1,0 @@
-# Cloudflare Pages headers.
-# The service worker must never be cached by the CDN, or app updates get stuck.
-/sw.js
-  Cache-Control: no-cache
-/registerSW.js
-  Cache-Control: no-cache
-/manifest.webmanifest
-  Cache-Control: no-cache
