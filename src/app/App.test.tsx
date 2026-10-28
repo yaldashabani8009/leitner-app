@@ -1,0 +1,114 @@
+// @vitest-environment jsdom
+import 'fake-indexeddb/auto';
+import { act, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { AuthService, SessionClient } from '../data/auth';
+import { App, type AppServices } from './App';
+import { readLastUser } from './lastUser';
+
+const auth: AuthService = {
+  signIn: async () => ({ ok: true }),
+  signUp: async () => ({ ok: true }),
+  sendPasswordReset: async () => ({ ok: true }),
+  setNewPassword: async () => ({ ok: true }),
+};
+
+function services(
+  loaded: { userId: string | null; offline: boolean },
+  extra: Partial<AppServices> = {},
+) {
+  let listener: (userId: string | null) => void = () => {};
+  const session: SessionClient = {
+    load: vi.fn(async () => loaded),
+    onChange: (l) => {
+      listener = l;
+      return () => {};
+    },
+  };
+  const value: AppServices = {
+    session,
+    auth,
+    profiles: {
+      fetchProfile: async () => ({
+        display_name: 'Yali',
+        time_zone: 'Asia/Tehran',
+        updated_at: '2026-10-28T10:00:00Z',
+      }),
+    },
+    fromRecoveryLink: false,
+    ...extra,
+  };
+  return { value, emit: (userId: string | null) => act(() => listener(userId)) };
+}
+
+beforeEach(() => {
+  localStorage.clear();
+});
+
+describe('App start-up', () => {
+  it('first launch → Sign in', async () => {
+    render(<App services={services({ userId: null, offline: false }).value} />);
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
+  });
+
+  it('signed in → the box, with the profile name copied onto the device', async () => {
+    const userId = `u-${crypto.randomUUID()}`;
+    render(<App services={services({ userId, offline: false }).value} />);
+    expect(await screen.findByRole('heading', { name: "Yali's Leitner." })).toBeInTheDocument();
+    expect(await screen.findByText(/0 words in your box/)).toBeInTheDocument();
+    expect(readLastUser()).toBe(userId);
+  });
+
+  it('offline with an expired session → still opens the box of the last account', async () => {
+    localStorage.setItem('leitner:lastUserId', 'u-offline');
+    render(<App services={services({ userId: null, offline: true }).value} />);
+    expect(await screen.findByText("You're signed in")).toBeInTheDocument();
+  });
+
+  it('offline and Supabase never answers → opens the last account’s box after the wait', async () => {
+    localStorage.setItem('leitner:lastUserId', 'u-hanging');
+    const { value } = services({ userId: null, offline: false }, { startTimeoutMs: 50 });
+    value.session.load = () => new Promise(() => {});
+    render(<App services={value} />);
+    expect(await screen.findByText("You're signed in")).toBeInTheDocument();
+  });
+
+  it('from a reset email → choose a new password, even once the link signs in', async () => {
+    const { value, emit } = services({ userId: 'u1', offline: false }, { fromRecoveryLink: true });
+    render(<App services={value} />);
+    expect(
+      await screen.findByRole('heading', { name: 'Choose a new password' }),
+    ).toBeInTheDocument();
+    await emit('u1');
+    expect(screen.getByRole('heading', { name: 'Choose a new password' })).toBeInTheDocument();
+  });
+});
+
+describe('App sign-in changes', () => {
+  it('signing in moves from Sign in to the box', async () => {
+    const { value, emit } = services({ userId: null, offline: false });
+    render(<App services={value} />);
+    await screen.findByRole('heading', { name: 'Welcome back' });
+    await emit(`u-${crypto.randomUUID()}`);
+    expect(await screen.findByText("You're signed in")).toBeInTheDocument();
+  });
+
+  it('a session that ends goes back to Sign in and forgets the account', async () => {
+    const { value, emit } = services({ userId: `u-${crypto.randomUUID()}`, offline: false });
+    render(<App services={value} />);
+    await screen.findByText("You're signed in");
+    await emit(null);
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
+    expect(readLastUser()).toBeNull();
+  });
+
+  it('moves between Sign in, Sign up and Forgot password', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event');
+    render(<App services={services({ userId: null, offline: false }).value} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Create an account' }));
+    expect(screen.getByRole('heading', { name: 'Make your box' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'I already have an account' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }));
+    expect(screen.getByRole('heading', { name: 'Forgot password?' })).toBeInTheDocument();
+  });
+});
