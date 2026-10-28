@@ -16,7 +16,7 @@ The built app is static files. Hosting must be free, HTTPS, allow commercial use
 **Code on GitHub (`yaldashabani8009/leitner-app`, private). Cloudflare Pages watches `main` and deploys it automatically; other branches get preview URLs.** GitHub Actions runs the quality checks (`.github/workflows/ci.yml`).
 
 ## Consequences
-- Build command `npm run build`, output `dist`, env vars `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` set in Cloudflare.
+- Build command `npm run build`, output `dist`, env vars `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` set in Cloudflare.
 - `public/_headers` stops the CDN from caching the service worker.
 - Cloudflare SPA fallback serves `index.html` for unknown paths (no `404.html`).
 - Reachability from Iran isn't guaranteed; local-first covers it.

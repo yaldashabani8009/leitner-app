@@ -15,7 +15,7 @@ React 19 · TypeScript · Vite · Dexie · Supabase · CSS Modules + tokens · v
 
 ## Run locally
 ```bash
-cp .env.example .env.local   # add Supabase URL + anon key
+cp .env.example .env.local   # add Supabase URL + publishable key
 npm install
 npm run dev
 npm run check                # everything CI runs

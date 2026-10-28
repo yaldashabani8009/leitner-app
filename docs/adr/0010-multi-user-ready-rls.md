@@ -17,6 +17,6 @@ Today the app has one user (the owner). It may open to other users later. Adding
 - **Public sign-ups are disabled** in Supabase until launch.
 
 ## Consequences
-- The browser's anon key is safe to ship because RLS is on.
+- The browser's publishable key is safe to ship because RLS is on.
 - Launch checklist: enable sign-ups, add free custom SMTP, review the free-tier limits (500 MB database, ~50k monthly active users).
 - Note: Supabase pauses free projects after ~1 week without activity; restore from the dashboard. Local-first means the app keeps working meanwhile.

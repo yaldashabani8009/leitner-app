@@ -39,7 +39,13 @@ npm run coverage    # coverage for src/domain
 - IDs are `crypto.randomUUID()` created on the device. Timestamps are UTC ISO strings.
 - Never show box number, counter or due date in the UI.
 - Persian text: `lang="fa"` (RTL + Vazirmatn via global CSS).
-- Never commit secrets. Env vars `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` go in `.env.local`.
+- Never commit secrets. Env vars `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` go in `.env.local`.
+
+## Supabase
+- Project: `leitner-app`, ref **`lkyqktrpwhzsfkgaqiuo`** (us-east-1, free plan), URL `https://lkyqktrpwhzsfkgaqiuo.supabase.co`.
+- Schema changes: add a new file in `supabase/migrations/` (named `<version>_<name>.sql` to match the remote version), apply it with the Supabase MCP `apply_migration`, then run the security + performance advisors and regenerate `src/data/database.types.ts`. Never edit an applied migration.
+- RLS requires a card to exist before its entries/logs: sync pushes `cards` first, then `card_entries`, then `review_logs`.
+- Use the publishable key (`sb_publishable_…`) in the app; never the secret/service key.
 
 ## Folder layout
 ```
