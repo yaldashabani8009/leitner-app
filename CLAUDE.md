@@ -7,7 +7,7 @@ A playful Leitner flashcard PWA for learning English vocabulary (iPhone + Androi
 
 - Product spec: `docs/product/prd.md` (source of truth for behaviour)
 - Decisions: `docs/adr/` (read before changing anything architectural)
-- Design: `docs/design/` + `src/styles/tokens.css`; final screens on the Claude Design canvas (link in `docs/design/README.md`)
+- Design: `docs/design/` + `src/styles/tokens.css`; final screens on the Claude Design canvas (link in `docs/design/README.md`). Yali edits the canvas herself: read the latest files before changing screens, never publish while she has unsaved edits, and keep canvas and app in step (update both).
 - Database: `supabase/migrations/`
 - Setup / deploy: `docs/setup/deploy.md`
 
@@ -29,6 +29,12 @@ npm run check       # typecheck + lint + css lint + tests with coverage + build 
 npm run test        # unit tests (Vitest)
 npm run coverage    # tests + coverage for src/domain (fails below 100%)
 ```
+
+Dev-only pages (never in the built site), for screenshots and review:
+- `http://localhost:5173/leitner-app/?kit`: the UI kit and all mascot poses (`&open=bottom` / `&open=dialog` opens a sheet)
+- `http://localhost:5173/leitner-app/?demo`: the real study screens with sample words in a separate, never-synced database (`&empty`, `&many` for 23 words, `&complete` for Session complete with a streak)
+
+Screenshots for Yali: Playwright at iPhone size (393×852, deviceScaleFactor 3), sent as files before merging.
 
 ## Code rules
 - `src/domain/**` is **pure TypeScript**: no React, Dexie, Supabase, `Date.now()` or argument-less `new Date()`. "Today" is a parameter. Every PRD rule has a test.
