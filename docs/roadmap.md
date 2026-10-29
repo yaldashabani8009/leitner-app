@@ -1,17 +1,17 @@
 # Roadmap
 
-| Step                           | Status                                                                                                                                                                                |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Requirements (PRD)          | ✅ Done                                                                                                                                                                               |
-| 2. Domain & algorithm spec     | ✅ Done                                                                                                                                                                               |
-| 3. User flows                  | ✅ Done                                                                                                                                                                               |
-| 3b. Screen design (iPhone, v2) | ✅ Done (laptop added in 7.13)                                                                                                                                                        |
-| 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; first mascot motion built in 7.8 (small loops and hops); final motion design still open                                                   |
-| 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                                                                                                    |
-| 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                                                                    |
-| 7. Build the MVP               | 🟡 In progress: all built (7.1–7.5, 7.7–7.14); 7.6 waits for its phone + laptop test. **Next: step 8**                                                                                |
-| 8. Deploy & install            | 🟡 Site live at https://yaldashabani8009.github.io/leitner-app/ (auto-deploys). Sign-ups off and own user created. Still to do: reset-link URL in Supabase ([setup](setup/deploy.md)) |
-| 9. Use & iterate               | ⬜                                                                                                                                                                                    |
+| Step                           | Status                                                                                                                                                                                          |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Requirements (PRD)          | ✅ Done                                                                                                                                                                                         |
+| 2. Domain & algorithm spec     | ✅ Done                                                                                                                                                                                         |
+| 3. User flows                  | ✅ Done                                                                                                                                                                                         |
+| 3b. Screen design (iPhone, v2) | ✅ Done (laptop added in 7.13)                                                                                                                                                                  |
+| 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; first mascot motion built in 7.8 (small loops and hops); final motion design still open                                                             |
+| 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                                                                                                              |
+| 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                                                                              |
+| 7. Build the MVP               | 🟡 In progress: all built (7.1–7.5, 7.7–7.14); 7.6 waits for its phone + laptop test                                                                                                            |
+| 8. Deploy & install            | 🟡 Site live, auto-deploys after all tests; live smoke check after every deploy. Sign-ups off, own user and profile checked. **Yali:** reset-link URL in Supabase ([4 clicks](setup/deploy.md)) |
+| 9. Use & iterate               | ⬜                                                                                                                                                                                              |
 
 ## Step 7 tasks (in order)
 
