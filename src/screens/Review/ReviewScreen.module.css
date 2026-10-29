@@ -158,9 +158,10 @@
   transition: none;
 }
 
+/* A dragged card waits while the stamp lands, then flies off (motion.md, 2026-10-29). */
 .leaveRight,
 .leaveLeft {
-  transition: transform 220ms ease-in;
+  transition: transform var(--answer-fly) ease-in var(--answer-hold);
 }
 
 .leaveRight {
@@ -208,19 +209,23 @@
   transform: rotate(16deg);
 }
 
-/* Button or key answer: the card pulls back a little (anticipation), then flies off on a turn
-   (motion.md). A dragged card needs none: the drag was the anticipation. Same 220ms. */
+/* Button or key answer: the card pulls back a little while the stamp lands (anticipation),
+   holds, then flies off on a turn. A dragged card needs no pull-back: the drag was it. */
 .flick.leaveRight {
-  animation: flick-right 220ms ease-in forwards;
+  transition: none;
+  animation: flick-right calc(var(--answer-hold) + var(--answer-fly)) forwards;
 }
 
 .flick.leaveLeft {
-  animation: flick-left 220ms ease-in forwards;
+  transition: none;
+  animation: flick-left calc(var(--answer-hold) + var(--answer-fly)) forwards;
 }
 
+/* The stamp thumps onto the card: big, then pressed down with a little bounce. */
 .leaveRight .stampRight,
 .leaveLeft .stampLeft {
   opacity: 1;
+  animation: stamp-thump 280ms var(--ease-bounce);
 }
 
 /* ---------- Bottom panel ---------- */
@@ -267,13 +272,17 @@
   flex: 1;
 }
 
+/* 0–35%: pull back while the stamp lands · 35–46%: hold · 46–100%: fly off (ease-in). */
 @keyframes flick-right {
   0% {
     transform: none;
+    animation-timing-function: ease-out;
   }
 
-  25% {
-    transform: translateX(-4%) rotate(-2deg);
+  35%,
+  46% {
+    transform: translateX(-3%) rotate(-2deg);
+    animation-timing-function: ease-in;
   }
 
   100% {
@@ -284,14 +293,24 @@
 @keyframes flick-left {
   0% {
     transform: none;
+    animation-timing-function: ease-out;
   }
 
-  25% {
-    transform: translateX(4%) rotate(2deg);
+  35%,
+  46% {
+    transform: translateX(3%) rotate(2deg);
+    animation-timing-function: ease-in;
   }
 
   100% {
     transform: translateX(-140%) rotate(-20deg);
+  }
+}
+
+@keyframes stamp-thump {
+  from {
+    opacity: 0;
+    scale: 1.6;
   }
 }
 
