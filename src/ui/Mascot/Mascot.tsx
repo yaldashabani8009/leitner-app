@@ -123,7 +123,8 @@ export function Mascot({
             strokeWidth="2.5"
           />
           {spec.eyes.kind === 'dots' ? (
-            <>
+            // Grouped so the eyes can blink together (secondary action, motion.md).
+            <g className={styles.eyes}>
               <circle
                 cx={spec.eyes.left[0]}
                 cy={spec.eyes.left[1]}
@@ -136,7 +137,7 @@ export function Mascot({
                 r="4.5"
                 className={styles.ink}
               />
-            </>
+            </g>
           ) : (
             <path d={spec.eyes.d} className={styles.line} strokeWidth="3.5" />
           )}

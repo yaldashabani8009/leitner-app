@@ -35,7 +35,10 @@ export function Confetti({ amount = 'full' }: ConfettiProps) {
     );
   }
   return (
-    <div className={styles.confetti} aria-hidden="true">
+    <div
+      className={[styles.confetti, amount === 'full' && styles.lively].filter(Boolean).join(' ')}
+      aria-hidden="true"
+    >
       <svg className={`${styles.sparkle} ${styles.sparkleInk}`} viewBox="0 0 24 24">
         <path d="M12 0C13 8 16 11 24 12C16 13 13 16 12 24C11 16 8 13 0 12C8 11 11 8 12 0Z" />
       </svg>

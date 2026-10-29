@@ -30,6 +30,7 @@
   align-items: center;
   gap: 10px;
   text-align: center;
+  animation: rise-in var(--duration-base) ease-out calc(var(--stagger) * 2) backwards;
 }
 
 .mascotCircle {
@@ -41,11 +42,15 @@
   height: 230px;
   border-radius: var(--radius-pill);
   background: var(--color-cream);
+
+  /* Arrival (roadmap step 4): the mascot pops in, the words and bubble follow, the panel slides up. */
+  animation: pop-in var(--duration-slow) var(--ease-bounce);
 }
 
 .panel {
   position: relative;
   gap: 10px;
+  animation: slide-up var(--duration-base) ease-out;
 }
 
 .title {
@@ -99,6 +104,10 @@
   font-size: 16px;
   font-weight: var(--weight-black);
   white-space: nowrap;
+  transform-origin: left bottom;
+
+  /* Pops out of the mascot, overshoots and wobbles into place (follow-through). */
+  animation: bubble-in var(--duration-slow) ease-out calc(var(--stagger) * 4) backwards;
 }
 
 /* A button with an icon before its label (canvas 08: "+ Add a new word"). */
@@ -121,4 +130,43 @@
 .panel.buttonsPanel {
   justify-content: flex-end;
   min-height: calc(190px + var(--space-7));
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    translate: 0 100%;
+  }
+}
+
+@keyframes bubble-in {
+  0% {
+    opacity: 0;
+    scale: 0.6;
+    rotate: -8deg;
+  }
+
+  60% {
+    opacity: 1;
+    scale: 1.06;
+    rotate: 3deg;
+  }
+
+  80% {
+    scale: 0.98;
+    rotate: -1deg;
+  }
 }

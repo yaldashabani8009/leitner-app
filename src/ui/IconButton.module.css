@@ -49,6 +49,19 @@
   transform: scale(0.92);
 }
 
+/* Laptop hover (roadmap step 4): the + rises like the big buttons; small round ones grow a touch. */
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover:not(:active) {
+    transform: translateY(calc(var(--hover-lift) * -1));
+    box-shadow: var(--shadow-hard-on-ink-sm-lifted);
+  }
+
+  .cream:hover:not(:active),
+  .white:hover:not(:active) {
+    transform: scale(1.06);
+  }
+}
+
 .white svg {
   stroke-width: 3;
 }

@@ -1,0 +1,60 @@
+# Motion (roadmap step 4, final version 2026-10-29)
+
+Motion in Leitner has three jobs, and nothing moves without one of them:
+
+1. **Confirm** what you just did: the button squishes, the card flies off the way you swiped, the mascot hops or nods.
+2. **Guide** your eye to what's next: the next card is dealt from the stack; a rest screen's panel slides up with its buttons.
+3. **Celebrate**, briefly, when you finish: Session complete is the only big moment.
+
+Rules: motion never blocks input (nothing waits for an animation, except the 220ms card fly-out); repeating loops are slow and small; **"Reduce motion" on the phone turns everything off** (`global.css` cuts every animation and transition to an instant, delays included; the mascot stands still).
+
+## The 12 principles of animation (Yali, 2026-10-29)
+
+The classic Disney principles, applied where they make the app clearer or friendlier. The UI stays calm: the strongest use is on the mascot.
+
+| #   | Principle                       | Where it shows in Leitner                                                                                                                                                                                                                                               |
+| --- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Squash and stretch              | Mascot hop: squashes as it pushes off, stretches in the air, squashes on landing. Flame stretches up and squashes down. Buttons squish when pressed.                                                                                                                    |
+| 2   | Anticipation                    | Mascot crouches before the hop and leans back before the nod. A card answered with a button or key pulls back a hair before it flies off (a swipe needs none: the drag is the anticipation).                                                                            |
+| 3   | Staging                         | One thing at a time: on Session complete the mascot arrives first, then the words, the bubble, the confetti, the buttons. The review screen's confetti stays still so the word has the stage.                                                                           |
+| 4   | Straight ahead and pose to pose | Pose to pose for everything designed (keyframes). Straight ahead for the swipe: the card follows your finger frame by frame.                                                                                                                                            |
+| 5   | Follow-through and overlap      | The index cards inside the mascot keep moving after the body lands. The wave lines follow the arm a beat later. The speech bubble overshoots and wobbles into place.                                                                                                    |
+| 6   | Slow in and slow out            | Easing everywhere; the hop eases out going up and eases in coming down, like gravity. Nothing moves linearly.                                                                                                                                                           |
+| 7   | Arcs                            | The arm waves on an arc from the shoulder; cards turn as they fly off and as they're dealt in; the z z z drift sideways as they rise.                                                                                                                                   |
+| 8   | Secondary action                | The mascot blinks every few seconds while idle, waving or writing; the wave lines pulse with the wave.                                                                                                                                                                  |
+| 9   | Timing                          | Two speeds (Yali, 2026-10-29): what you touch answers fast (button 120ms, card 220–240ms) so 20 answers never feel laggy; the mascot acts slowly enough to enjoy (hop 1s, nod 1.3s, Session complete hops 1.1s twice, celebrations 680ms, 120ms apart). Breathing 2.8s. |
+| 10  | Exaggeration                    | Session complete exaggerates the hop (15px instead of 9px, deeper squash) and does it twice. Everyday answers stay small.                                                                                                                                               |
+| 11  | Solid drawing                   | Squash and stretch keep the volume (width × height ≈ 1), so the box reads as a solid object, not a rubber sheet.                                                                                                                                                        |
+| 12  | Appeal                          | One consistent character with a few clear emotions (wave, happy, warm nod, celebrate, sleep); soft, round, bouncy, never frantic.                                                                                                                                       |
+
+## Timing tokens (`src/styles/tokens.css`)
+
+| Token             | Value                        | Used for                                                              |
+| ----------------- | ---------------------------- | --------------------------------------------------------------------- |
+| `--duration-fast` | 120ms                        | press and hover                                                       |
+| `--duration-base` | 240ms                        | card flip and deal, sheets, panels, words rising in                   |
+| `--duration-slow` | 680ms                        | celebrations: mascot circle, speech bubble, confetti                  |
+| `--stagger`       | 120ms                        | between pieces that arrive one after another                          |
+| `--ease-bounce`   | cubic-bezier(.34,1.56,.64,1) | things arriving or pressed (playful overshoot)                        |
+| `ease-out`        | built in                     | things fading or sliding into place                                   |
+| `--hover-lift`    | 2px                          | laptop hover: the button rises, its hard shadow grows by the same 2px |
+
+## What moves, where
+
+| Moment                 | Motion                                                                                                                                                                                                                                                         |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Loading                | Mascot circle pops in → name rises in → streak pill pops in (120ms apart). Sparkles twinkle slowly. Mascot waves (arm on an arc, wave lines a beat later) and blinks.                                                                                          |
+| Card front             | Each card is **dealt** from the stack: rises 18px, turns from −3°, fades in (240ms, bounce). Mascot breathes and blinks.                                                                                                                                       |
+| Flip                   | The back turns in (rotateY, 240ms).                                                                                                                                                                                                                            |
+| Swipe / answer         | Card follows the finger with a slight tilt; KNEW IT! / NOT YET stamps fade in; flies off 220ms (after a small pull-back when answered with a button or key). Mascot hops with crouch, squash and stretch (knew it, 1s) or leans back and nods (not yet, 1.3s). |
+| Progress bar           | Fills smoothly (240ms).                                                                                                                                                                                                                                        |
+| Session complete       | Mascot circle pops in (680ms) → words rise in → speech bubble pops in and wobbles into place → confetti pops in piece by piece (120ms apart) → panel slides up. Mascot does two big hops (1.1s each); the cards inside bounce after each landing.              |
+| All done / Resting     | Same arrival, calmer: no bubble; sparkles twinkle slowly; mascot sleeps (z z z float up).                                                                                                                                                                      |
+| Add / edit sheet       | Phone: slides up; drag the handle down to close. Laptop: pops in as a centred modal. Overlay fades.                                                                                                                                                            |
+| Dialogs                | Pop in (scale 0.9 → 1, bounce).                                                                                                                                                                                                                                |
+| Buttons                | Press: drop 5px, shadow gone. **Laptop hover:** rise 2px, shadow 5px → 7px; round pencil / ✕ grow 6%. Never on touch screens.                                                                                                                                  |
+| Review screen confetti | Still (nothing should pull your eye while you think).                                                                                                                                                                                                          |
+
+## Tuning
+
+Every number above is a token or sits next to its keyframes, so a change is one line. To try a change, run `npm run dev` and open `?demo` (`&complete` for Session complete, `&empty` for All done).

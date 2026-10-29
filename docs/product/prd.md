@@ -127,4 +127,4 @@ See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (di
 - [x] Sign-in / sign-up / forgot-password screens: designed in code in the v2 style, reviewed by Yali from screenshots (2026-10-28). Mascot added in 7.8.
 - [x] Where Export/Import lives: nowhere in the app; it appears as a modal only when needed (Yali, 2026-10-29, ADR-016).
 - [x] Laptop screens redrawn in v2 style: the phone screens in a centred column (7.13, canvas "Laptop" row).
-- [ ] Motion for the new mascot: first calm version built in 7.8 (see docs/design/README.md); Yali to review and refine.
+- [x] Motion: final version built in roadmap step 4 (2026-10-29), spec in `docs/design/motion.md`; every value is a token, easy to tune.
