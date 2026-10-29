@@ -65,7 +65,7 @@ interface AllDoneProps {
 /** Nothing (more) due today, or the daily cap is reached: calm aqua panel, sleeping mascot. */
 export function AllDone({ emptyBox, top, onAddWord }: AllDoneProps) {
   const text = emptyBox
-    ? 'Your box is empty. Add your first word to start learning.'
+    ? 'Add your first word to start learning.'
     : onAddWord
       ? 'Your next words will be ready tomorrow. Want to add a new one?'
       : 'Your next words will be ready tomorrow.';
@@ -74,7 +74,7 @@ export function AllDone({ emptyBox, top, onAddWord }: AllDoneProps) {
       pose="sleep"
       panel="aqua"
       top={top}
-      title={emptyBox ? 'Nothing to review yet' : 'All done for today'}
+      title={emptyBox ? 'Your box is empty' : 'All done for today'}
       text={text}
       actions={
         onAddWord && (

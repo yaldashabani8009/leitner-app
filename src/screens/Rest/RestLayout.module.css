@@ -73,6 +73,9 @@
   width: 100%;
   margin-top: auto;
   padding-top: var(--space-4);
+
+  /* 48px higher than the panel edge, easier to reach with the thumb (Yali, 2026-10-29). */
+  margin-bottom: var(--space-7);
 }
 
 /* The mascot "says" it: a speech bubble above the circle, to the left (canvas 07, Yali 2026-10-29). */
@@ -112,5 +115,5 @@
 /* Session complete: the panel holds only the buttons, 190px tall like canvas 07. */
 .panel.buttonsPanel {
   justify-content: flex-end;
-  min-height: 190px;
+  min-height: calc(190px + var(--space-7));
 }

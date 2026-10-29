@@ -92,7 +92,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 
 1. Open app. First launch on a device → Sign in (or Sign up).
 2. Loading (2.5 s, cold start; decided 2026-10-29): waving mascot + "{display_name}'s Leitner." (no name → "Leitner.") + streak pill.
-3. Cards due and under cap → review card. Otherwise → "All done for today" (sleeping mascot, Add a new word). An empty box says "Nothing to review yet".
+3. Cards due and under cap → review card. Otherwise → "All done for today" (sleeping mascot, Add a new word). An empty box says "Your box is empty" with "Add your first word to start learning." (decided 2026-10-29).
 4. Card front (word) → tap → back (similar words, in Persian, in a sentence, pencil to edit).
 5. Answer: swipe right = Knew it, left = Not yet, or tap buttons. No swiping on the front.
 6. After 20: practice round for misses → "Session complete" (celebrating mascot; streak counts). "Next N words" shows only when more are due and under the cap. "I'm done for now" while more are due → a calm resting screen ("Nice work! More words are waiting whenever you're ready." + "Keep going"); otherwise → All done (decided 2026-10-28).

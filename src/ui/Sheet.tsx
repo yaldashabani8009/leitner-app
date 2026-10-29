@@ -3,6 +3,7 @@ import {
   useId,
   useRef,
   type CSSProperties,
+  type FocusEvent,
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
@@ -11,7 +12,7 @@ import { createPortal } from 'react-dom';
 import { IconButton } from './IconButton';
 import { CloseIcon } from './icons';
 import styles from './Sheet.module.css';
-import { useKeyboardInset } from './useKeyboardInset';
+import { useVisibleArea } from './useVisibleArea';
 
 interface SheetProps {
   open: boolean;
@@ -55,7 +56,7 @@ export function Sheet({
   const panelRef = useRef<HTMLDivElement>(null);
 
   useModalBehaviour(open, layerRef, panelRef, initialFocusRef);
-  const keyboard = useKeyboardInset(open && variant === 'bottom');
+  const visible = useVisibleArea(open && variant === 'bottom');
 
   if (!open) return null;
 
@@ -73,8 +74,15 @@ export function Sheet({
   return createPortal(
     <div
       ref={layerRef}
-      className={styles.layer}
-      style={{ '--keyboard-inset': `${keyboard}px` } as CSSProperties}
+      className={[styles.layer, visible?.keyboardOpen && styles.keyboardOpen]
+        .filter(Boolean)
+        .join(' ')}
+      // Follow what is actually visible, so the sheet sits on top of the iPhone keyboard.
+      style={
+        visible
+          ? ({ top: `${visible.top}px`, height: `${visible.height}px` } as CSSProperties)
+          : undefined
+      }
     >
       <div className={styles.overlay} onClick={onClose} aria-hidden="true" />
       <div
@@ -96,7 +104,10 @@ export function Sheet({
           </div>
         )}
         {isBottom && <div className={styles.handle} aria-hidden="true" />}
-        <div className={isBottom ? styles.body : styles.dialogBody}>
+        <div
+          className={isBottom ? styles.body : styles.dialogBody}
+          onFocus={isBottom ? revealField : undefined}
+        >
           {isBottom ? (
             <div className={styles.header}>
               <h2 id={titleId} className={styles.title}>
@@ -147,6 +158,13 @@ function useModalBehaviour(
       opener?.focus();
     };
   }, [open, layerRef, panelRef, initialFocusRef]);
+}
+
+/** Once the keyboard has opened, scroll the tapped field into view inside the sheet. */
+function revealField(event: FocusEvent<HTMLDivElement>) {
+  const field = event.target;
+  if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
+  setTimeout(() => field.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }), 300);
 }
 
 /** Wraps Tab from the last control to the first, and Shift+Tab from the first to the last. */

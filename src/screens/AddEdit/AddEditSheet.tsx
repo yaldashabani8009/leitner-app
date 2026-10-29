@@ -40,7 +40,6 @@ export function AddEditSheet({ repo, editor, onClose, onOpenCard }: AddEditSheet
   const [errors, setErrors] = useState<FieldErrors>({});
   const [duplicate, setDuplicate] = useState<{ cardId: string; word: string } | null>(null);
   const saving = useRef(false);
-  const wordRef = useRef<HTMLInputElement>(null);
 
   if (!editor) return null;
   // Wait for the card before showing the edit form, so it starts filled in.
@@ -104,7 +103,6 @@ export function AddEditSheet({ repo, editor, onClose, onOpenCard }: AddEditSheet
       onClose={close}
       title={isEdit ? 'Edit word' : 'New word'}
       mascot={<Mascot pose="write" size="small" decorative />}
-      initialFocusRef={isEdit ? undefined : wordRef}
     >
       {isEdit && <p className={styles.note}>Editing won't change when you see this word next.</p>}
       <WordForm
@@ -115,7 +113,6 @@ export function AddEditSheet({ repo, editor, onClose, onOpenCard }: AddEditSheet
         errors={errors}
         onClearError={clearError}
         onSubmit={(draft) => void save(draft)}
-        wordRef={wordRef}
       />
       {/* At the end of the form, scrolling with it (not pinned; Yali, 2026-10-29). */}
       <Button type="submit" form={FORM_ID} className={styles.save}>

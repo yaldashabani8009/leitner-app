@@ -79,11 +79,9 @@ async function flipAndAnswer(answer: 'Knew it!' | 'Not yet') {
 }
 
 describe('StudyFlow', () => {
-  it('shows "Nothing to review yet" when the box is empty', async () => {
+  it('shows "Your box is empty" when the box is empty', async () => {
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
-    expect(
-      await screen.findByRole('heading', { name: 'Nothing to review yet' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Your box is empty' })).toBeInTheDocument();
   });
 
   it('shows "All done for today" when no card is due yet', async () => {

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -175,5 +175,33 @@ describe('Sheet', () => {
     expect(first.parentElement).not.toHaveAttribute('inert');
     expect(document.body.style.overflow).toBe('hidden');
     expect(screen.getByRole('button', { name: 'Save word' })).toHaveFocus();
+  });
+
+  it('follows the visible area, so it sits on top of the iPhone keyboard', async () => {
+    // A phone 852px tall; the keyboard covers 336px and Safari has scrolled the page by 40px.
+    const listeners = new Set<() => void>();
+    const viewport = {
+      height: 852,
+      offsetTop: 0,
+      addEventListener: (_: string, fn: () => void) => listeners.add(fn),
+      removeEventListener: (_: string, fn: () => void) => listeners.delete(fn),
+    };
+    vi.stubGlobal('visualViewport', viewport);
+    vi.stubGlobal('innerHeight', 852);
+    try {
+      await openSheet();
+      const layer = screen.getByRole('dialog').parentElement!;
+      expect(layer.style.height).toBe('852px');
+      expect(layer.className).not.toMatch(/keyboardOpen/);
+
+      viewport.height = 516;
+      viewport.offsetTop = 40;
+      act(() => listeners.forEach((fn) => fn()));
+      expect(layer.style.height).toBe('516px');
+      expect(layer.style.top).toBe('40px');
+      expect(layer.className).toMatch(/keyboardOpen/);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
