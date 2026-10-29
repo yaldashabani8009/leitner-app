@@ -74,6 +74,6 @@
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-fast: 120ms;
   --duration-base: 240ms;
-  --duration-slow: 420ms; /* celebrations: Session complete, confetti */
-  --stagger: 70ms; /* between pieces that arrive one after another */
+  --duration-slow: 680ms; /* celebrations: Session complete, confetti (slowed 2026-10-29, Yali) */
+  --stagger: 120ms; /* between pieces that arrive one after another */
 }
