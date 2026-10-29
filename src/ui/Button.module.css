@@ -45,6 +45,20 @@
   box-shadow: none;
 }
 
+/* Laptop hover (roadmap step 4, audit 04): rises 2px and the shadow grows. Never on touch. */
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover:not(:active),
+  .aqua:hover:not(:active),
+  .secondary:hover:not(:active) {
+    transform: translateY(calc(var(--hover-lift) * -1));
+    box-shadow: var(--shadow-hard-lifted);
+  }
+
+  .text:hover {
+    text-decoration-thickness: 3px;
+  }
+}
+
 .primary[aria-busy='true'],
 .aqua[aria-busy='true'],
 .secondary[aria-busy='true'] {

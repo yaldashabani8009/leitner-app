@@ -19,6 +19,9 @@
   height: 220px;
   border-radius: var(--radius-pill);
   background: var(--color-cream);
+
+  /* Arrival (roadmap step 4): mascot, then the name, then the streak. */
+  animation: pop-in var(--duration-slow) var(--ease-bounce);
 }
 
 .title {
@@ -28,6 +31,7 @@
   font-weight: var(--weight-black);
   letter-spacing: -0.5px;
   text-align: center;
+  animation: rise-in var(--duration-base) ease-out calc(var(--stagger) * 2) backwards;
 }
 
 .dot {
@@ -36,4 +40,19 @@
 
 .streak {
   position: relative;
+  animation: pop-in var(--duration-slow) var(--ease-bounce) calc(var(--stagger) * 4) backwards;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
 }

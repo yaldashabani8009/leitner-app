@@ -61,4 +61,4 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 
 ## Motion
 
-`--ease-bounce` cubic-bezier(0.34, 1.56, 0.64, 1) · `--duration-fast` 120ms · `--duration-base` 240ms. `prefers-reduced-motion` is respected globally.
+`--ease-bounce` cubic-bezier(0.34, 1.56, 0.64, 1) · `--duration-fast` 120ms · `--duration-base` 240ms · `--duration-slow` 420ms (celebrations) · `--stagger` 70ms · `--hover-lift` 2px with `--shadow-hard-lifted` / `--shadow-hard-on-ink-sm-lifted` (laptop hover). `prefers-reduced-motion` is respected globally (durations and delays). Full motion spec: [motion.md](motion.md).

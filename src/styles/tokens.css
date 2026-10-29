@@ -50,6 +50,12 @@
   --shadow-hard-on-ink: 0 var(--press-depth) 0 var(--color-black); /* ink buttons (Save word, Sign in) */
   --shadow-hard-sm: 0 3px 0 var(--color-ink); /* top-bar stat pills */
   --shadow-hard-on-ink-sm: 0 var(--press-depth-sm) 0 var(--color-black); /* round + button */
+
+  /* Hover on laptops (mouse / trackpad only, roadmap step 4): the button rises, its shadow grows. */
+  --hover-lift: 2px;
+  --shadow-hard-lifted: 0 calc(var(--press-depth) + var(--hover-lift)) 0 var(--color-ink);
+  --shadow-hard-on-ink-sm-lifted: 0 calc(var(--press-depth-sm) + var(--hover-lift)) 0
+    var(--color-black);
   --shadow-card: 0 6px 0 var(--color-ink); /* word card, dialog card */
 
   /* Spacing (4px base) */
@@ -68,4 +74,6 @@
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-fast: 120ms;
   --duration-base: 240ms;
+  --duration-slow: 420ms; /* celebrations: Session complete, confetti */
+  --stagger: 70ms; /* between pieces that arrive one after another */
 }

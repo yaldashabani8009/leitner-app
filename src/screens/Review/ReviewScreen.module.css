@@ -85,6 +85,9 @@
 
 .frontCard {
   padding: 0;
+
+  /* Each new card is dealt from the stack (roadmap step 4). */
+  animation: deal-in var(--duration-base) var(--ease-bounce);
 }
 
 /* The whole front is one big button: tap to flip. */
@@ -252,6 +255,14 @@
 
 .answers > * {
   flex: 1;
+}
+
+@keyframes deal-in {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+    rotate: -3deg;
+  }
 }
 
 @keyframes flip-in {

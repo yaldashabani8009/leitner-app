@@ -73,7 +73,7 @@ On a laptop there is no hint that something is clickable until you click it (the
 stylesheets read: 20 of 20 · :hover rules: 0 · :active rules: 4 · :focus-visible rules: 5
 ```
 
-**Options:** A. a small lift on hover (shadow 5px → 7px), mouse and trackpad only · B. leave as is (phones never hover). **Recommendation: A**, as part of the final motion pass (roadmap step 4).
+**Options:** A. a small lift on hover (shadow 5px → 7px), mouse and trackpad only · B. leave as is (phones never hover). **Recommendation: A**, as part of the final motion pass (roadmap step 4). **Built in step 4 (option A).**
 
 ### 05 · Note · Empty box (new account)
 
