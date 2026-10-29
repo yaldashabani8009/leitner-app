@@ -1,0 +1,59 @@
+.backHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.backWord {
+  flex-grow: 1;
+  margin: 0;
+  font-size: 28px;
+  font-weight: var(--weight-black);
+  letter-spacing: -0.3px;
+  overflow-wrap: anywhere;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: var(--weight-bold);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.persian {
+  padding: 10px var(--space-4);
+  border-radius: var(--radius-input);
+  background: var(--color-cream);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.persian p {
+  margin: 0;
+}
+
+.sentence {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.mark {
+  padding: 0 3px;
+  border-radius: var(--radius-highlight);
+  background: var(--color-cream);
+  color: inherit;
+}

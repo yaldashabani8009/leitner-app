@@ -1,7 +1,7 @@
-import { useId, type InputHTMLAttributes } from 'react';
+import { useId, type ComponentPropsWithRef } from 'react';
 import styles from './TextField.module.css';
 
-interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> {
+interface TextFieldProps extends Omit<ComponentPropsWithRef<'input'>, 'id'> {
   label: string;
   /** Shown under the field, in the error colour (PRD: errors appear under the field). */
   error?: string;

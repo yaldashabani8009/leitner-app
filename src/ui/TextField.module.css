@@ -23,6 +23,14 @@
   font-weight: 700;
 }
 
+/* Text areas (sentences) grow with their text instead of showing a resize handle. */
+textarea.input {
+  display: block;
+  overflow: hidden;
+  line-height: 1.35;
+  resize: none;
+}
+
 .input:focus-visible {
   outline: 3px solid var(--color-terracotta);
   outline-offset: 2px;
@@ -49,4 +57,10 @@
   stroke: currentcolor;
   stroke-width: 2.6;
   stroke-linecap: round;
+}
+
+.input::placeholder {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  opacity: 0.75;
 }

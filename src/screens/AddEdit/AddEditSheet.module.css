@@ -1,0 +1,14 @@
+.note {
+  margin: calc(-1 * var(--space-1)) 0 0;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dialogText {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.45;
+}

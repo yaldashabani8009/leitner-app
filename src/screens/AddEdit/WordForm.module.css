@@ -1,0 +1,27 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* An extra field that is still empty: soft outline, like "another one?" on the canvas. */
+.extraEmpty:not(:focus) {
+  border-color: var(--color-line);
+}
+
+.addRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.itemRow > input {
+  flex: 1;
+  min-width: 0;
+}

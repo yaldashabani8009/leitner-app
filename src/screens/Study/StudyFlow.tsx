@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Repository } from '../../data/repository';
 import {
   answerInSession,
@@ -9,8 +9,10 @@ import {
   type Session,
 } from '../../domain/session/session';
 import { TopBar } from '../../ui/TopBar';
+import { AddEditSheet, type Editor } from '../AddEdit/AddEditSheet';
 import { LoadingScreen } from '../Loading/LoadingScreen';
 import { AllDone, Resting, SessionComplete } from '../Rest/RestScreens';
+import { CardViewScreen } from '../Review/CardViewScreen';
 import { ReviewScreen } from '../Review/ReviewScreen';
 
 /** PRD user flow 2: the loading screen shows for about a second on a cold start. */
@@ -20,7 +22,15 @@ const REACTION_MS = 900;
 
 type StudyRepo = Pick<
   Repository,
-  'getProfile' | 'getCard' | 'countCards' | 'nextSessionCardIds' | 'recordAnswer'
+  | 'getProfile'
+  | 'getCard'
+  | 'countCards'
+  | 'nextSessionCardIds'
+  | 'recordAnswer'
+  | 'addCard'
+  | 'editCard'
+  | 'findCardIdByWord'
+  | 'sendCardBackToStart'
 >;
 
 interface StudyFlowProps {
@@ -51,6 +61,13 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
   const [view, setView] = useState<'study' | 'complete' | 'resting'>('study');
   const [reaction, setReaction] = useState<'happy' | 'cheer' | null>(null);
   const saving = useRef(false);
+  const [editor, setEditor] = useState<Editor | null>(null);
+  /** A card opened from the duplicate dialog ("Open my card"). */
+  const [viewingId, setViewingId] = useState<string | null>(null);
+  const viewing = useLiveQuery(
+    async () => (viewingId ? ((await repo.getCard(viewingId)) ?? null) : null),
+    [repo, viewingId],
+  );
 
   useEffect(() => {
     if (!reaction) return;
@@ -81,10 +98,35 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
     setView('study');
   }
 
-  const top = <TopBar />;
+  const top = <TopBar onAdd={() => setEditor({ mode: 'add' })} />;
+  const sheet = (
+    <AddEditSheet
+      repo={repo}
+      editor={editor}
+      onClose={() => setEditor(null)}
+      onOpenCard={setViewingId}
+    />
+  );
+  const withSheet = (screen: ReactNode) => (
+    <>
+      {screen}
+      {sheet}
+    </>
+  );
+
+  if (viewingId && viewing && viewing.card.id === viewingId) {
+    return withSheet(
+      <CardViewScreen
+        card={viewing}
+        top={top}
+        onEdit={() => setEditor({ mode: 'edit', cardId: viewingId })}
+        onDone={() => setViewingId(null)}
+      />,
+    );
+  }
 
   if (view === 'complete' && session) {
-    return (
+    return withSheet(
       <SessionComplete
         wordCount={session.scheduled.length}
         nextCount={dueIds.length}
@@ -97,13 +139,17 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
             setView('study');
           }
         }}
-      />
+      />,
     );
   }
 
-  if (view === 'resting') return <Resting top={top} onKeepGoing={startNext} />;
+  if (view === 'resting') return withSheet(<Resting top={top} onKeepGoing={startNext} />);
 
-  if (!session || !step) return <AllDone emptyBox={cardCount === 0} top={top} />;
+  if (!session || !step) {
+    return withSheet(
+      <AllDone emptyBox={cardCount === 0} top={top} onAddWord={() => setEditor({ mode: 'add' })} />,
+    );
+  }
 
   if (!loaded || loaded.cardId !== step.cardId) return null; // the card is loading (a few ms)
   const card = loaded.card;
@@ -130,7 +176,7 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
   }
 
   const scheduledCount = session.scheduled.length;
-  return (
+  return withSheet(
     <ReviewScreen
       // A fresh card each step: back to the front, swipe reset.
       key={session.answered}
@@ -140,7 +186,8 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
       practiceLeft={scheduledCount + session.practice.length - session.answered}
       reaction={reaction}
       onAnswer={handleAnswer}
+      onEdit={() => setEditor({ mode: 'edit', cardId: card.card.id })}
       top={top}
-    />
+    />,
   );
 }
