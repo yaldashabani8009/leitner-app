@@ -70,6 +70,8 @@ export function StudyFlow({ repo, userId, minLoadingMs = MIN_LOADING_MS }: Study
   const [view, setView] = useState<'study' | 'complete' | 'resting'>('study');
   const [reaction, setReaction] = useState<'happy' | 'cheer' | null>(null);
   const saving = useRef(false);
+  /** The last answer came while something on the card had focus (keyboard, screen reader). */
+  const [focusNextCard, setFocusNextCard] = useState(false);
   const [editor, setEditor] = useState<Editor | null>(null);
   /** A card opened from the duplicate dialog ("Open my card"). */
   const [viewingId, setViewingId] = useState<string | null>(null);
@@ -183,6 +185,9 @@ export function StudyFlow({ repo, userId, minLoadingMs = MIN_LOADING_MS }: Study
   async function handleAnswer(correct: boolean) {
     if (!session || !step || saving.current) return;
     saving.current = true;
+    // Touch taps don't focus buttons on iPhone, so this is only true for keyboard and
+    // screen-reader use (and mouse clicks in some browsers, where it does no harm).
+    setFocusNextCard(document.activeElement !== null && document.activeElement !== document.body);
     try {
       await repo.recordAnswer(step.cardId, correct, step.kind);
       const next = answerInSession(session, correct);
@@ -205,6 +210,7 @@ export function StudyFlow({ repo, userId, minLoadingMs = MIN_LOADING_MS }: Study
       practiceLeft={scheduledCount + session.practice.length - session.answered}
       reaction={reaction}
       onAnswer={handleAnswer}
+      focusOnStart={focusNextCard}
       onEdit={() => setEditor({ mode: 'edit', cardId: card.card.id })}
       top={top}
     />,
