@@ -105,11 +105,6 @@ export function AddEditSheet({ repo, editor, onClose, onOpenCard }: AddEditSheet
       title={isEdit ? 'Edit word' : 'New word'}
       mascot={<Mascot pose="write" size="small" decorative />}
       initialFocusRef={isEdit ? undefined : wordRef}
-      footer={
-        <Button type="submit" form={FORM_ID}>
-          {isEdit ? 'Save changes' : 'Save word'}
-        </Button>
-      }
     >
       {isEdit && <p className={styles.note}>Editing won't change when you see this word next.</p>}
       <WordForm
@@ -122,6 +117,10 @@ export function AddEditSheet({ repo, editor, onClose, onOpenCard }: AddEditSheet
         onSubmit={(draft) => void save(draft)}
         wordRef={wordRef}
       />
+      {/* At the end of the form, scrolling with it (not pinned; Yali, 2026-10-29). */}
+      <Button type="submit" form={FORM_ID} className={styles.save}>
+        {isEdit ? 'Save changes' : 'Save word'}
+      </Button>
 
       <Sheet
         open={duplicate !== null}

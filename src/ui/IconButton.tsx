@@ -9,18 +9,18 @@ interface IconButtonProps extends Omit<
   label: string;
   icon: ReactNode;
   /**
-   * "ink": 52px round ink button (top bar +).
+   * "primary": 52px round orange button with an ink outline (top bar +).
    * "cream": 44px round cream button (pencil on the card back).
    * "white": 44px round white button (✕ in the add / edit sheet).
    */
-  variant?: 'ink' | 'cream' | 'white';
+  variant?: 'primary' | 'cream' | 'white';
 }
 
 /** Round icon-only button; squishes like the big pill buttons. */
 export function IconButton({
   label,
   icon,
-  variant = 'ink',
+  variant = 'primary',
   type = 'button',
   className,
   ...rest

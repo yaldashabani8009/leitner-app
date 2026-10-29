@@ -1,5 +1,6 @@
-/* Shared by primary + secondary: a full-width chunky pill that squishes when pressed. */
+/* Shared by primary, aqua and secondary: a full-width chunky pill that squishes when pressed. */
 .primary,
+.aqua,
 .secondary {
   width: 100%;
   min-height: 56px;
@@ -15,11 +16,19 @@
     box-shadow var(--duration-fast) var(--ease-bounce);
 }
 
-/* Ink pill: Save word, Sign in, Knew it! */
+/* Orange pill with the ink outline and ink shadow (Yali, 2026-10-29: the outline stays visible,
+   unlike on a black fill). Save word, Sign in, buttons on aqua panels. */
 .primary {
-  background: var(--color-ink);
-  color: var(--color-white);
-  box-shadow: var(--shadow-hard-on-ink);
+  background: var(--color-orange);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-hard);
+}
+
+/* Aqua pill, same outline: "Knew it!" (like the KNEW IT! stamp) and buttons on orange panels. */
+.aqua {
+  background: var(--color-aqua);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-hard);
 }
 
 /* Cream pill with an ink outline: Not yet (neutral, never red). */
@@ -30,12 +39,14 @@
 }
 
 .primary:active,
+.aqua:active,
 .secondary:active {
   transform: translateY(var(--press-depth));
   box-shadow: none;
 }
 
 .primary[aria-busy='true'],
+.aqua[aria-busy='true'],
 .secondary[aria-busy='true'] {
   cursor: progress;
 }
@@ -57,6 +68,7 @@
 }
 
 .primary:focus-visible,
+.aqua:focus-visible,
 .secondary:focus-visible,
 .text:focus-visible {
   outline: 3px solid var(--color-terracotta);

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { LeitnerDb } from '../data/db';
 import { createRepository, type Repository } from '../data/repository';
+import { SessionComplete } from '../screens/Rest/RestScreens';
 import { StudyFlow } from '../screens/Study/StudyFlow';
 
 /**
  * Dev-only: the real study screens with sample words (roadmap 7.9 screenshots).
- * Open http://localhost:5173/leitner-app/?demo (add &empty for an empty box, &many for 23 words).
+ * Open http://localhost:5173/leitner-app/?demo (add &empty for an empty box, &many for 23 words,
+ * &complete for Session complete with a streak bubble, which needs 7.11 in the real flow).
  * Uses its own on-device database that is never synced; main.tsx only loads this in dev.
  */
 export function DemoPage() {
@@ -14,6 +16,18 @@ export function DemoPage() {
   useEffect(() => {
     void ready.then(setRepo);
   }, []);
+
+  if (params.has('complete')) {
+    return (
+      <SessionComplete
+        wordCount={20}
+        nextCount={20}
+        streak={13}
+        onNext={() => {}}
+        onDone={() => {}}
+      />
+    );
+  }
 
   return repo ? <StudyFlow repo={repo} /> : null;
 }

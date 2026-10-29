@@ -37,7 +37,9 @@ export function CardViewScreen({ card, onEdit, onDone, top }: CardViewScreenProp
         mascot={<Mascot pose="idle" size="small" decorative />}
       >
         <p className={styles.reassure}>It's back at the start. You'll see it again tomorrow.</p>
-        <Button onClick={onDone}>Done</Button>
+        <Button variant="secondary" onClick={onDone}>
+          Done
+        </Button>
       </BottomPanel>
     </main>
   );

@@ -9,15 +9,15 @@
 
 ## UI kit (roadmap 7.7)
 
-| Component     | Variants                                                                            |
-| ------------- | ----------------------------------------------------------------------------------- |
-| `Button`      | `primary` (ink), `secondary` (cream, "Not yet"), `text` (underlined)                |
-| `IconButton`  | `ink` 52px (top bar +), `cream` 44px (pencil), `white` 44px (sheet ✕); spoken label |
-| `Pill`        | `stat` (top bar), `tag` (similar words), `label` (cream / aqua); `AddPill` dashed   |
-| `Card`        | White word card; `CardStack` adds the tilted aqua + peach cards behind              |
-| `BottomPanel` | `orange` / `aqua`, `compact` / `tall`, optional peeking mascot                      |
-| `Sheet`       | `bottom` (add / edit, round ✕ closes it) / `dialog` (duplicate word, mascot circle) |
-| `TopBar`      | Option A: words-learned pill, streak pill, + button                                 |
+| Component     | Variants                                                                                       |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| `Button`      | `primary` (orange), `aqua` ("Knew it!", orange panels), `secondary` (cream, "Not yet"), `text` |
+| `IconButton`  | `primary` 52px orange (top bar +), `cream` 44px (pencil), `white` 44px (sheet ✕); spoken label |
+| `Pill`        | `stat` (top bar), `tag` (similar words), `label` (cream / aqua); `AddPill` dashed              |
+| `Card`        | White word card; `CardStack` adds the tilted aqua + peach cards behind                         |
+| `BottomPanel` | `orange` / `aqua`, `compact` / `tall`, optional peeking mascot                                 |
+| `Sheet`       | `bottom` (add / edit, round ✕ closes it) / `dialog` (duplicate word, mascot circle)            |
+| `TopBar`      | Option A: words-learned pill, streak pill, + button                                            |
 
 Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as its content and grows as fields are added, up to 76px from the top, then scrolls (decided 2026-10-28; the canvas shows it full height): page behind is `inert`, Tab stays inside, Esc / overlay / ✕ close it, focus returns to the opener.
 
@@ -26,8 +26,11 @@ Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as it
 - Very round: cards 40px, bottom panels 52–56px top radius, inputs 22px, every button/tag a full pill.
 - Chunky 2.5px ink outlines on cards, pills, buttons.
 - Squishy buttons: hard shadow `0 5px 0`; on press, drop 5px and lose the shadow.
+- Button colours (Yali, 2026-10-29): every big button has the chunky ink outline and an ink shadow, so the outline stays visible. **Orange** on the cream page and forms; **cream** on aqua panels (like screen 08) and for "Not yet"; **aqua** on orange panels and for "Knew it!" (in the aqua practice round "Knew it!" stays orange so it differs from "Not yet"). The top-bar + is orange with an ink outline. No black-filled buttons.
+- Session complete (2026-10-29): the mascot stays centred, "Session complete!" and the text sit under it, the orange panel holds only the buttons, and the streak is a speech bubble from the mascot (so nothing else looks like a button).
 - Tilted card stack: aqua + peach cards peek behind the current card.
-- Big rounded colour panel at the bottom holds actions: orange (review, session complete), aqua (practice, all done). Review panels ~124–160px tall.
+- Big rounded colour panel at the bottom holds actions: orange (card front, session complete), **white on the card back** (answer buttons, canvas 03), aqua (practice, all done). Review panels ~124–160px tall.
+- Card screens: the progress bar sits 48px under the top bar and the card stack 40px under it (canvas 03, 2026-10-29).
 - Session complete & All done share a layout: mascot circle 150px from top, bottom panel 330px.
 - Memphis confetti (sparkles, triangles, dots) on loading, session complete, all done; only a touch on review.
 - Copy: "Knew it!" / "Not yet"; stamps KNEW IT! / NOT YET while swiping.

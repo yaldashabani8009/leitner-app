@@ -18,6 +18,7 @@ interface MascotProps {
 }
 
 const SIZE_PX = { large: 190, small: 84 };
+const DEFAULT_VIEW_BOX = '-6 -6 132 124';
 
 /**
  * The box mascot, drawn from separate parts so each can move on its own (roadmap 7.8).
@@ -35,7 +36,8 @@ export function Mascot({
   const reducedMotion = useReducedMotion();
   const spec = POSES[pose];
   const moving = !still && !reducedMotion;
-  const px = SIZE_PX[size];
+  // Poses drawn with a wider view (celebrate) are a little bigger, as on canvas 07.
+  const px = SIZE_PX[size] + (spec.viewBox && size === 'large' ? 10 : 0);
   const classes = [
     styles.mascot,
     body === 'white' && styles.whiteBody,
@@ -51,7 +53,7 @@ export function Mascot({
       key={pose}
       width={px}
       height={px}
-      viewBox="-6 -6 132 124"
+      viewBox={spec.viewBox ?? DEFAULT_VIEW_BOX}
       className={classes}
       data-pose={pose}
       data-moving={moving}

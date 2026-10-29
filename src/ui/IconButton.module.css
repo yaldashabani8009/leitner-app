@@ -11,16 +11,16 @@
     box-shadow var(--duration-fast) var(--ease-bounce);
 }
 
-.ink {
+.primary {
   width: 52px;
   height: 52px;
-  border: none;
-  background: var(--color-ink);
-  color: var(--color-white);
+  border: var(--border-chunky) solid var(--color-ink);
+  background: var(--color-orange);
+  color: var(--color-ink);
   box-shadow: var(--shadow-hard-on-ink-sm);
 }
 
-.ink:active {
+.primary:active {
   transform: translateY(var(--press-depth-sm));
   box-shadow: none;
 }
@@ -29,15 +29,18 @@
 .white {
   width: 44px;
   height: 44px;
-  border: var(--border-chunky) solid var(--color-ink);
   color: var(--color-ink);
 }
 
+/* Pencil on the card back: soft fill, no outline, brown pencil (canvas 03, 2026-10-29). */
 .cream {
-  background: var(--color-cream);
+  border: none;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
 }
 
 .white {
+  border: var(--border-chunky) solid var(--color-ink);
   background: var(--color-white);
 }
 

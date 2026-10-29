@@ -12,3 +12,7 @@
   font-weight: 700;
   line-height: 1.45;
 }
+
+.save {
+  margin-top: var(--space-3);
+}
