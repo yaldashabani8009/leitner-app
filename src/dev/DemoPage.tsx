@@ -12,7 +12,7 @@ import { StudyFlow } from '../screens/Study/StudyFlow';
  * streak (up to yesterday) and the sample words already learned once.
  * &backup=save shows "Save a copy?" (20 days without the cloud); &empty&backup=restore shows
  * "Have a backup file?" (empty box, cloud unreachable). &reminder offers "Want a daily reminder?"
- * after "I'm done for now" (with a fake cloud; the browser still needs push support).
+ * after "Done for today" (with a fake cloud; the browser still needs push support).
  * Uses its own on-device database that is never synced; main.tsx only loads this in dev.
  */
 export function DemoPage() {

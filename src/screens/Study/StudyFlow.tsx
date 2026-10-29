@@ -73,7 +73,7 @@ export function StudyFlow({
   const progress = useLiveQuery(() => repo.progress(), [repo]);
   const waiting = useLiveQuery(() => repo.waitingToday(), [repo]);
   useAppBadge(waiting);
-  /** "I'm done for now" was tapped on Session complete: the calm moment to offer reminders. */
+  /** "Done for today" / "I'm done for now" was tapped on Session complete: the calm moment to offer reminders. */
   const [doneForNow, setDoneForNow] = useState(false);
 
   const [waited, setWaited] = useState(minLoadingMs === 0);

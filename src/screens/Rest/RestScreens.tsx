@@ -45,14 +45,21 @@ export function SessionComplete({
       }
       actions={
         <>
-          {nextCount > 0 && (
-            <Button variant="aqua" onClick={onNext}>
-              {nextCount === 1 ? 'Next word' : `Next ${nextCount} words`}
+          {/* Nothing else due: one real button, not a lone link in an empty panel (Yali, 2026-10-29). */}
+          {nextCount > 0 ? (
+            <>
+              <Button variant="aqua" onClick={onNext}>
+                {nextCount === 1 ? 'Next word' : `Next ${nextCount} words`}
+              </Button>
+              <Button variant="text" onClick={onDone}>
+                I'm done for now
+              </Button>
+            </>
+          ) : (
+            <Button variant="aqua" onClick={onDone}>
+              Done for today
             </Button>
           )}
-          <Button variant="text" onClick={onDone}>
-            I'm done for now
-          </Button>
         </>
       }
     />

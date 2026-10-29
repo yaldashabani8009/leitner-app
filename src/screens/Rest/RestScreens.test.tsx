@@ -57,6 +57,14 @@ describe('Session complete', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Next 5 words' }));
     expect(onNext).toHaveBeenCalledOnce();
   });
+
+  it('with nothing else due, shows one real "Done for today" button (no lone link)', async () => {
+    const onDone = vi.fn();
+    render(<SessionComplete wordCount={2} nextCount={0} onNext={() => {}} onDone={onDone} />);
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Done for today']);
+    await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
+    expect(onDone).toHaveBeenCalledOnce();
+  });
 });
 
 describe('All done', () => {

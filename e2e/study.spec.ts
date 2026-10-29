@@ -40,7 +40,7 @@ test('sign in, add words, then review them the next day', async ({ page }) => {
   await expect(page.getByText('You went through 2 words. Nice work.')).toBeVisible();
   await expect(page.getByText('2 days in a row!')).toBeVisible();
 
-  await page.getByRole('button', { name: "I'm done for now" }).click();
+  await page.getByRole('button', { name: 'Done for today' }).click();
   await expect(page.getByRole('heading', { name: 'All done for today' })).toBeVisible();
   await expect(spoken(page, '1 word learned')).toBeAttached();
   await expect(spoken(page, '2-day streak')).toBeAttached();
