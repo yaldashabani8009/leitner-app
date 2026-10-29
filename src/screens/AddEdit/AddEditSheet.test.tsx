@@ -57,10 +57,11 @@ async function fillNewWord(word: string) {
 }
 
 describe('Add word', () => {
-  it('opens with the word field focused', async () => {
+  it('opens without putting the cursor in a field, so the keyboard stays closed', async () => {
     open({ mode: 'add' });
-    expect(await screen.findByRole('dialog', { name: 'New word' })).toBeInTheDocument();
-    expect(field('The word')).toHaveFocus();
+    const sheet = await screen.findByRole('dialog', { name: 'New word' });
+    expect(sheet).toHaveFocus();
+    expect(field('The word')).not.toHaveFocus();
   });
 
   it('shows an error under each empty field, saves nothing, and Save stays enabled', async () => {
