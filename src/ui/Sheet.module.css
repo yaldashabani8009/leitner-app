@@ -114,6 +114,35 @@
   display: none;
 }
 
+/* Laptop and tablet (PRD: add / edit is a centred modal, roadmap 7.13). Same 700px as global.css. */
+@media (width >= 700px) {
+  .bottom {
+    position: relative;
+    inset: auto;
+    width: min(100% - 48px, var(--column-desktop));
+    max-height: calc(100% - 120px);
+    border: var(--border-chunky) solid var(--color-ink);
+    border-radius: var(--radius-sheet);
+    box-shadow: var(--shadow-card);
+    transform: none;
+    animation: pop-in var(--duration-base) var(--ease-bounce);
+  }
+
+  /* No handle to drag on a laptop: ✕, Esc and the overlay close it. */
+  .grab {
+    display: none;
+  }
+
+  .body {
+    padding-top: var(--space-5);
+    padding-bottom: var(--space-5);
+  }
+
+  .footer {
+    padding-bottom: var(--space-5);
+  }
+}
+
 /* ---------- Centred dialog (duplicate word) ---------- */
 
 .dialog {

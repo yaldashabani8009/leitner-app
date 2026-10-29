@@ -36,6 +36,13 @@ Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as it
 - Copy: "Knew it!" / "Not yet"; stamps KNEW IT! / NOT YET while swiping.
 - "Not yet" is neutral, never red. Never small white text on terracotta.
 
+## Laptop (roadmap 7.13)
+
+- From 700px wide (laptop, tablet) the whole app is the phone layout in a centred 560px column (`--column-desktop`) on the cream page. Phones are unchanged.
+- The add / edit sheet becomes a centred modal: full chunky outline, card shadow, no drag handle (✕, Esc and the overlay close it). Dialogs are the same as on the phone.
+- With a mouse or trackpad the card front says "click or press space" and the panel "then flip the card…"; with touch it stays "tap to flip".
+- Shortcuts: Space flips, ← Not yet, → Knew it!, E edits (back only), Esc closes a sheet. Canvas row "Laptop" (1440×900).
+
 ## Mascot
 
 A rounded card box (aqua front #BFE7EA, darker back wall #8FD0D6), three index cards inside (terracotta, orange, cream), cream label slot. Dot eyes, ^ ^ happy eyes, orange blush, stick arms/legs (2.5–3.5px ink). Small mascots have no legs. Built from separate shapes so parts animate independently.

@@ -54,6 +54,10 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 
 4px base: `--space-1` 4 · `--space-2` 8 · `--space-3` 12 · `--space-4` 16 · `--space-5` 24 · `--space-6` 32 · `--space-7` 48
 
+## Layout
+
+`--column-desktop` 560px: on screens 700px and wider (laptop, tablet) the whole app sits in a centred 560px column, and the add / edit sheet becomes a centred modal (roadmap 7.13). The 700px breakpoint can't be a CSS variable (media queries don't read them), so it is written in `global.css` and `Sheet.module.css`.
+
 ## Motion
 
 `--ease-bounce` cubic-bezier(0.34, 1.56, 0.64, 1) · `--duration-fast` 120ms · `--duration-base` 240ms. `prefers-reduced-motion` is respected globally.

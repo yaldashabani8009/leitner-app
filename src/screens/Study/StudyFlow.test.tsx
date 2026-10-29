@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import 'fake-indexeddb/auto';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LeitnerDb, META } from '../../data/db';
@@ -297,6 +297,66 @@ describe('StudyFlow', () => {
     expect(
       await within(screen.getByLabelText('Answer for brave')).findByText('fearless'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('StudyFlow with a keyboard (laptop, roadmap 7.13)', () => {
+  beforeEach(async () => {
+    await addCards('brave', 'calm');
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await screen.findByRole('button', { name: /tap to flip/ });
+  });
+
+  it('Space flips, → is "Knew it!", ← is "Not yet"', async () => {
+    const first = await frontWord();
+    await userEvent.keyboard(' ');
+    expect(await screen.findByLabelText(`Answer for ${first}`)).toBeInTheDocument();
+    await userEvent.keyboard('{ArrowRight}');
+
+    const second = await frontWord();
+    expect(second).not.toBe(first);
+    await userEvent.keyboard(' ');
+    await screen.findByLabelText(`Answer for ${second}`);
+    await userEvent.keyboard('{ArrowLeft}');
+
+    expect(await boxOf(first!)).toBe(2);
+    expect(await boxOf(second!)).toBe(1);
+    expect(await screen.findByText('Practice round')).toBeInTheDocument();
+  });
+
+  it('arrows and E do nothing on the front (no answering or editing before you flip)', async () => {
+    const word = await frontWord();
+    await userEvent.keyboard('{ArrowRight}e');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(await boxOf(word!)).toBe(1);
+    expect(screen.getByRole('button', { name: /tap to flip/ })).toBeInTheDocument();
+  });
+
+  it('E edits the card on the back; typing in the sheet is not a shortcut; Esc closes it', async () => {
+    const word = await frontWord();
+    await userEvent.keyboard(' ');
+    await screen.findByLabelText(`Answer for ${word}`);
+    await userEvent.keyboard('e');
+
+    const sheet = await screen.findByRole('dialog', { name: 'Edit word' });
+    const synonym = within(sheet).getByLabelText('Similar words');
+    expect(synonym).toHaveValue(`${word}-like`); // no stray "e" typed in
+    await userEvent.type(synonym, ' e {ArrowLeft}{ArrowRight}');
+    expect(await boxOf(word!)).toBe(1); // the arrows moved the text cursor, not the card
+
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByLabelText(`Answer for ${word}`)).toBeInTheDocument();
+  });
+
+  it('leaves browser shortcuts alone (Ctrl / ⌘ held)', async () => {
+    const word = await frontWord();
+    await userEvent.keyboard(' ');
+    await screen.findByLabelText(`Answer for ${word}`);
+    await userEvent.keyboard('{Control>}{ArrowRight}{/Control}{Meta>}e{/Meta}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(await boxOf(word!)).toBe(1);
   });
 });
 

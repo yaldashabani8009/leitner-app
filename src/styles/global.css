@@ -27,6 +27,15 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Laptop and tablet (PRD, roadmap 7.13): the phone layout in a centred 560px column.
+   700px is wider than any phone held upright (also in Sheet.module.css; docs/design/tokens.md). */
+@media (width >= 700px) {
+  #root {
+    max-width: var(--column-desktop);
+    margin-inline: auto;
+  }
+}
+
 [lang='fa'] {
   direction: rtl;
   font-family: var(--font-persian);
