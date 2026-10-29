@@ -10,7 +10,10 @@ import {
 } from '../../domain/session/session';
 import { TopBar } from '../../ui/TopBar';
 import { AddEditSheet, type Editor } from '../AddEdit/AddEditSheet';
+import { useAppBadge } from '../../app/useAppBadge';
+import type { ReminderService } from '../../data/reminders';
 import { BackupPrompts } from '../Backup/BackupPrompts';
+import { ReminderOffer } from '../Reminders/ReminderOffer';
 import { LoadingScreen } from '../Loading/LoadingScreen';
 import { AllDone, Resting, SessionComplete } from '../Rest/RestScreens';
 import { CardViewScreen } from '../Review/CardViewScreen';
@@ -37,12 +40,17 @@ type StudyRepo = Pick<
   | 'snoozeBackup'
   | 'exportBackup'
   | 'importBackup'
+  | 'waitingToday'
+  | 'reminderOfferOpen'
+  | 'closeReminderOffer'
 >;
 
 interface StudyFlowProps {
   repo: StudyRepo;
   /** The signed-in account; turns on the backup modals (7.12). */
   userId?: string;
+  /** The daily reminder (ADR-018); without it the offer never shows. */
+  reminders?: ReminderService;
   /** Tests pass 0. */
   minLoadingMs?: number;
 }
@@ -53,11 +61,20 @@ interface StudyFlowProps {
  * The cards for a session are picked once when it starts; answers are saved right away,
  * so leaving mid-session keeps unanswered cards due (sessions rule 7).
  */
-export function StudyFlow({ repo, userId, minLoadingMs = MIN_LOADING_MS }: StudyFlowProps) {
+export function StudyFlow({
+  repo,
+  userId,
+  reminders,
+  minLoadingMs = MIN_LOADING_MS,
+}: StudyFlowProps) {
   const profile = useLiveQuery(async () => (await repo.getProfile()) ?? null, [repo]);
   const cardCount = useLiveQuery(() => repo.countCards(), [repo]);
   const dueIds = useLiveQuery(() => repo.nextSessionCardIds(), [repo]);
   const progress = useLiveQuery(() => repo.progress(), [repo]);
+  const waiting = useLiveQuery(() => repo.waitingToday(), [repo]);
+  useAppBadge(waiting);
+  /** "I'm done for now" was tapped on Session complete: the calm moment to offer reminders. */
+  const [doneForNow, setDoneForNow] = useState(false);
 
   const [waited, setWaited] = useState(minLoadingMs === 0);
   useEffect(() => {
@@ -125,6 +142,7 @@ export function StudyFlow({ repo, userId, minLoadingMs = MIN_LOADING_MS }: Study
       {screen}
       {sheet}
       {userId && <BackupPrompts repo={repo} userId={userId} paused={editor !== null} />}
+      <ReminderOffer repo={repo} reminders={reminders} active={doneForNow && editor === null} />
     </>
   );
 
@@ -154,6 +172,7 @@ export function StudyFlow({ repo, userId, minLoadingMs = MIN_LOADING_MS }: Study
         focusOnStart={focusNextCard}
         onNext={startNext}
         onDone={() => {
+          setDoneForNow(true);
           if (dueIds.length > 0) {
             setView('resting');
           } else {

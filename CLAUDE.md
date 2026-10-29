@@ -33,6 +33,7 @@ npm run check       # typecheck + lint + css lint + tests with coverage + build 
 npm run test        # unit tests (Vitest)
 npm run coverage    # tests + coverage for src/domain (fails below 100%)
 npm run e2e         # Playwright end-to-end tests on the built app (WebKit + Chromium; ADR-017)
+npm run build:functions   # bundle the Supabase server functions (part of check; deploy with the MCP)
 npm run e2e -- --project=android-chromium   # Chromium only (WebKit isn't installed in cloud sessions)
 ```
 
@@ -65,6 +66,7 @@ Screenshots for Yali: Playwright at iPhone size (393×852, deviceScaleFactor 3, 
 - RLS requires a card to exist before its entries/logs: sync pushes `cards` first, then `card_entries`, then `review_logs`, then `streak_days` (ADR-015).
 - Sync (`src/data/sync/`, ADR-013): pulls use `server_updated_at` (set by the server, never sent by the app); the database skips updates older than the stored `updated_at`.
 - Use the publishable key (`sb_publishable_…`) in the app; never the secret/service key.
+- Server functions (ADR-018): sources in `supabase/functions/` import the pure rules from `src/domain`; `npm run build:functions` bundles them into `functions-dist/<name>/index.js`, which is deployed with the Supabase MCP `deploy_edge_function` (`reminders-cron`: `verify_jwt` false, checks `x-cron-secret`; `reminders-test`: `verify_jwt` true). Redeploy after changing `src/domain/reminder` or what it imports. Secrets live in Vault and are generated server-side; never put a secret value in a migration, a function or the chat.
 
 ## Folder layout
 

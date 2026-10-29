@@ -588,3 +588,25 @@ describe('streak and words learned (roadmap 7.11, ADR-015)', () => {
     sub.unsubscribe();
   });
 });
+
+describe('waiting today and the reminder offer (ADR-018)', () => {
+  it('waitingToday counts the due words, and goes down as you review', async () => {
+    const ids = [await addCard('brave'), await addCard('calm')];
+    expect(await repo.waitingToday()).toBe(0); // due tomorrow
+    now = '2026-03-11T08:00:00.000Z';
+    expect(await repo.waitingToday()).toBe(2);
+    await repo.recordAnswer(ids[0], true, 'scheduled');
+    expect(await repo.waitingToday()).toBe(1);
+  });
+
+  it('the offer is open until answered: "done" closes it for good, "snooze" for 7 days', async () => {
+    expect(await repo.reminderOfferOpen()).toBe(true);
+    await repo.closeReminderOffer('snooze');
+    expect(await repo.reminderOfferOpen()).toBe(false);
+    now = '2026-03-17T08:00:00.000Z';
+    expect(await repo.reminderOfferOpen()).toBe(true);
+    await repo.closeReminderOffer('done');
+    now = '2027-03-17T08:00:00.000Z';
+    expect(await repo.reminderOfferOpen()).toBe(false);
+  });
+});

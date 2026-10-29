@@ -11,7 +11,8 @@ import { StudyFlow } from '../screens/Study/StudyFlow';
  * &complete for Session complete with a streak bubble). Unless &empty, it starts with a 12-day
  * streak (up to yesterday) and the sample words already learned once.
  * &backup=save shows "Save a copy?" (20 days without the cloud); &empty&backup=restore shows
- * "Have a backup file?" (empty box, cloud unreachable).
+ * "Have a backup file?" (empty box, cloud unreachable). &reminder offers "Want a daily reminder?"
+ * after "I'm done for now" (with a fake cloud; the browser still needs push support).
  * Uses its own on-device database that is never synced; main.tsx only loads this in dev.
  */
 export function DemoPage() {
@@ -33,7 +34,13 @@ export function DemoPage() {
     );
   }
 
-  return repo ? <StudyFlow repo={repo} userId="demo" /> : null;
+  return repo ? (
+    <StudyFlow
+      repo={repo}
+      userId="demo"
+      reminders={params.has('reminder') ? demoReminders : undefined}
+    />
+  ) : null;
 }
 
 const WORDS = [
@@ -61,6 +68,13 @@ const WORDS = [
 ];
 
 const params = new URLSearchParams(location.search);
+
+/** A pretend cloud for the reminder offer: nothing is saved or sent. */
+const demoReminders = {
+  publicKey: async () => 'BAQIDBA',
+  save: async () => {},
+  sendTest: async () => {},
+};
 const demoDb = new LeitnerDb('leitner-dev-demo');
 // Seeded once per page load (React runs effects twice in development).
 const ready = seed(demoDb, params.has('empty'), params.has('many')).then(() =>

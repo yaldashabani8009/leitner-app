@@ -65,5 +65,12 @@ export function createE2EServices(): AppServices {
   const remote = createFakeCloud();
   Object.defineProperty(remote, 'offline', { get: offline });
 
-  return { session, auth, profiles, remote, fromRecoveryLink: false };
+  // No push key: the reminder offer never shows in end-to-end tests (no notifications there).
+  const reminders = {
+    publicKey: async () => null,
+    save: async () => {},
+    sendTest: async () => {},
+  };
+
+  return { session, auth, profiles, remote, reminders, fromRecoveryLink: false };
 }

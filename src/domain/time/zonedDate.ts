@@ -13,6 +13,7 @@ export const FALLBACK_TIME_ZONE = 'UTC';
 const UTC_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?Z$/;
 
 const formatters = new Map<string, Intl.DateTimeFormat>();
+const hourFormatters = new Map<string, Intl.DateTimeFormat>();
 
 function formatterFor(timeZone: string): Intl.DateTimeFormat {
   let formatter = formatters.get(timeZone);
@@ -61,4 +62,21 @@ export function dateInZone(instant: string, timeZone: string): CalendarDate {
   const parts = formatterFor(timeZone).formatToParts(new Date(ms));
   const part = Object.fromEntries(parts.map((p) => [p.type, p.value]));
   return `${part.year}-${part.month}-${part.day}`;
+}
+
+/** The hour (0–23) of a UTC moment in `timeZone`, e.g. for "is it 19:00 there yet?". */
+export function hourInZone(instant: string, timeZone: string): number {
+  // Same checks as dateInZone (throws on a bad timestamp or zone).
+  dateInZone(instant, timeZone);
+  let formatter = hourFormatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour: '2-digit',
+      hourCycle: 'h23',
+      numberingSystem: 'latn',
+    });
+    hourFormatters.set(timeZone, formatter);
+  }
+  return Number(formatter.format(new Date(Date.parse(instant))));
 }

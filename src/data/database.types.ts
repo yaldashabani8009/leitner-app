@@ -9,6 +9,42 @@ export type Database = {
   };
   public: {
     Tables: {
+      app_config: {
+        Row: { key: string; value: string };
+        Insert: { key: string; value: string };
+        Update: { key?: string; value?: string };
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at: string;
+          last_reminded_on: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at?: string;
+          last_reminded_on?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          endpoint?: string;
+          p256dh?: string;
+          auth?: string;
+          created_at?: string;
+          last_reminded_on?: string | null;
+        };
+        Relationships: [];
+      };
       card_entries: {
         Row: {
           card_id: string;

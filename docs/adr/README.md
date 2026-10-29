@@ -29,5 +29,6 @@ Once **Accepted**, an ADR is not edited. To change a decision, write a new ADR t
 | [015](0015-streak-days-saved-when-earned.md)          | Streak days are saved the moment they are earned   | Accepted                  |
 | [016](0016-automatic-backup-modals.md)                | Backup by itself; a modal only when it's needed    | Accepted                  |
 | [017](0017-e2e-tests-with-a-stand-in-cloud.md)        | E2E tests: the real app with a stand-in cloud      | Accepted                  |
+| [018](0018-daily-reminder-web-push.md)                | Daily reminder with web push from Supabase         | Accepted                  |
 
 Template: [template.md](template.md)
