@@ -26,6 +26,11 @@ interface ReviewScreenProps {
   /** Pencil on the card back; hidden until editing exists (roadmap 7.10). */
   onEdit?: () => void;
   top?: ReactNode;
+  /**
+   * Put focus on the card front when it appears: set after an answer given with the keyboard
+   * or a screen reader, so they don't lose their place (audit 2026-10-29, WCAG 2.4.3).
+   */
+  focusOnStart?: boolean;
 }
 
 /**
@@ -41,10 +46,12 @@ export function ReviewScreen({
   onAnswer,
   onEdit,
   top,
+  focusOnStart = false,
 }: ReviewScreenProps) {
   const [flipped, setFlipped] = useState(false);
   const swipe = useSwipe(onAnswer, flipped);
   const backRef = useRef<HTMLDivElement>(null);
+  const frontRef = useRef<HTMLButtonElement>(null);
   const practice = kind === 'practice';
 
   useReviewKeys(
@@ -52,6 +59,11 @@ export function ReviewScreen({
       ? { onAnswer: (correct) => swipe.flyOut(correct ? 'right' : 'left'), onEdit }
       : { onFlip: () => setFlipped(true) },
   );
+
+  // Runs once: this screen is mounted fresh for every card (StudyFlow gives it a new key).
+  useEffect(() => {
+    if (focusOnStart) frontRef.current?.focus({ preventScroll: true });
+  }, [focusOnStart]);
 
   // After the flip, move focus to the answer so a screen reader reads it.
   useEffect(() => {
@@ -128,6 +140,7 @@ export function ReviewScreen({
           ) : (
             <Card className={styles.frontCard}>
               <button
+                ref={frontRef}
                 type="button"
                 className={styles.front}
                 onClick={() => setFlipped(true)}

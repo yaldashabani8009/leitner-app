@@ -350,6 +350,18 @@ describe('StudyFlow with a keyboard (laptop, roadmap 7.13)', () => {
     expect(screen.getByLabelText(`Answer for ${word}`)).toBeInTheDocument();
   });
 
+  it('after answering with the keyboard, focus moves to the next card (not lost)', async () => {
+    const first = await frontWord();
+    await userEvent.keyboard(' ');
+    await screen.findByLabelText(`Answer for ${first}`);
+    screen.getByRole('button', { name: 'Knew it!' }).focus();
+    await userEvent.keyboard('{Enter}');
+
+    const next = await screen.findByRole('button', { name: /tap to flip/ });
+    await waitFor(() => expect(next).toHaveFocus());
+    expect(await frontWord()).not.toBe(first);
+  });
+
   it('leaves browser shortcuts alone (Ctrl / ⌘ held)', async () => {
     const word = await frontWord();
     await userEvent.keyboard(' ');

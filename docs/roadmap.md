@@ -11,7 +11,7 @@
 | 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                  |
 | 7. Build the MVP               | 🟡 In progress: all built (7.1–7.5, 7.7–7.14); 7.6 waits for its phone + laptop test                                                |
 | 8. Deploy & install            | ✅ Done: site live, auto-deploys after all tests, live smoke check after every deploy; sign-ups off; reset-link URL set in Supabase |
-| 9. Use & iterate               | ⬜                                                                                                                                  |
+| 9. Use & iterate               | 🟡 Started: maintenance + audit done; [backlog](#step-9-use--iterate) waits for Yali's choices                                      |
 
 ## Step 7 tasks (in order)
 
@@ -63,3 +63,17 @@ Each task = one branch + one pull request. CI must be green before merging.
 **7.14 done:** end-to-end tests run the built app in WebKit (iPhone Safari) and Chromium (Android) on every PR and before every deploy: sign in, add words, review the next day (tap, keyboard, practice, Session complete), duplicate word, and opening offline. The cloud is an in-memory stand-in, so no secrets are needed (ADR-017).
 
 **Next:** finish the phone checks above (then mark 7.6 ✅), and step 8: add the reset-link URL in Supabase ([setup](setup/deploy.md)).
+
+## Step 9: use & iterate
+
+Yali uses the app daily and notes what feels wrong, slow or missing; each note becomes a small task with options.
+
+**Backlog (waiting for Yali's decision)** — from the [UX/UI audit of 2026-10-29](audits/2026-10-29-ux-ui-audit.md):
+
+- [ ] 01 Focus ring invisible on orange / aqua panels (1.59:1 and 2.72:1, needs 3:1). Options A / B / C, recommended B.
+- [ ] 03 "Create an account" leads to a form that always fails while sign-ups are closed. Recommended: hide it.
+- [ ] 02b After the last card, keyboard focus is lost on "Session complete!".
+- [ ] 05 Screen readers say "0-day streak" on a new box. Option: "no streak yet".
+- [ ] 04 No hover state for mouse users (laptop). With the motion pass (step 4).
+
+Done in step 9: GitHub Actions updated (Node 24) and runners pinned to Ubuntu 24.04; keyboard focus kept after answering a card (audit 02).
