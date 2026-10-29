@@ -43,6 +43,7 @@ Each task = one branch + one pull request. CI must be green before merging.
 - [ ] When words are due: try flip, swipe and the practice round.
 - [ ] 7.11: after a session that clears all due words, the top-bar flame goes up by one, and the phone and laptop show the same streak after syncing.
 - [ ] 7.13: on the laptop, review a few words with Space and the arrow keys, and press E on a card back.
+- [ ] 7.14: once, open the installed app on the iPhone in flight mode: it should open on your box (the automatic test can't do this part in Safari's engine).
 
 **Changes after Yali's iPhone tests (all merged, canvas updated):**
 
