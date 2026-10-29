@@ -18,6 +18,12 @@
   background: var(--color-aqua);
 }
 
+/* Terracotta focus rings vanish on orange (1.59:1) and aqua (2.72:1); ink is 7.2:1 and 12.3:1. */
+.orange,
+.aqua {
+  --color-focus-ring: var(--color-ink);
+}
+
 /* Review / practice: actions or a short hint. */
 .compact {
   min-height: 124px;

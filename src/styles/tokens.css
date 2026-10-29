@@ -12,6 +12,10 @@
   --color-aqua-dark: #8fd0d6;
   --color-orange: #e89b5b;
   --color-terracotta: #d46743;
+
+  /* Keyboard focus ring (audit 2026-10-29, option B): terracotta on cream and white,
+     ink on the orange and aqua panels (BottomPanel), where terracotta is too faint. */
+  --color-focus-ring: var(--color-terracotta);
   --color-ink: #2b1d16;
   --color-text-secondary: #6e5648;
   --color-error: #b5502e;
