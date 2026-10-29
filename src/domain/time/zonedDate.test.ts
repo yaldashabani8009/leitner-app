@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isDue, newCard } from '../leitner/engine';
-import { dateInZone, FALLBACK_TIME_ZONE, isValidTimeZone, resolveTimeZone } from './zonedDate';
+import {
+  dateInZone,
+  FALLBACK_TIME_ZONE,
+  hourInZone,
+  isValidTimeZone,
+  resolveTimeZone,
+} from './zonedDate';
 
 const TEHRAN = 'Asia/Tehran'; // UTC+3:30, no daylight saving
 const NEW_YORK = 'America/New_York'; // UTC-5 / UTC-4 in summer
@@ -169,5 +175,17 @@ describe('resolveTimeZone (missing or broken profile zone → UTC, option A)', (
   it('never falls back to the phone zone', () => {
     phoneIn(TEHRAN);
     expect(resolveTimeZone(null)).toBe('UTC');
+  });
+});
+
+describe('hourInZone', () => {
+  it('is the hour on the clock in that zone', () => {
+    expect(hourInZone('2026-10-29T15:30:00.000Z', 'Asia/Tehran')).toBe(19);
+    expect(hourInZone('2026-10-29T20:30:00.000Z', 'Asia/Tehran')).toBe(0);
+    expect(hourInZone('2026-10-29T23:30:00.000Z', 'America/New_York')).toBe(19);
+  });
+
+  it('throws on a bad timestamp like dateInZone', () => {
+    expect(() => hourInZone('yesterday', 'UTC')).toThrow(RangeError);
   });
 });

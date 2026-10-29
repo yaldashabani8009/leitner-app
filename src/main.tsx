@@ -7,6 +7,7 @@ import {
   auth,
   openedFromRecoveryLink,
   profileSource,
+  reminders,
   sessionClient,
   syncRemote,
 } from './data/supabase';
@@ -16,6 +17,7 @@ const services = {
   auth,
   profiles: profileSource,
   remote: syncRemote,
+  reminders,
   fromRecoveryLink: openedFromRecoveryLink,
 };
 

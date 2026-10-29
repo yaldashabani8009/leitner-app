@@ -34,6 +34,12 @@ Live URL: **https://yaldashabani8009.github.io/leitner-app/**
 
 > Before more than ~10 users or any commercial use, move to a proper host (ADR-011 → ADR-006 Cloudflare). Change `BASE` in `vite.config.ts` to `/` when you do.
 
+## Daily reminder (ADR-018)
+
+- [x] Migration `daily_reminders` applied (push_subscriptions, app_config, pg_cron job every 15 minutes); functions `reminders-cron` and `reminders-test` deployed; VAPID keys generated server-side into Vault.
+- Turn it on in the app: after a session, **I'm done for now** → **Yes, remind me** → allow notifications. On iPhone this only works in the app opened from the Home Screen (iOS 16.4 or newer).
+- Turn it off: phone **Settings → Notifications → Leitner**.
+
 ## 3. Install on your phone
 
 - **iPhone:** open https://yaldashabani8009.github.io/leitner-app/ in Safari → Share → Add to Home Screen.

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { AuthService, SessionClient } from '../data/auth';
 import { openDatabase } from '../data/db';
+import type { ReminderService } from '../data/reminders';
 import type { SyncRemote } from '../data/sync/remote';
 import { useSync } from '../data/sync/useSync';
 import { refreshProfile, type ProfileSource } from '../data/profileSync';
@@ -21,6 +22,8 @@ export interface AppServices {
   profiles: ProfileSource;
   /** The cloud copy of the cards (sync, ADR-003). */
   remote: SyncRemote;
+  /** The daily reminder (ADR-018); without it the app never offers reminders. */
+  reminders?: ReminderService;
   fromRecoveryLink: boolean;
   /** Tests shorten this; see START_TIMEOUT_MS. */
   startTimeoutMs?: number;
@@ -80,6 +83,7 @@ export function App({ services }: { services: AppServices }) {
           userId={view.userId}
           profiles={services.profiles}
           remote={services.remote}
+          reminders={services.reminders}
           minLoadingMs={services.minLoadingMs}
         />
       );
@@ -107,11 +111,12 @@ interface SignedInProps {
   userId: string;
   profiles: ProfileSource;
   remote: SyncRemote;
+  reminders?: ReminderService;
   minLoadingMs?: number;
 }
 
 /** Opens this account's own on-device database (ADR-012), keeps it in sync and refreshes the profile copy. */
-function SignedIn({ userId, profiles, remote, minLoadingMs }: SignedInProps) {
+function SignedIn({ userId, profiles, remote, reminders, minLoadingMs }: SignedInProps) {
   const db = useMemo(() => openDatabase(userId), [userId]);
   const repo = useMemo(() => createRepository(db), [db]);
   useSync(db, remote);
@@ -121,5 +126,7 @@ function SignedIn({ userId, profiles, remote, minLoadingMs }: SignedInProps) {
     void refreshProfile(profiles, repo, userId);
   }, [profiles, repo, userId]);
 
-  return <StudyFlow repo={repo} userId={userId} minLoadingMs={minLoadingMs} />;
+  return (
+    <StudyFlow repo={repo} userId={userId} reminders={reminders} minLoadingMs={minLoadingMs} />
+  );
 }

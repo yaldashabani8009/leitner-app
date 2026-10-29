@@ -45,6 +45,11 @@ Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as it
 - With a mouse or trackpad the card front says "click or press space" and the panel "then flip the card…"; with touch it stays "tap to flip".
 - Shortcuts: Space flips, ← Not yet, → Knew it!, E edits (back only), Esc closes a sheet. Canvas row "Laptop" (1440×900).
 
+## Daily reminder (ADR-018)
+
+- "Want a daily reminder?" is a dialog (waving mascot) shown once after **I'm done for now**: "At 19:00 I'll let you know when words are waiting, or when your streak needs a new word. Never more than once a day." · **Yes, remind me** / **Not now**. Results: "Reminders are on!" (happy), "Notifications are off" or "Couldn't turn it on" (cheer).
+- Notifications: "Time for your words · 12 words are waiting for you." / "Keep your streak going · Add a word to keep your 5-day streak." Icon: the app icon. The app-icon number = words waiting today.
+
 ## Mascot
 
 A rounded card box (aqua front #BFE7EA, darker back wall #8FD0D6), three index cards inside (terracotta, orange, cream), cream label slot. Dot eyes, ^ ^ happy eyes, orange blush, stick arms/legs (2.5–3.5px ink). Small mascots have no legs. Built from separate shapes so parts animate independently.

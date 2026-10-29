@@ -12,6 +12,7 @@
 | 7. Build the MVP               | 🟡 In progress: all built (7.1–7.5, 7.7–7.14); 7.6 waits for its phone + laptop test                                                |
 | 8. Deploy & install            | ✅ Done: site live, auto-deploys after all tests, live smoke check after every deploy; sign-ups off; reset-link URL set in Supabase |
 | 9. Use & iterate               | 🟡 Ongoing: maintenance + audit done, audit fixes built; next comes from Yali's daily use                                           |
+| 10. Daily reminder (v1.1)      | 🟡 Built (ADR-018): 19:00 notification + app-icon number; waits for Yali's phone test                                               |
 
 ## Step 7 tasks (in order)
 
@@ -45,6 +46,7 @@ Each task = one branch + one pull request. CI must be green before merging.
 - [ ] 7.13: on the laptop, review a few words with Space and the arrow keys, and press E on a card back.
 - [ ] 7.14: once, open the installed app on the iPhone in flight mode: it should open on your box (the automatic test can't do this part in Safari's engine).
 - [ ] 8: tap **Forgot password?**, open the email on the phone, set a new password: you should land back in the app, signed in.
+- [ ] 10: finish a session, tap **I'm done for now**, answer **Yes, remind me** and allow notifications: a "Reminders are on" notification arrives, and the app icon shows the number of words waiting. At 19:00 the next day (if words are waiting or the streak needs a word) the reminder arrives.
 
 **Changes after Yali's iPhone tests (all merged, canvas updated):**
 

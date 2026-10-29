@@ -15,6 +15,7 @@ import {
 } from '../domain/card/validate';
 import { BACKUP_APP, BACKUP_VERSION, type Backup, type BackupEntry } from '../domain/backup/file';
 import { shouldOfferRestore, shouldRemindToSave, snoozeUntil } from '../domain/backup/reminder';
+import { waitingToday } from '../domain/reminder/reminder';
 import { answer, isDue, newCard, resetToBox1 } from '../domain/leitner/engine';
 import { currentStreak, wordsLearned } from '../domain/progress/progress';
 import { pickSessionCards, reviewsDoneToday } from '../domain/session/pick';
@@ -473,6 +474,34 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         }
         return { status: 'imported', wordsAdded, wordsUpdated };
       });
+    },
+
+    /** Words still to review today (due, within the daily cap): the number on the app icon. */
+    async waitingToday(): Promise<number> {
+      const now = deps.now();
+      const [profile, maybeDue, recent] = await Promise.all([
+        db.profile.toCollection().first(),
+        maybeDueCards(now),
+        recentLogs(now),
+      ]);
+      const zone = resolveTimeZone(profile?.timeZone);
+      const date = dateInZone(now, zone);
+      const due = maybeDue.filter((card) => isDue(card, date)).length;
+      return waitingToday(due, reviewsDoneToday(recent, now, zone));
+    },
+
+    /** Should "Want a daily reminder?" be offered on this device? (Not after yes, nor during "Not now".) */
+    async reminderOfferOpen(): Promise<boolean> {
+      const state = (await db.meta.get(META.reminderOffer))?.value as string | undefined;
+      if (state === undefined) return true;
+      if (state === 'done') return false;
+      return Date.parse(deps.now()) >= Date.parse(state);
+    },
+
+    /** "done": reminders are on (never ask again here). "snooze": "Not now", ask again in 7 days. */
+    async closeReminderOffer(how: 'done' | 'snooze'): Promise<void> {
+      const value = how === 'done' ? 'done' : snoozeUntil(deps.now());
+      await db.meta.put({ key: META.reminderOffer, value });
     },
 
     /** Words learned and the streak, for the top bar, Loading and Session complete. */

@@ -41,6 +41,8 @@ export default defineConfig({
         // Cache the whole app shell (incl. fonts) so it opens offline for 30+ days.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: `${BASE}index.html`,
+        // Daily reminder (ADR-018): notifications and the app-icon number, even when closed.
+        importScripts: ['push-handler.js'],
       },
     }),
   ],

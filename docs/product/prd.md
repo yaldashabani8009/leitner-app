@@ -91,6 +91,16 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 - **Words learned:** cards that have passed box 1 at least once, i.e. a scheduled "Knew it!" in box 1 (never goes down, even when the card goes back to box 1).
 - Session progress: chunky pill bar, no numbers.
 
+## Daily reminder (decided 2026-10-29, ADR-018)
+
+- Once a day from **19:00** in the profile's time zone, only when there is something to do:
+  - words due → "Time for your words · 12 words are waiting for you."
+  - nothing due and today not yet counted → "Keep your streak going · Add a word to keep your 5-day streak." (or "Add a new word today and start a streak.")
+  - today already counts, or the daily cap is reached → no notification.
+- The app icon shows the number of words still waiting today (installed app; on iPhone once notifications are allowed).
+- Offered once per device after a session ("I'm done for now" on Session complete): "Want a daily reminder?" Yes → the phone asks for permission → a test notification "Reminders are on". Not now → asked again in 7 days. Turned off in the phone's settings.
+- iPhone: only in the app added to the Home Screen (iOS 16.4+). Android: Chrome.
+
 ## User flow
 
 1. Open app. First launch on a device → Sign in (Sign up only once sign-ups are open).
@@ -118,7 +128,7 @@ Laptop (built in 7.13): Space flips, ← / → answer, E edits (card back only),
 
 ## Data model
 
-See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (display_name, time_zone), `cards`, `card_entries`, `review_logs`, `streak_days` (ADR-015).
+See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (display_name, time_zone), `cards`, `card_entries`, `review_logs`, `streak_days` (ADR-015), `push_subscriptions` and `app_config` (ADR-018).
 
 ## Open questions
 

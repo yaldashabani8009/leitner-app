@@ -1,5 +1,6 @@
 import { createClient, isAuthRetryableFetchError } from '@supabase/supabase-js';
 import { createSupabaseAuth, type SessionClient } from './auth';
+import { createSupabaseReminders } from './reminders';
 import type { Database } from './database.types';
 import type { ProfileSource } from './profileSync';
 import { createSupabaseRemote } from './sync/remote';
@@ -64,6 +65,9 @@ export const sessionClient: SessionClient = {
     return () => data.subscription.unsubscribe();
   },
 };
+
+/** The daily reminder (ADR-018). */
+export const reminders = createSupabaseReminders(supabase);
 
 /** The cloud side of sync (ADR-003, ADR-013). */
 export const syncRemote = createSupabaseRemote(supabase);

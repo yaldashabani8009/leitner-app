@@ -79,6 +79,8 @@ export const META = {
   saveReminderSnoozedUntil: 'backup:saveSnoozedUntil',
   /** Don't show "Restore your words?" before this moment. */
   restoreOfferSnoozedUntil: 'backup:restoreSnoozedUntil',
+  /** The daily-reminder offer: "done" once answered yes, or the moment "Not now" ends (ADR-018). */
+  reminderOffer: 'reminder:offer',
 } as const;
 
 /** Small device-only facts, e.g. where each table's last pull stopped (sync, ADR-013). */

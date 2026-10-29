@@ -24,3 +24,8 @@ export const STREAK_DAILY_REVIEWS = 20;
 export const BACKUP_REMINDER_AFTER_DAYS = 14;
 /** After "Not now" or a saved copy, the backup modals wait this long before asking again (7.12). */
 export const BACKUP_REMINDER_SNOOZE_DAYS = 7;
+
+/** Daily reminder (Yali, 2026-10-29): from 19:00 in the profile time zone, at most once a day. */
+export const DAILY_REMINDER_HOUR = 19;
+/** No reminder from this hour on, if the server missed the evening (e.g. it was paused). */
+export const DAILY_REMINDER_LAST_HOUR = 23;
