@@ -69,11 +69,11 @@
   padding-top: var(--space-4);
 }
 
-/* The mascot "says" it: a speech bubble above its left side (canvas 07 idea D). */
+/* The mascot "says" it: a speech bubble above the circle, to the left (canvas 07, Yali 2026-10-29). */
 .bubble {
   position: absolute;
-  top: -38px;
-  left: -44px;
+  bottom: calc(100% + 20px);
+  left: -56px;
   display: flex;
   align-items: center;
   gap: 6px;
