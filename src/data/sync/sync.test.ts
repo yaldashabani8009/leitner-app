@@ -89,16 +89,16 @@ describe('push', () => {
       [...cloud.tables.card_entries.values()].filter((e) => e.card_id === cardId),
     ).toHaveLength(3);
     expect(await phone.db.outbox.count()).toBe(0);
-    expect(summary.pushed).toBe(4);
+    expect(summary.pushed).toBe(5); // card, 3 entries, today's streak day
   });
 
-  it('sends cards before entries before logs (the database needs the card first)', async () => {
+  it('sends cards, entries, logs, then streak days (the database needs the card first)', async () => {
     const phone = device();
     const cardId = await add(phone, 'brave');
     await phone.repo.recordAnswer(cardId, true, 'scheduled');
     await phone.sync.run();
     const uploads = cloud.calls.filter((c) => !c.startsWith('pull'));
-    expect(uploads).toEqual(['upsertCards', 'upsertEntries', 'insertLogs']);
+    expect(uploads).toEqual(['upsertCards', 'upsertEntries', 'insertLogs', 'insertStreakDays']);
   });
 
   it('offline: nothing is lost; the next run sends it', async () => {
@@ -106,7 +106,7 @@ describe('push', () => {
     await add(phone, 'brave');
     cloud.offline = true;
     await expect(phone.sync.run()).rejects.toThrow('Failed to fetch');
-    expect(await phone.db.outbox.count()).toBe(4);
+    expect(await phone.db.outbox.count()).toBe(5);
 
     cloud.offline = false;
     await phone.sync.run();
@@ -201,6 +201,32 @@ describe('pull', () => {
     expect(await laptop.db.reviewLogs.count()).toBe(1);
     expect(await phone.db.reviewLogs.count()).toBe(1);
     expect(cloud.tables.review_logs.size).toBe(1);
+  });
+
+  it('streak days reach the other device, and a day earned on both is kept once', async () => {
+    const phone = device();
+    const laptop = device();
+    await add(phone, 'brave'); // nothing due: the phone earns the 10th
+    await add(laptop, 'calm'); // so does the laptop, offline
+    phone.clock.now = laptop.clock.now = '2026-03-12T08:00:00.000Z';
+    await phone.db.cards.toCollection().modify({ dueDate: '2026-03-20' });
+    await add(phone, 'quiet'); // the 12th, only on the phone
+
+    await phone.sync.run();
+    await laptop.sync.run();
+    await phone.sync.run();
+
+    expect([...cloud.tables.streak_days.values()].map((d) => d.day).sort()).toEqual([
+      '2026-03-10',
+      '2026-03-12',
+    ]);
+    for (const d of [phone, laptop]) {
+      expect(await d.db.streakDays.toCollection().primaryKeys()).toEqual([
+        '2026-03-10',
+        '2026-03-12',
+      ]);
+      expect(await d.db.outbox.count()).toBe(0);
+    }
   });
 });
 

@@ -7,16 +7,18 @@
 import { wordKey } from '../../domain/card/validate';
 import type { Box } from '../../domain/leitner/config';
 import type { Database } from '../database.types';
-import type { CardRow, EntryRow, ReviewLogRow } from '../db';
+import type { CardRow, EntryRow, ReviewLogRow, StreakDayRow } from '../db';
 
 type Tables = Database['public']['Tables'];
 export type RemoteCard = Tables['cards']['Row'];
 export type RemoteEntry = Tables['card_entries']['Row'];
 export type RemoteLog = Tables['review_logs']['Row'];
+export type RemoteStreakDay = Tables['streak_days']['Row'];
 
 export type CardUpload = Omit<RemoteCard, 'user_id' | 'server_updated_at'>;
 export type EntryUpload = Omit<RemoteEntry, 'user_id' | 'server_updated_at'>;
 export type LogUpload = Omit<RemoteLog, 'user_id' | 'server_updated_at'>;
+export type StreakDayUpload = Omit<RemoteStreakDay, 'user_id' | 'server_updated_at'>;
 
 export function cardToRemote(card: CardRow): CardUpload {
   return {
@@ -93,4 +95,12 @@ export function logFromRemote(row: RemoteLog): ReviewLogRow {
     isPractice: row.is_practice,
     createdAt: row.created_at,
   };
+}
+
+export function streakDayToRemote(row: StreakDayRow): StreakDayUpload {
+  return { id: row.id, day: row.day, created_at: row.createdAt };
+}
+
+export function streakDayFromRemote(row: RemoteStreakDay): StreakDayRow {
+  return { day: row.day, id: row.id, createdAt: row.created_at };
 }

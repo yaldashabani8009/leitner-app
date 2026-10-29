@@ -14,7 +14,7 @@ interface TopBarProps {
 
 /**
  * Option A from the canvas: two floating pills (words learned, streak) and a round + button.
- * Parts that aren't built yet are simply left out (7.9: pills come in 7.11, + in 7.10);
+ * A part that isn't given is left out (the pills while their numbers load);
  * the bar keeps its height so screens don't jump when they arrive.
  */
 export function TopBar({ wordsLearned, streak, onAdd }: TopBarProps) {

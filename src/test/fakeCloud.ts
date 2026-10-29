@@ -4,7 +4,8 @@
  * - an older update never replaces a newer one (trigger a_reject_older_write);
  * - one live card per word, ignoring capitals (cards_user_word_unique) → DuplicateWordError;
  * - entries and logs need their card first (RLS);
- * - review logs are append-only.
+ * - review logs are append-only;
+ * - streak days are append-only and one per day (streak_days_user_day).
  */
 
 import { timeMs } from '../data/sync/merge';
@@ -14,6 +15,7 @@ import type {
   RemoteCard,
   RemoteEntry,
   RemoteLog,
+  RemoteStreakDay,
 } from '../data/sync/mapping';
 import {
   DuplicateWordError,
@@ -29,6 +31,7 @@ export interface FakeCloud extends SyncRemote {
     cards: Map<string, RemoteCard>;
     card_entries: Map<string, RemoteEntry>;
     review_logs: Map<string, RemoteLog>;
+    streak_days: Map<string, RemoteStreakDay>;
   };
   calls: string[];
   /** Runs inside the next upload, e.g. to edit a row "while it is being sent". */
@@ -44,7 +47,12 @@ export function createFakeCloud(): FakeCloud {
 
   const cloud: FakeCloud = {
     offline: false,
-    tables: { cards: new Map(), card_entries: new Map(), review_logs: new Map() },
+    tables: {
+      cards: new Map(),
+      card_entries: new Map(),
+      review_logs: new Map(),
+      streak_days: new Map(),
+    },
     calls: [],
 
     async upsertCards(rows) {
@@ -78,6 +86,16 @@ export function createFakeCloud(): FakeCloud {
       }
     },
 
+    async insertStreakDays(rows) {
+      await enter('insertStreakDays');
+      const days = new Set([...cloud.tables.streak_days.values()].map((d) => d.day));
+      for (const row of rows) {
+        if (days.has(row.day)) continue; // on conflict (user_id, day) do nothing
+        days.add(row.day);
+        cloud.tables.streak_days.set(row.id, stamp(row));
+      }
+    },
+
     async pull<T extends PullTable>(table: T, after: Cursor | null, limit: number) {
       await enter(`pull:${table}`);
       const rows = [...(cloud.tables[table] as Map<string, RemoteRows[T]>).values()]
@@ -108,7 +126,7 @@ export function createFakeCloud(): FakeCloud {
   async function enter(call: string) {
     if (cloud.offline) throw new TypeError('Failed to fetch');
     cloud.calls.push(call);
-    if (call.startsWith('upsert') || call === 'insertLogs') {
+    if (call.startsWith('upsert') || call.startsWith('insert')) {
       const hook = cloud.duringNextUpload;
       cloud.duringNextUpload = undefined;
       await hook?.();

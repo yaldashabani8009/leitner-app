@@ -86,7 +86,9 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
   1. 20 scheduled reviews were done that day, across any number of sessions (practice doesn't count);
   2. fewer than 20 cards were due, and all of them were reviewed;
   3. no cards were due at all, and a new word was added. The All done screen nudges you to add a word to keep the streak.
-- **Words learned:** cards that have passed box 1 at least once (never goes down).
+  - The day is saved the moment it counts and never removed (ADR-015). Until today counts, the streak shows the run up to yesterday; a whole missed day resets it (decided 2026-10-29).
+  - The streak pill on Loading and the bubble on Session complete are hidden while the streak is 0; the top-bar pill always shows.
+- **Words learned:** cards that have passed box 1 at least once, i.e. a scheduled "Knew it!" in box 1 (never goes down, even when the card goes back to box 1).
 - Session progress: chunky pill bar, no numbers.
 
 ## User flow

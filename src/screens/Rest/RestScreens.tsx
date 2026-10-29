@@ -11,7 +11,7 @@ interface SessionCompleteProps {
   nextCount: number;
   onNext: () => void;
   onDone: () => void;
-  /** Days in a row, shown in the mascot's speech bubble; hidden until streaks exist (7.11). */
+  /** Days in a row, shown in the mascot's speech bubble; hidden while unknown or 0. */
   streak?: number;
 }
 
@@ -32,7 +32,8 @@ export function SessionComplete({
       text={`You went through ${words}. Nice work.`}
       textIn="stage"
       bubble={
-        streak !== undefined && (
+        streak !== undefined &&
+        streak > 0 && (
           <>
             <FlameIcon /> {streak === 1 ? '1 day in a row!' : `${streak} days in a row!`}
           </>

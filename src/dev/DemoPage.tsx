@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { dateInZone } from '../domain/time/zonedDate';
 import { LeitnerDb } from '../data/db';
 import { createRepository, type Repository } from '../data/repository';
 import { SessionComplete } from '../screens/Rest/RestScreens';
@@ -7,7 +8,8 @@ import { StudyFlow } from '../screens/Study/StudyFlow';
 /**
  * Dev-only: the real study screens with sample words (roadmap 7.9 screenshots).
  * Open http://localhost:5173/leitner-app/?demo (add &empty for an empty box, &many for 23 words,
- * &complete for Session complete with a streak bubble, which needs 7.11 in the real flow).
+ * &complete for Session complete with a streak bubble). Unless &empty, it starts with a 12-day
+ * streak (up to yesterday) and the sample words already learned once.
  * Uses its own on-device database that is never synced; main.tsx only loads this in dev.
  */
 export function DemoPage() {
@@ -84,12 +86,39 @@ async function seed(db: LeitnerDb, empty: boolean, many: boolean) {
         sentences: [`This is sample${i + 1}.`],
       }))
     : [];
+  const ids: string[] = [];
   for (const card of [...WORDS, ...fillers]) {
-    await past.addCard({
+    const result = await past.addCard({
       word: card.word,
       synonyms: card.synonyms.map((text) => ({ text })),
       meanings: card.meanings.map((text) => ({ text })),
       sentences: card.sentences.map((text) => ({ text })),
     });
+    if (result.status === 'created') ids.push(result.cardId);
   }
+
+  // Top-bar numbers: the sample words passed box 1 once before, and the 12 days before today
+  // earned the streak (written straight to the demo database; it is never synced).
+  const day = (daysAgo: number) =>
+    new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
+  await db.streakDays.clear();
+  await db.streakDays.bulkAdd(
+    Array.from({ length: 12 }, (_, i) => ({
+      day: dateInZone(day(i + 1), 'Asia/Tehran'),
+      id: crypto.randomUUID(),
+      createdAt: yesterday,
+    })),
+  );
+  await db.reviewLogs.bulkAdd(
+    ids.map((cardId) => ({
+      id: crypto.randomUUID(),
+      cardId,
+      reviewedAt: day(5),
+      correct: true,
+      boxBefore: 1 as const,
+      boxAfter: 2 as const,
+      isPractice: false,
+      createdAt: day(5),
+    })),
+  );
 }

@@ -12,14 +12,17 @@ import type {
   RemoteCard,
   RemoteEntry,
   RemoteLog,
+  RemoteStreakDay,
+  StreakDayUpload,
 } from './mapping';
 
-export type PullTable = 'cards' | 'card_entries' | 'review_logs';
+export type PullTable = 'cards' | 'card_entries' | 'review_logs' | 'streak_days';
 
 export interface RemoteRows {
   cards: RemoteCard;
   card_entries: RemoteEntry;
   review_logs: RemoteLog;
+  streak_days: RemoteStreakDay;
 }
 
 /**
@@ -36,6 +39,8 @@ export interface SyncRemote {
   upsertEntries(rows: EntryUpload[]): Promise<void>;
   /** Logs are append-only: one that is already there is left alone. */
   insertLogs(rows: LogUpload[]): Promise<void>;
+  /** Append-only too, and one per day: a day the cloud already has (from any device) is left alone. */
+  insertStreakDays(rows: StreakDayUpload[]): Promise<void>;
   /** Rows changed after `after` (server time, then id), oldest first. */
   pull<T extends PullTable>(
     table: T,
@@ -78,6 +83,15 @@ export function createSupabaseRemote(client: SupabaseClient<Database>): SyncRemo
     },
     async insertLogs(rows) {
       check((await client.from('review_logs').upsert(rows, { ignoreDuplicates: true })).error);
+    },
+    async insertStreakDays(rows) {
+      check(
+        (
+          await client
+            .from('streak_days')
+            .upsert(rows, { onConflict: 'user_id,day', ignoreDuplicates: true })
+        ).error,
+      );
     },
     async pull(table, after, limit) {
       let query = client.from(table).select('*');

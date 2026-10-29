@@ -33,3 +33,7 @@
 .dot {
   color: var(--color-terracotta);
 }
+
+.streak {
+  position: relative;
+}

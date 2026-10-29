@@ -163,6 +163,30 @@ export type Database = {
           },
         ];
       };
+      streak_days: {
+        Row: {
+          id: string;
+          user_id: string;
+          day: string;
+          created_at: string;
+          server_updated_at: string;
+        };
+        Insert: {
+          id: string;
+          user_id?: string;
+          day: string;
+          created_at?: string;
+          server_updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          day?: string;
+          created_at?: string;
+          server_updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };
