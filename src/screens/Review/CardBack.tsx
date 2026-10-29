@@ -12,7 +12,13 @@ export function CardBack({ card, onEdit }: { card: CardWithEntries; onEdit?: () 
       <div className={styles.backHeader}>
         <h1 className={styles.backWord}>{word}</h1>
         {onEdit && (
-          <IconButton label="Edit word" variant="cream" icon={<PencilIcon />} onClick={onEdit} />
+          <IconButton
+            label="Edit word"
+            variant="cream"
+            icon={<PencilIcon />}
+            onClick={onEdit}
+            aria-keyshortcuts="E"
+          />
         )}
       </div>
       <section className={styles.section} aria-label="Similar words">

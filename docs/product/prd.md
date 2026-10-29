@@ -102,7 +102,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 7. Add word: bottom sheet (top bar + or All done). Save checks required fields and duplicates. The sheet is only as tall as its fields and sits above the phone keyboard; fields grow with the text. Drag the handle down (or tap ✕) to close it.
 8. Edit: pencil on card back → same sheet, pre-filled, with the reminder "Editing won't change when you see this word next."
 
-Laptop: Space flips, ← / → answer, E edits, Esc closes; centred 560px column; add/edit is a centred modal.
+Laptop (built in 7.13): Space flips, ← / → answer, E edits (card back only), Esc closes; centred 560px column on screens 700px and wider; add/edit is a centred modal. With a mouse or trackpad the card says "click or press space" instead of "tap to flip". Shortcuts never fire while typing, while a sheet or dialog is open, or with Ctrl / ⌘ / Alt held.
 
 ## Time and offline
 
@@ -126,5 +126,5 @@ See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (di
 - [x] Session complete: no score (Yali, 2026-10-28): "You went through 20 words. Nice work."
 - [x] Sign-in / sign-up / forgot-password screens: designed in code in the v2 style, reviewed by Yali from screenshots (2026-10-28). Mascot added in 7.8.
 - [x] Where Export/Import lives: nowhere in the app; it appears as a modal only when needed (Yali, 2026-10-29, ADR-016).
-- [ ] Laptop screens redrawn in v2 style.
+- [x] Laptop screens redrawn in v2 style: the phone screens in a centred column (7.13, canvas "Laptop" row).
 - [ ] Motion for the new mascot: first calm version built in 7.8 (see docs/design/README.md); Yali to review and refine.

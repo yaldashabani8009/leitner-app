@@ -7,6 +7,7 @@ import { Confetti } from '../../ui/Confetti';
 import { Mascot } from '../../ui/Mascot/Mascot';
 import { CardBack } from './CardBack';
 import styles from './ReviewScreen.module.css';
+import { useReviewKeys } from './useReviewKeys';
 
 interface CardViewScreenProps {
   card: CardWithEntries;
@@ -20,6 +21,7 @@ interface CardViewScreenProps {
  * the card back as in review, with the pencil, and "Done" to go back to where you were.
  */
 export function CardViewScreen({ card, onEdit, onDone, top }: CardViewScreenProps) {
+  useReviewKeys({ onEdit });
   return (
     <main className={styles.screen}>
       <Confetti amount="touch" />

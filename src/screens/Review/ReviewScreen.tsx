@@ -9,6 +9,7 @@ import { Mascot, type MascotPose } from '../../ui/Mascot/Mascot';
 import { Pill } from '../../ui/Pill';
 import { CardBack } from './CardBack';
 import styles from './ReviewScreen.module.css';
+import { useReviewKeys } from './useReviewKeys';
 import { useSwipe } from './useSwipe';
 
 interface ReviewScreenProps {
@@ -45,6 +46,12 @@ export function ReviewScreen({
   const swipe = useSwipe(onAnswer, flipped);
   const backRef = useRef<HTMLDivElement>(null);
   const practice = kind === 'practice';
+
+  useReviewKeys(
+    flipped
+      ? { onAnswer: (correct) => swipe.flyOut(correct ? 'right' : 'left'), onEdit }
+      : { onFlip: () => setFlipped(true) },
+  );
 
   // After the flip, move focus to the answer so a screen reader reads it.
   useEffect(() => {
@@ -120,13 +127,19 @@ export function ReviewScreen({
             </div>
           ) : (
             <Card className={styles.frontCard}>
-              <button type="button" className={styles.front} onClick={() => setFlipped(true)}>
+              <button
+                type="button"
+                className={styles.front}
+                onClick={() => setFlipped(true)}
+                aria-keyshortcuts="Space"
+              >
                 <Pill variant="label" tone={practice ? 'aqua' : 'cream'}>
                   {practice ? 'one more look' : 'do you know it?'}
                 </Pill>
                 <span className={styles.word}>{card.card.word}</span>
                 <span className={styles.hint}>
-                  <FlipIcon /> tap to flip
+                  <FlipIcon /> <span className={styles.touchOnly}>tap to flip</span>
+                  <span className={styles.pointerOnly}>click or press space</span>
                 </span>
               </button>
             </Card>
@@ -152,7 +165,12 @@ export function ReviewScreen({
           ) : (
             <>
               <p className={styles.panelTitle}>Think first…</p>
-              <p className={styles.panelText}>then tap the card to see if you were right</p>
+              <p className={styles.panelText}>
+                <span className={styles.touchOnly}>then tap the card to see if you were right</span>
+                <span className={styles.pointerOnly}>
+                  then flip the card to see if you were right
+                </span>
+              </p>
             </>
           )
         ) : (
@@ -161,11 +179,19 @@ export function ReviewScreen({
               <p className={styles.reassure}>That's okay. You'll see it again tomorrow.</p>
             )}
             <div className={styles.answers}>
-              <Button variant="secondary" onClick={() => swipe.flyOut('left')}>
+              <Button
+                variant="secondary"
+                onClick={() => swipe.flyOut('left')}
+                aria-keyshortcuts="ArrowLeft"
+              >
                 Not yet
               </Button>
               {/* Aqua on the white review panel; orange on the aqua practice panel. */}
-              <Button variant={practice ? 'primary' : 'aqua'} onClick={() => swipe.flyOut('right')}>
+              <Button
+                variant={practice ? 'primary' : 'aqua'}
+                onClick={() => swipe.flyOut('right')}
+                aria-keyshortcuts="ArrowRight"
+              >
                 Knew it!
               </Button>
             </div>

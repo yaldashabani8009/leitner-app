@@ -39,7 +39,7 @@ Dev-only pages (never in the built site), for screenshots and review:
 - `http://localhost:5173/leitner-app/?kit`: the UI kit and all mascot poses (`&open=bottom` / `&open=dialog` opens a sheet)
 - `http://localhost:5173/leitner-app/?demo`: the real study screens with sample words in a separate, never-synced database (`&empty`, `&many` for 23 words, `&complete` for Session complete with a streak; the demo starts with a 12-day streak; `&backup=save` and `&empty&backup=restore` open the backup modals)
 
-Screenshots for Yali: Playwright at iPhone size (393×852, deviceScaleFactor 3), sent as files before merging.
+Screenshots for Yali: Playwright at iPhone size (393×852, deviceScaleFactor 3, `isMobile` + `hasTouch` so the touch wording shows) and, for layout changes, laptop size (1440×900), sent as files before merging.
 
 ## Code rules
 

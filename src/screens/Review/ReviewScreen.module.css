@@ -116,6 +116,21 @@
   overflow-wrap: anywhere;
 }
 
+/* "tap to flip" on phones; "click or press space" with a mouse or trackpad (roadmap 7.13). */
+.pointerOnly {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .touchOnly {
+    display: none;
+  }
+
+  .pointerOnly {
+    display: inline;
+  }
+}
+
 .hint {
   display: flex;
   align-items: center;
