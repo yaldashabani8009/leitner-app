@@ -10,6 +10,7 @@ import {
 } from '../../domain/session/session';
 import { TopBar } from '../../ui/TopBar';
 import { AddEditSheet, type Editor } from '../AddEdit/AddEditSheet';
+import { BackupPrompts } from '../Backup/BackupPrompts';
 import { LoadingScreen } from '../Loading/LoadingScreen';
 import { AllDone, Resting, SessionComplete } from '../Rest/RestScreens';
 import { CardViewScreen } from '../Review/CardViewScreen';
@@ -32,10 +33,16 @@ type StudyRepo = Pick<
   | 'findCardIdByWord'
   | 'sendCardBackToStart'
   | 'progress'
+  | 'backupStatus'
+  | 'snoozeBackup'
+  | 'exportBackup'
+  | 'importBackup'
 >;
 
 interface StudyFlowProps {
   repo: StudyRepo;
+  /** The signed-in account; turns on the backup modals (7.12). */
+  userId?: string;
   /** Tests pass 0. */
   minLoadingMs?: number;
 }
@@ -46,7 +53,7 @@ interface StudyFlowProps {
  * The cards for a session are picked once when it starts; answers are saved right away,
  * so leaving mid-session keeps unanswered cards due (sessions rule 7).
  */
-export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProps) {
+export function StudyFlow({ repo, userId, minLoadingMs = MIN_LOADING_MS }: StudyFlowProps) {
   const profile = useLiveQuery(async () => (await repo.getProfile()) ?? null, [repo]);
   const cardCount = useLiveQuery(() => repo.countCards(), [repo]);
   const dueIds = useLiveQuery(() => repo.nextSessionCardIds(), [repo]);
@@ -89,12 +96,6 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
     return <LoadingScreen name={profile?.displayName} streak={progress?.streak} />;
   }
 
-  // Start a session as soon as cards are due (also on first open of the day).
-  if (view === 'study' && session === null && dueIds.length > 0) {
-    setSession(startSession(dueIds));
-    return null;
-  }
-
   function startNext() {
     setSession(dueIds && dueIds.length > 0 ? startSession(dueIds) : null);
     setView('study');
@@ -115,12 +116,21 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
       onOpenCard={setViewingId}
     />
   );
+  // Every screen after loading goes through here, even the in-between empty frames, so the
+  // sheets and backup modals stay mounted (and keep their state) while screens change.
   const withSheet = (screen: ReactNode) => (
     <>
       {screen}
       {sheet}
+      {userId && <BackupPrompts repo={repo} userId={userId} paused={editor !== null} />}
     </>
   );
+
+  // Start a session as soon as cards are due (also on first open of the day).
+  if (view === 'study' && session === null && dueIds.length > 0) {
+    setSession(startSession(dueIds));
+    return withSheet(null);
+  }
 
   if (viewingId && viewing && viewing.card.id === viewingId) {
     return withSheet(
@@ -160,14 +170,14 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
     );
   }
 
-  if (!loaded || loaded.cardId !== step.cardId) return null; // the card is loading (a few ms)
+  if (!loaded || loaded.cardId !== step.cardId) return withSheet(null); // the card is loading (a few ms)
   const card = loaded.card;
   if (card === null) {
     // The card was deleted on another device mid-session: skip it.
     const next = answerInSession(session, true);
     setSession(next);
     if (isComplete(next)) setView('complete');
-    return null;
+    return withSheet(null);
   }
 
   async function handleAnswer(correct: boolean) {

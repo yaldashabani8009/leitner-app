@@ -26,11 +26,11 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 - Sync between devices through Supabase
 - Fully offline for 30+ days, syncing on reconnect
 - Mascot and playful animation
-- Export / Import backup (JSON)
+- Backup without a button (decided 2026-10-29, ADR-016): sync is the backup. Only after 14 days without the cloud does a modal offer "Save a copy of your words?" (a JSON file); when the box is empty and the cloud can't be reached, a modal offers to restore from that file.
 
 **Out of v1:** native store apps; sharing decks; showing box numbers, counters or due dates; reviewing mastered cards; deleting cards.
 
-**Future ideas:** review mastered cards every 2 weeks or a quick exam; statistics; native wrapper; open to other users; **Sign out** (left out of v1 on purpose, decided 2026-10-28; place it together with Export/Import).
+**Future ideas:** review mastered cards every 2 weeks or a quick exam; statistics; native wrapper; open to other users; **Sign out** (left out of v1 on purpose, decided 2026-10-28; there is no settings screen, so its place is still open).
 
 ## Card structure
 
@@ -118,13 +118,13 @@ Laptop: Space flips, ← / → answer, E edits, Esc closes; centred 560px column
 
 ## Data model
 
-See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (display_name, time_zone), `cards`, `card_entries`, `review_logs`.
+See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (display_name, time_zone), `cards`, `card_entries`, `review_logs`, `streak_days` (ADR-015).
 
 ## Open questions
 
 - [x] Keep "Think first… then tap the card" on the front: yes (Yali, 2026-10-28). "That's okay. You'll see it again tomorrow." shows while swiping left / after "Not yet", as on the canvas (not in the practice round, where nothing is rescheduled).
 - [x] Session complete: no score (Yali, 2026-10-28): "You went through 20 words. Nice work."
 - [x] Sign-in / sign-up / forgot-password screens: designed in code in the v2 style, reviewed by Yali from screenshots (2026-10-28). Mascot added in 7.8.
-- [ ] Where Export/Import lives (small settings screen or top-bar menu).
+- [x] Where Export/Import lives: nowhere in the app; it appears as a modal only when needed (Yali, 2026-10-29, ADR-016).
 - [ ] Laptop screens redrawn in v2 style.
 - [ ] Motion for the new mascot: first calm version built in 7.8 (see docs/design/README.md); Yali to review and refine.

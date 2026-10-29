@@ -3,7 +3,15 @@
  * Safe to run any time: offline it fails and the outbox simply waits for the next run.
  */
 
-import type { CardRow, EntryRow, LeitnerDb, OutboxRow, StreakDayRow, SyncedTable } from '../db';
+import {
+  META,
+  type CardRow,
+  type EntryRow,
+  type LeitnerDb,
+  type OutboxRow,
+  type StreakDayRow,
+  type SyncedTable,
+} from '../db';
 import {
   cardFromRemote,
   cardToRemote,
@@ -228,9 +236,19 @@ export function createSync(db: LeitnerDb, remote: SyncRemote, deps: SyncDeps) {
   return {
     /** Push, then pull. Throws when offline or the cloud fails; nothing is lost, just retry later. */
     async run(): Promise<SyncSummary> {
-      const { pushed, merged } = await push();
-      const pulled = await pull();
-      return { pushed, pulled, merged };
+      let summary: SyncSummary;
+      try {
+        const { pushed, merged } = await push();
+        const pulled = await pull();
+        summary = { pushed, pulled, merged };
+      } catch (error) {
+        // Remembered for the backup modals (7.12); the error itself still goes to the caller.
+        await db.meta.put({ key: META.lastSyncFailedAt, value: deps.now() }).catch(() => {});
+        throw error;
+      }
+      await db.meta.put({ key: META.lastSyncedAt, value: deps.now() });
+      await db.meta.delete(META.lastSyncFailedAt);
+      return summary;
     },
   };
 }

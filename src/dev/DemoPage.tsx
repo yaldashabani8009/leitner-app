@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { dateInZone } from '../domain/time/zonedDate';
-import { LeitnerDb } from '../data/db';
+import { LeitnerDb, META } from '../data/db';
 import { createRepository, type Repository } from '../data/repository';
 import { SessionComplete } from '../screens/Rest/RestScreens';
 import { StudyFlow } from '../screens/Study/StudyFlow';
@@ -10,6 +10,8 @@ import { StudyFlow } from '../screens/Study/StudyFlow';
  * Open http://localhost:5173/leitner-app/?demo (add &empty for an empty box, &many for 23 words,
  * &complete for Session complete with a streak bubble). Unless &empty, it starts with a 12-day
  * streak (up to yesterday) and the sample words already learned once.
+ * &backup=save shows "Save a copy?" (20 days without the cloud); &empty&backup=restore shows
+ * "Have a backup file?" (empty box, cloud unreachable).
  * Uses its own on-device database that is never synced; main.tsx only loads this in dev.
  */
 export function DemoPage() {
@@ -31,7 +33,7 @@ export function DemoPage() {
     );
   }
 
-  return repo ? <StudyFlow repo={repo} /> : null;
+  return repo ? <StudyFlow repo={repo} userId="demo" /> : null;
 }
 
 const WORDS = [
@@ -77,6 +79,13 @@ async function seed(db: LeitnerDb, empty: boolean, many: boolean) {
     timeZone: 'Asia/Tehran',
     updatedAt: yesterday,
   });
+  if (params.get('backup') === 'restore') {
+    await db.meta.put({ key: META.lastSyncFailedAt, value: yesterday });
+  }
+  if (params.get('backup') === 'save') {
+    const longAgo = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString();
+    await db.meta.put({ key: META.lastSyncedAt, value: longAgo });
+  }
   if (empty) return;
   const fillers = many
     ? Array.from({ length: 20 }, (_, i) => ({

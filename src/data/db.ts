@@ -69,6 +69,18 @@ export interface OutboxRow {
   queuedAt: string;
 }
 
+/** Device-only facts in the `meta` table besides the pull positions (roadmap 7.12). */
+export const META = {
+  /** When a sync with the cloud last finished. */
+  lastSyncedAt: 'sync:lastSyncedAt',
+  /** When the latest sync attempt failed; removed by the next one that works. */
+  lastSyncFailedAt: 'sync:lastSyncFailedAt',
+  /** Don't show "Save a copy?" before this moment. */
+  saveReminderSnoozedUntil: 'backup:saveSnoozedUntil',
+  /** Don't show "Restore your words?" before this moment. */
+  restoreOfferSnoozedUntil: 'backup:restoreSnoozedUntil',
+} as const;
+
 /** Small device-only facts, e.g. where each table's last pull stopped (sync, ADR-013). */
 export interface MetaRow {
   key: string;
