@@ -6,11 +6,11 @@
 
 ## Summary
 
-| Severity      | Count | Status                         |
-| ------------- | ----- | ------------------------------ |
-| Accessibility | 2     | 01 fixed (option B) · 02 fixed |
-| Major         | 1     | for Yali to decide             |
-| Note          | 3     | for Yali to decide             |
+| Severity      | Count | Status                                        |
+| ------------- | ----- | --------------------------------------------- |
+| Accessibility | 2     | 01 fixed (option B) · 02 fixed                |
+| Major         | 1     | 03 fixed (option A)                           |
+| Note          | 3     | 05 fixed · 04 with the motion pass · 06 noted |
 
 The foundations are strong: no text contrast failures, no tap target under 44px, no unnamed control, no console errors and no overflow on any of the 12 screens measured.
 
@@ -48,7 +48,7 @@ after the fix:
 card 1 → BUTTON "do you know it? brave …"   card 2 → BUTTON "… meticulous …"
 ```
 
-**Fix:** after an answer given while something on the card had focus, the next card's front gets focus. Touch taps on iPhone don't focus buttons, so phones are unaffected. Test: `StudyFlow.test.tsx` "after answering with the keyboard…". **Still open:** after the last card, focus is lost on "Session complete!" too. Suggested fix: focus the "Session complete!" heading in the same situation.
+**Fix:** after an answer given while something on the card had focus, the next card's front gets focus. Touch taps on iPhone don't focus buttons, so phones are unaffected. Test: `StudyFlow.test.tsx` "after answering with the keyboard…". **Follow-up, also fixed:** after the last keyboard answer, focus moves to the "Session complete!" heading.
 
 ### 03 · Major · Sign in
 
@@ -61,7 +61,7 @@ Sign in screen text: "Welcome back" · "Sign in" · "Forgot password?" · "Creat
 ADR-010: sign-ups are off in Supabase; AUTH_MESSAGES.signupsClosed = "Sign-ups are closed for now."
 ```
 
-**Options:** A. hide "Create an account" while sign-ups are closed (one setting to flip when they open) · B. keep it, but say "Sign-ups are closed for now" on the Sign in screen instead of a link · C. leave as is. **Recommendation: A.**
+**Options:** A. hide "Create an account" while sign-ups are closed (one setting to flip when they open) · B. keep it, but say "Sign-ups are closed for now" on the Sign in screen instead of a link · C. leave as is. **Recommendation: A. Yali chose A (2026-10-29); built:** hidden behind `SIGNUPS_OPEN` in `src/app/features.ts`, to flip together with the Supabase setting.
 
 ### 04 · Note · Laptop
 
@@ -85,7 +85,7 @@ Screen readers say "0 words learned, 0-day streak".
 accessibility tree (empty box): text: "0 words learned 0-day streak"
 ```
 
-**Option:** say "no streak yet" for 0 (the pill itself still shows 0). Tiny copy decision.
+**Option:** say "no streak yet" for 0 (the pill itself still shows 0). **Yali said yes (2026-10-29); built.**
 
 ### 06 · Note · All screens
 
@@ -110,7 +110,7 @@ text on screen that is ≥ semibold: 100% on every screen (e.g. card back 14 of 
 ## Where to start (impact ÷ effort)
 
 1. ~~**01** focus ring on coloured panels~~ (done, option B).
-2. **03** hide "Create an account": one line plus a test.
-3. **02 follow-up** focus on "Session complete!": small.
-4. **05** "no streak yet": one line.
+2. ~~**03** hide "Create an account"~~ (done).
+3. ~~**02 follow-up** focus on "Session complete!"~~ (done).
+4. ~~**05** "no streak yet"~~ (done).
 5. **04** hover lift: with the motion pass.

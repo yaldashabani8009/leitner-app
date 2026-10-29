@@ -151,6 +151,7 @@ export function StudyFlow({ repo, userId, minLoadingMs = MIN_LOADING_MS }: Study
         wordCount={session.scheduled.length}
         nextCount={dueIds.length}
         streak={progress?.streak}
+        focusOnStart={focusNextCard}
         onNext={startNext}
         onDone={() => {
           if (dueIds.length > 0) {

@@ -21,7 +21,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 - Edit every field; add more items to each list at any time
 - Review sessions: see the word, flip, mark "Knew it!" / "Not yet"
 - Leitner scheduling as below, including mastered cards
-- Sign in once per device (email + password); sign up and forgot password screens exist, public sign-ups off
+- Sign in once per device (email + password); sign up and forgot password screens exist, public sign-ups off. While sign-ups are off, the Sign in screen doesn't show "Create an account" (decided 2026-10-29; switch `SIGNUPS_OPEN` in `src/app/features.ts`).
 - Sign up takes the time zone quietly from the phone; it can be changed in the profile later (decided 2026-10-28)
 - Sync between devices through Supabase
 - Fully offline for 30+ days, syncing on reconnect
@@ -93,7 +93,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 
 ## User flow
 
-1. Open app. First launch on a device → Sign in (or Sign up).
+1. Open app. First launch on a device → Sign in (Sign up only once sign-ups are open).
 2. Loading (2.5 s, cold start; decided 2026-10-29): waving mascot + "{display_name}'s Leitner." (no name → "Leitner.") + streak pill.
 3. Cards due and under cap → review card. Otherwise → "All done for today" (sleeping mascot, Add a new word). An empty box says "Your box is empty" with "Add your first word to start learning." (decided 2026-10-29).
 4. Card front (word) → tap → back (similar words, in Persian, in a sentence, pencil to edit).

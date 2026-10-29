@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SIGNUPS_OPEN } from '../../app/features';
 import type { AuthService } from '../../data/auth';
 import { Button } from '../../ui/Button';
 import { TextField } from '../../ui/TextField';
@@ -12,10 +13,12 @@ export type AuthScreen = 'signIn' | 'signUp' | 'forgotPassword';
 interface SignInProps {
   auth: AuthService;
   onNavigate(screen: AuthScreen): void;
+  /** Shows "Create an account" (see app/features.ts). */
+  signupsOpen?: boolean;
 }
 
 /** Success is picked up by the app's auth listener, which opens the cards. */
-export function SignIn({ auth, onNavigate }: SignInProps) {
+export function SignIn({ auth, onNavigate, signupsOpen = SIGNUPS_OPEN }: SignInProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const form = useAuthForm(
@@ -60,9 +63,11 @@ export function SignIn({ auth, onNavigate }: SignInProps) {
             <Button variant="text" onClick={() => onNavigate('forgotPassword')}>
               Forgot password?
             </Button>
-            <Button variant="text" onClick={() => onNavigate('signUp')}>
-              Create an account
-            </Button>
+            {signupsOpen && (
+              <Button variant="text" onClick={() => onNavigate('signUp')}>
+                Create an account
+              </Button>
+            )}
           </div>
         </div>
       </form>

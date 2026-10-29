@@ -128,13 +128,13 @@ describe('App sign-in changes', () => {
     expect(readLastUser()).toBeNull();
   });
 
-  it('moves between Sign in, Sign up and Forgot password', async () => {
+  it('moves between Sign in and Forgot password (no sign-up while sign-ups are closed)', async () => {
     const { default: userEvent } = await import('@testing-library/user-event');
     render(<App services={services({ userId: null, offline: false }).value} />);
-    await userEvent.click(await screen.findByRole('button', { name: 'Create an account' }));
-    expect(screen.getByRole('heading', { name: 'Make your box' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'I already have an account' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Forgot password?' }));
     expect(screen.getByRole('heading', { name: 'Forgot password?' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Back to sign in' }));
+    expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Create an account' })).not.toBeInTheDocument();
   });
 });
