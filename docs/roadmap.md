@@ -9,7 +9,7 @@
 | 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; first mascot motion built in 7.8 (small loops and hops); final motion design still open                                                   |
 | 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                                                                                                    |
 | 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                                                                    |
-| 7. Build the MVP               | 🟡 In progress: 7.1–7.5 and 7.7–7.11 done; 7.6 waits for its phone + laptop test. **Next: 7.12**                                                                                      |
+| 7. Build the MVP               | 🟡 In progress: 7.1–7.5 and 7.7–7.12 done; 7.6 waits for its phone + laptop test. **Next: 7.13**                                                                                      |
 | 8. Deploy & install            | 🟡 Site live at https://yaldashabani8009.github.io/leitner-app/ (auto-deploys). Sign-ups off and own user created. Still to do: reset-link URL in Supabase ([setup](setup/deploy.md)) |
 | 9. Use & iterate               | ⬜                                                                                                                                                                                    |
 
@@ -30,7 +30,7 @@ Each task = one branch + one pull request. CI must be green before merging.
 | 7.9 ✅  | Screens: Loading, Review (flip, swipe), Practice, Session complete, All done | Flow matches PRD; swipe off on front                                                                                                                                                                                        |
 | 7.10 ✅ | Add / Edit sheet + validation + duplicate rule                               | Errors under fields; duplicate → box 1 tomorrow. Built. **Still to do on the phone after merging (Yali):** the 7.6 phone + laptop sync test, the sheet with the iPhone keyboard open, flip and swipe                        |
 | 7.11 ✅ | Streak + words learned                                                       | Words learned from review logs; streak days saved when earned and synced (ADR-015); tested; top-bar pills, Loading streak pill and Session complete bubble on                                                               |
-| 7.12    | Export / Import backup                                                       | Round-trip test                                                                                                                                                                                                             |
+| 7.12 ✅ | Backup reminder + restore (modals only, ADR-016)                             | Round-trip test ✅; "Save a copy?" after 14 days without the cloud; restore when the box is empty and the cloud is unreachable                                                                                              |
 | 7.13    | Laptop layout + keyboard shortcuts                                           | Space / ← → / E / Esc work                                                                                                                                                                                                  |
 | 7.14    | Playwright E2E: review, add word, offline launch                             | Green in CI (WebKit + Chromium)                                                                                                                                                                                             |
 
@@ -53,4 +53,6 @@ Each task = one branch + one pull request. CI must be green before merging.
 
 **7.11 done:** words learned and the streak are on (top-bar pills, Loading pill, Session complete bubble). Earned days are saved and synced in the new `streak_days` table (ADR-015). The streak starts counting from 2026-10-29; earlier days have no record.
 
-**Next task: 7.12 Export / Import backup.** The backup must include streak days as well as cards, entries and review logs.
+**7.12 done:** no backup button anywhere. A "Save a copy of your words?" modal appears only after 14 days without the cloud (with changes waiting), and "Have a backup file?" only when the box is empty and the cloud can't be reached (ADR-016).
+
+**Next task: 7.13 Laptop layout + keyboard shortcuts.**

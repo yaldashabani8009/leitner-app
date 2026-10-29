@@ -3,7 +3,7 @@ import 'fake-indexeddb/auto';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LeitnerDb } from '../../data/db';
+import { LeitnerDb, META } from '../../data/db';
 import { createRepository, type Repository } from '../../data/repository';
 import { StudyFlow } from './StudyFlow';
 
@@ -131,6 +131,36 @@ describe('StudyFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: "I'm done for now" }));
     expect(await screen.findByText('1 word learned')).toBeInTheDocument();
     expect(screen.getByText('2-day streak')).toBeInTheDocument();
+  });
+
+  it('restoring a backup keeps "Your words are back!" open while the review starts behind it', async () => {
+    // A backup made by another device of the same account.
+    const other = new LeitnerDb(`test-${crypto.randomUUID()}`);
+    const source = createRepository(other, { now: () => DAY_1, newId: () => crypto.randomUUID() });
+    await source.addCard({
+      word: 'brave',
+      synonyms: [{ text: 'bold' }],
+      meanings: [{ text: 'شجاع' }],
+      sentences: [{ text: 'She was brave.' }],
+    });
+    const file = new File([JSON.stringify(await source.exportBackup('u1'))], 'b.json', {
+      type: 'application/json',
+    });
+    await other.delete();
+
+    // This phone lost its words and can't reach the cloud.
+    await db.meta.put({ key: META.lastSyncFailedAt, value: DAY_1 });
+    now = DAY_2;
+    render(<StudyFlow repo={repo} userId="u1" minLoadingMs={0} />);
+    await userEvent.upload(
+      await screen.findByLabelText('Backup file', { selector: 'input' }),
+      file,
+    );
+    await userEvent.click(await screen.findByRole('button', { name: 'Restore' }));
+
+    expect(await screen.findByRole('dialog', { name: 'Your words are back!' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(await screen.findByRole('button', { name: /tap to flip/ })).toBeInTheDocument();
   });
 
   it('shows the front, then the back after a tap', async () => {

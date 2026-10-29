@@ -19,3 +19,8 @@ export function gapForBox(box: Box): number {
 
 /** Scheduled reviews in one day that always earn a streak day (Yali's decision, 2026-10-28). */
 export const STREAK_DAILY_REVIEWS = 20;
+
+/** Days without reaching the cloud (with unsent changes) before the "save a copy" modal (7.12). */
+export const BACKUP_REMINDER_AFTER_DAYS = 14;
+/** After "Not now" or a saved copy, the backup modals wait this long before asking again (7.12). */
+export const BACKUP_REMINDER_SNOOZE_DAYS = 7;

@@ -13,21 +13,25 @@ import {
   type FieldErrors,
   type ListField,
 } from '../domain/card/validate';
+import { BACKUP_APP, BACKUP_VERSION, type Backup, type BackupEntry } from '../domain/backup/file';
+import { shouldOfferRestore, shouldRemindToSave, snoozeUntil } from '../domain/backup/reminder';
 import { answer, isDue, newCard, resetToBox1 } from '../domain/leitner/engine';
 import { currentStreak, wordsLearned } from '../domain/progress/progress';
 import { pickSessionCards, reviewsDoneToday } from '../domain/session/pick';
 import { dayCountsForStreak } from '../domain/session/streakDay';
 import { isOnOrBefore } from '../domain/time/calendarDate';
 import { dateInZone, resolveTimeZone } from '../domain/time/zonedDate';
-import type {
-  CardRow,
-  EntryKind,
-  EntryRow,
-  LeitnerDb,
-  ProfileRow,
-  ReviewLogRow,
-  SyncedTable,
+import {
+  META,
+  type CardRow,
+  type EntryKind,
+  type EntryRow,
+  type LeitnerDb,
+  type ProfileRow,
+  type ReviewLogRow,
+  type SyncedTable,
 } from './db';
+import { planEntryMerge, remoteWins } from './sync/merge';
 
 /** Where the repository gets the time and new ids. Tests pass fixed ones. */
 export interface RepositoryDeps {
@@ -60,6 +64,17 @@ export type AddCardResult =
   | { status: 'invalid'; errors: FieldErrors };
 
 export type EditCardResult = { status: 'saved' } | { status: 'invalid'; errors: FieldErrors };
+
+/** Which backup modal should show now (roadmap 7.12); normally neither. */
+export interface BackupStatus {
+  saveReminder: boolean;
+  restoreOffer: boolean;
+}
+
+export type ImportResult =
+  | { status: 'imported'; wordsAdded: number; wordsUpdated: number }
+  /** The file came from another account; nothing was saved. */
+  | { status: 'otherAccount' };
 
 /** The two top-bar numbers (PRD "Streak and progress"). */
 export interface Progress {
@@ -318,6 +333,147 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
     },
 
     reviewsDoneToday: countReviewsToday,
+
+    /** Should a backup modal show? Read with useLiveQuery; normally both are false. */
+    async backupStatus(): Promise<BackupStatus> {
+      const now = deps.now();
+      const metaValue = (key: string) =>
+        db.meta.get(key).then((row) => (row?.value as string | undefined) ?? null);
+      const [lastSyncedAt, lastSyncFailedAt, saveSnooze, restoreSnooze, oldest, cardCount] =
+        await Promise.all([
+          metaValue(META.lastSyncedAt),
+          metaValue(META.lastSyncFailedAt),
+          metaValue(META.saveReminderSnoozedUntil),
+          metaValue(META.restoreOfferSnoozedUntil),
+          db.outbox.orderBy('queuedAt').first(),
+          db.cards.count(),
+        ]);
+      return {
+        saveReminder: shouldRemindToSave({
+          now,
+          lastSyncedAt,
+          oldestUnsentAt: oldest?.queuedAt ?? null,
+          snoozedUntil: saveSnooze,
+        }),
+        restoreOffer: shouldOfferRestore({
+          now,
+          cardCount,
+          lastSyncedAt,
+          lastSyncFailed: lastSyncFailedAt !== null,
+          snoozedUntil: restoreSnooze,
+        }),
+      };
+    },
+
+    /** "Not now" (or a saved copy): that modal waits 7 days. Device-only, never synced. */
+    async snoozeBackup(kind: 'save' | 'restore'): Promise<void> {
+      const key = kind === 'save' ? META.saveReminderSnoozedUntil : META.restoreOfferSnoozedUntil;
+      await db.meta.put({ key, value: snoozeUntil(deps.now()) });
+    },
+
+    /** Everything in this account's box, deleted rows too, as one backup (ADR-016). */
+    async exportBackup(userId: string): Promise<Backup> {
+      const [profile, cards, entries, reviewLogs, streakDays] = await Promise.all([
+        db.profile.toCollection().first(),
+        db.cards.toArray(),
+        db.entries.toArray(),
+        db.reviewLogs.toArray(),
+        db.streakDays.toArray(),
+      ]);
+      return {
+        app: BACKUP_APP,
+        version: BACKUP_VERSION,
+        exportedAt: deps.now(),
+        userId,
+        profile: profile ? { displayName: profile.displayName, timeZone: profile.timeZone } : null,
+        // wordKey is device-only (worked out again on import).
+        cards: cards.map((card) => ({
+          id: card.id,
+          word: card.word,
+          box: card.box,
+          dueDate: card.dueDate,
+          masteredAt: card.masteredAt,
+          createdAt: card.createdAt,
+          updatedAt: card.updatedAt,
+          deletedAt: card.deletedAt,
+        })),
+        entries,
+        reviewLogs,
+        streakDays,
+      };
+    },
+
+    /**
+     * Put a backup into this box (ADR-016). Merges with what is there, using the sync rules:
+     * the newer edit of a row wins, review logs and streak days are only added, and a word
+     * that already exists under another card keeps that card (lists combined, history moved).
+     * All or nothing; everything it changes is queued for the cloud. Importing twice changes nothing.
+     */
+    importBackup(backup: Backup, userId: string): Promise<ImportResult> {
+      if (backup.userId !== userId) return Promise.resolve({ status: 'otherAccount' });
+      return db.transaction('rw', ALL_TABLES, async () => {
+        const now = deps.now();
+        let wordsAdded = 0;
+        let wordsUpdated = 0;
+
+        if (backup.profile && !(await db.profile.get(userId))) {
+          // The phone lost its copy too: bring back the name and time zone ("today").
+          await db.profile.put({ userId, ...backup.profile, updatedAt: now });
+        }
+
+        /** Backup card id → the card id on this device (differs for a merged duplicate word). */
+        const target = new Map<string, string>();
+        const mergedInto = new Map<string, string>();
+        for (const card of backup.cards) {
+          const row: CardRow = { ...card, wordKey: wordKey(card.word) };
+          const local = await db.cards.get(card.id);
+          const same = local || card.deletedAt !== null ? undefined : await findByWord(card.word);
+          if (same) {
+            target.set(card.id, same.id);
+            mergedInto.set(card.id, same.id);
+            continue;
+          }
+          target.set(card.id, card.id);
+          if (!remoteWins(local, row)) continue;
+          await db.cards.put(row);
+          await queue('cards', card.id, now);
+          if (card.deletedAt !== null) continue;
+          if (local) wordsUpdated += 1;
+          else wordsAdded += 1;
+        }
+
+        const byCard = new Map<string, BackupEntry[]>();
+        for (const entry of backup.entries) {
+          if (mergedInto.has(entry.cardId)) {
+            byCard.set(entry.cardId, [...(byCard.get(entry.cardId) ?? []), entry]);
+          } else if (remoteWins(await db.entries.get(entry.id), entry)) {
+            await db.entries.put(entry);
+            await queue('entries', entry.id, now);
+          }
+        }
+        for (const [cardId, entries] of byCard) {
+          const existing = mergedInto.get(cardId)!;
+          const plan = planEntryMerge(await liveEntries(existing), entries);
+          for (const { entry, position } of plan.move) {
+            if (await db.entries.get(entry.id)) continue;
+            await db.entries.put({ ...entry, cardId: existing, position, updatedAt: now });
+            await queue('entries', entry.id, now);
+          }
+        }
+
+        for (const log of backup.reviewLogs) {
+          if (await db.reviewLogs.get(log.id)) continue;
+          await db.reviewLogs.add({ ...log, cardId: target.get(log.cardId)! });
+          await queue('reviewLogs', log.id, now);
+        }
+        for (const day of backup.streakDays) {
+          if (await db.streakDays.get(day.day)) continue;
+          await db.streakDays.add(day);
+          await queue('streakDays', day.day, now);
+        }
+        return { status: 'imported', wordsAdded, wordsUpdated };
+      });
+    },
 
     /** Words learned and the streak, for the top bar, Loading and Session complete. */
     async progress(): Promise<Progress> {

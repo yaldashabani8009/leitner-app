@@ -121,5 +121,5 @@ function SignedIn({ userId, profiles, remote, minLoadingMs }: SignedInProps) {
     void refreshProfile(profiles, repo, userId);
   }, [profiles, repo, userId]);
 
-  return <StudyFlow repo={repo} minLoadingMs={minLoadingMs} />;
+  return <StudyFlow repo={repo} userId={userId} minLoadingMs={minLoadingMs} />;
 }

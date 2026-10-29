@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { CardDraft } from '../../domain/card/validate';
 import { createFakeCloud, type FakeCloud } from '../../test/fakeCloud';
-import { LeitnerDb } from '../db';
+import { LeitnerDb, META } from '../db';
 import { createRepository, type Repository } from '../repository';
 import { PULL_PAGE, createSync, type Sync } from './sync';
 
@@ -112,6 +112,21 @@ describe('push', () => {
     await phone.sync.run();
     expect(await phone.db.outbox.count()).toBe(0);
     expect(cloud.tables.cards.size).toBe(1);
+  });
+
+  it('remembers when the cloud was last reached, and when the latest try failed', async () => {
+    const phone = device();
+    const meta = async (key: string) => (await phone.db.meta.get(key))?.value;
+    cloud.offline = true;
+    await expect(phone.sync.run()).rejects.toThrow('Failed to fetch');
+    expect(await meta(META.lastSyncFailedAt)).toBe('2026-03-10T08:00:00.000Z');
+    expect(await meta(META.lastSyncedAt)).toBeUndefined();
+
+    cloud.offline = false;
+    phone.clock.now = '2026-03-11T08:00:00.000Z';
+    await phone.sync.run();
+    expect(await meta(META.lastSyncedAt)).toBe('2026-03-11T08:00:00.000Z');
+    expect(await meta(META.lastSyncFailedAt)).toBeUndefined();
   });
 
   it('a card edited while it is being sent stays in the outbox for the next run', async () => {

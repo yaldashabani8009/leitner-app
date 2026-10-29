@@ -27,5 +27,6 @@ Once **Accepted**, an ADR is not edited. To change a decision, write a new ADR t
 | [013](0013-sync-server-time-and-older-write-guard.md) | Sync by server time; database refuses older writes | Accepted                  |
 | [014](0014-swipe-gesture-use-gesture.md)              | Swipe gesture with @use-gesture/react              | Accepted                  |
 | [015](0015-streak-days-saved-when-earned.md)          | Streak days are saved the moment they are earned   | Accepted                  |
+| [016](0016-automatic-backup-modals.md)                | Backup by itself; a modal only when it's needed    | Accepted                  |
 
 Template: [template.md](template.md)
