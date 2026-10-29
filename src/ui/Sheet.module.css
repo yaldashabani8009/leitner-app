@@ -17,10 +17,11 @@
 
 .bottom {
   position: absolute;
-  inset: auto 0 0;
+  inset: auto 0 var(--keyboard-inset, 0);
 
-  /* As tall as its content (decided 2026-10-28); never closer than 76px to the top, then it scrolls. */
-  max-height: calc(100% - 76px);
+  /* As tall as its content (decided 2026-10-28); never closer than 76px to the top, then it scrolls.
+     It sits on top of the iPhone keyboard when that is open (useKeyboardInset). */
+  max-height: calc(100% - 76px - var(--keyboard-inset, 0px));
   display: flex;
   flex-direction: column;
   max-width: var(--column-desktop);
@@ -46,7 +47,7 @@
 .bottomMascot {
   position: absolute;
   top: -62px;
-  right: 70px;
+  right: 104px;
   line-height: 0;
   pointer-events: none;
 }

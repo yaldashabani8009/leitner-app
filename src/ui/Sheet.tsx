@@ -2,6 +2,7 @@ import {
   useEffect,
   useId,
   useRef,
+  type CSSProperties,
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
@@ -10,6 +11,7 @@ import { createPortal } from 'react-dom';
 import { IconButton } from './IconButton';
 import { CloseIcon } from './icons';
 import styles from './Sheet.module.css';
+import { useKeyboardInset } from './useKeyboardInset';
 
 interface SheetProps {
   open: boolean;
@@ -53,6 +55,7 @@ export function Sheet({
   const panelRef = useRef<HTMLDivElement>(null);
 
   useModalBehaviour(open, layerRef, panelRef, initialFocusRef);
+  const keyboard = useKeyboardInset(open && variant === 'bottom');
 
   if (!open) return null;
 
@@ -68,7 +71,11 @@ export function Sheet({
   const isBottom = variant === 'bottom';
 
   return createPortal(
-    <div ref={layerRef} className={styles.layer}>
+    <div
+      ref={layerRef}
+      className={styles.layer}
+      style={{ '--keyboard-inset': `${keyboard}px` } as CSSProperties}
+    >
       <div className={styles.overlay} onClick={onClose} aria-hidden="true" />
       <div
         ref={panelRef}

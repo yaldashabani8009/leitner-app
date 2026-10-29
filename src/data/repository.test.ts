@@ -53,6 +53,35 @@ async function addCard(word = 'brave'): Promise<string> {
   return result.cardId;
 }
 
+describe('duplicate words', () => {
+  it('findCardIdByWord ignores capitals and extra spaces, and deleted cards', async () => {
+    const id = await addCard('ice cream');
+    expect(await repo.findCardIdByWord('  ICE   cream ')).toBe(id);
+    expect(await repo.findCardIdByWord('ice')).toBeUndefined();
+    await db.cards.update(id, { deletedAt: now });
+    expect(await repo.findCardIdByWord('ice cream')).toBeUndefined();
+  });
+
+  it('sendCardBackToStart moves a card to box 1, due tomorrow, even when mastered, and queues it', async () => {
+    const id = await addCard();
+    await db.cards.update(id, { box: 5, dueDate: '2026-04-01', masteredAt: now });
+    await db.outbox.clear();
+    now = '2026-03-12T08:00:00.000Z';
+    await repo.sendCardBackToStart(id);
+    expect(await db.cards.get(id)).toMatchObject({
+      box: 1,
+      dueDate: '2026-03-13',
+      masteredAt: null,
+      updatedAt: now,
+    });
+    expect(await outboxKeys()).toEqual([`cards:${id}`]);
+  });
+
+  it('sendCardBackToStart refuses an unknown card', async () => {
+    await expect(repo.sendCardBackToStart('nope')).rejects.toThrow('No card');
+  });
+});
+
 describe('addCard', () => {
   it('saves the card in box 1, due tomorrow, with its entries in order', async () => {
     const cardId = await addCard();

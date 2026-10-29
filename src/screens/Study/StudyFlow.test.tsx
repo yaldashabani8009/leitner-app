@@ -90,7 +90,10 @@ describe('StudyFlow', () => {
     await addCards('brave'); // due tomorrow
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
     expect(await screen.findByRole('heading', { name: 'All done for today' })).toBeInTheDocument();
-    expect(screen.getByText('Your next words will be ready tomorrow.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Your next words will be ready tomorrow. Want to add a new one?'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add a new word' })).toBeInTheDocument();
   });
 
   it('shows the loading screen with the name first', async () => {
@@ -195,6 +198,43 @@ describe('StudyFlow', () => {
     swipe(screen.getByLabelText(`Answer for ${first}`), 150);
     await screen.findByRole('button', { name: /tap to flip/ });
     expect(await boxOf(first)).toBe(2);
+  });
+  it('adds words from the top bar, and "Open my card" shows the card until Done', async () => {
+    await addCards('brave', 'calm');
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await screen.findByRole('button', { name: /tap to flip/ });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add word' }));
+    await userEvent.type(await screen.findByLabelText('The word'), 'Calm');
+    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Open my card' }));
+
+    expect(await screen.findByLabelText('Your card: calm')).toBeInTheDocument();
+    expect(
+      screen.getByText("It's back at the start. You'll see it again tomorrow."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit word' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(await screen.findByRole('button', { name: /tap to flip/ })).toBeInTheDocument();
+  });
+
+  it('edits the card being reviewed with the pencil, and shows the change at once', async () => {
+    await addCards('brave');
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(await screen.findByRole('button', { name: /tap to flip/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Edit word' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Edit word' });
+    const synonym = within(sheet).getByLabelText('Similar words');
+    await userEvent.clear(synonym);
+    await userEvent.type(synonym, 'fearless');
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(
+      await within(screen.getByLabelText('Answer for brave')).findByText('fearless'),
+    ).toBeInTheDocument();
   });
 });
 

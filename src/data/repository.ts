@@ -97,6 +97,28 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
 
   return {
     /**
+     * The id of the live card with this word (ignoring capitals and extra spaces), if any.
+     * The add sheet asks this first, so the duplicate dialog can offer "Open my card" or "Cancel".
+     */
+    async findCardIdByWord(word: string): Promise<string | undefined> {
+      return (await findByWord(word))?.id;
+    },
+
+    /**
+     * Duplicate rule (PRD "Card structure"): send an existing card back to box 1, due tomorrow,
+     * mastered or not. Called when you choose "Open my card".
+     */
+    sendCardBackToStart(cardId: string): Promise<void> {
+      return db.transaction('rw', ALL_TABLES, async () => {
+        const now = deps.now();
+        const card = await db.cards.get(cardId);
+        if (!card || card.deletedAt !== null) throw new Error(`No card with id ${cardId}`);
+        await db.cards.put({ ...card, ...resetToBox1(await today(now)), updatedAt: now });
+        await queue('cards', cardId, now);
+      });
+    },
+
+    /**
      * Add a word. If it already exists (ignoring capitals and spaces), no copy is made:
      * the existing card goes back to box 1, due tomorrow (mastered or not), and its id is returned.
      */
