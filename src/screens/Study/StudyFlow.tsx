@@ -15,8 +15,8 @@ import { AllDone, Resting, SessionComplete } from '../Rest/RestScreens';
 import { CardViewScreen } from '../Review/CardViewScreen';
 import { ReviewScreen } from '../Review/ReviewScreen';
 
-/** PRD user flow 2: the loading screen shows for about a second on a cold start. */
-export const MIN_LOADING_MS = 1000;
+/** PRD user flow 2: the loading screen shows on a cold start. 2.5 s (Yali, 2026-10-29): 1 s flashed by. */
+export const MIN_LOADING_MS = 2500;
 /** How long the mascot reacts to an answer before going back to idle. */
 const REACTION_MS = 900;
 
