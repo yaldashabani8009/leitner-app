@@ -18,14 +18,14 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       # Public by design: the publishable key is safe in the browser because RLS is on (ADR-010).
       VITE_SUPABASE_URL: https://lkyqktrpwhzsfkgaqiuo.supabase.co
       VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_X7Np21Bccrdw8UZIFDjtHw_8qn1zhq4
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -33,28 +33,28 @@ jobs:
       - run: npm run check
       # SPA fallback: GitHub Pages serves 404.html for unknown paths.
       - run: cp dist/index.html dist/404.html
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
   # Roadmap 7.14 (ADR-017): the built app in WebKit (iPhone Safari) and Chromium (Android).
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       # Public by design (ADR-010). The test build never calls Supabase, but the app loads its client.
       VITE_SUPABASE_URL: https://lkyqktrpwhzsfkgaqiuo.supabase.co
       VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_X7Np21Bccrdw8UZIFDjtHw_8qn1zhq4
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
@@ -63,10 +63,10 @@ jobs:
 
   deploy:
     needs: [build, e2e]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
