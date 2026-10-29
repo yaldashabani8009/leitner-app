@@ -19,7 +19,7 @@ describe('Session complete', () => {
     expect(screen.getByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
   });
 
-  it('says "1 day in a row!" and hides the bubble without a streak', () => {
+  it('says "1 day in a row!" and hides the bubble without a streak or at 0', () => {
     const { rerender } = render(
       <SessionComplete
         wordCount={1}
@@ -31,6 +31,16 @@ describe('Session complete', () => {
     );
     expect(screen.getByText('1 day in a row!')).toBeInTheDocument();
     rerender(<SessionComplete wordCount={1} nextCount={0} onNext={() => {}} onDone={() => {}} />);
+    expect(screen.queryByText(/in a row/)).not.toBeInTheDocument();
+    rerender(
+      <SessionComplete
+        wordCount={1}
+        nextCount={0}
+        onNext={() => {}}
+        onDone={() => {}}
+        streak={0}
+      />,
+    );
     expect(screen.queryByText(/in a row/)).not.toBeInTheDocument();
     expect(screen.getByText('You went through 1 word. Nice work.')).toBeInTheDocument();
   });

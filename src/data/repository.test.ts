@@ -108,7 +108,12 @@ describe('addCard', () => {
     const cardId = await addCard();
     const entries = await db.entries.toArray();
     expect(await outboxKeys()).toEqual(
-      [`cards:${cardId}`, ...entries.map((e) => `entries:${e.id}`)].sort(),
+      [
+        `cards:${cardId}`,
+        ...entries.map((e) => `entries:${e.id}`),
+        // Nothing was due and a word was added: today earned the streak (rule 3).
+        'streakDays:2026-03-10',
+      ].sort(),
     );
   });
 
@@ -319,7 +324,10 @@ describe('recordAnswer', () => {
       dueDate: '2026-03-13',
       updatedAt: now,
     });
-    expect(await outboxKeys()).toEqual([`cards:${cardId}`, `reviewLogs:${log.id}`].sort());
+    // The only due card was reviewed: today earned the streak (rule 2).
+    expect(await outboxKeys()).toEqual(
+      [`cards:${cardId}`, `reviewLogs:${log.id}`, 'streakDays:2026-03-11'].sort(),
+    );
   });
 
   it('scheduled right answer in box 5: masters the card', async () => {
@@ -473,5 +481,110 @@ describe('one database per account (Q2 option A)', () => {
       await first.delete();
       await second.delete();
     }
+  });
+});
+
+describe('streak and words learned (roadmap 7.11, ADR-015)', () => {
+  const DAY_2 = '2026-03-11T08:00:00.000Z';
+  const streakDays = async () => (await db.streakDays.toArray()).map((d) => d.day);
+
+  /** Adds the words on day 1 (so they are due on day 2) and forgets day 1's streak day. */
+  async function cardsDueTomorrow(count: number): Promise<string[]> {
+    const ids: string[] = [];
+    for (let i = 0; i < count; i++) ids.push(await addCard(`word${i}`));
+    await db.streakDays.clear();
+    now = DAY_2;
+    return ids;
+  }
+
+  it('rule 1: 20 scheduled reviews earn the day, even with more still due', async () => {
+    const ids = await cardsDueTomorrow(25);
+    for (const id of ids.slice(0, 19)) await repo.recordAnswer(id, true, 'scheduled');
+    expect(await streakDays()).toEqual([]);
+    await repo.recordAnswer(ids[19], false, 'scheduled');
+    expect(await streakDays()).toEqual(['2026-03-11']);
+  });
+
+  it('rule 2: fewer than 20 due, and all of them reviewed', async () => {
+    const ids = await cardsDueTomorrow(3);
+    await repo.recordAnswer(ids[0], true, 'scheduled');
+    await repo.recordAnswer(ids[1], false, 'scheduled');
+    expect(await streakDays()).toEqual([]);
+    await repo.recordAnswer(ids[2], true, 'scheduled');
+    expect(await streakDays()).toEqual(['2026-03-11']);
+  });
+
+  it('practice answers never earn the day', async () => {
+    const [id] = await cardsDueTomorrow(2);
+    await repo.recordAnswer(id, false, 'scheduled');
+    await repo.recordAnswer(id, true, 'practice');
+    expect(await streakDays()).toEqual([]);
+  });
+
+  it('rule 3: a new word earns the day only when nothing was due', async () => {
+    await cardsDueTomorrow(1);
+    await addCard('calm');
+    expect(await streakDays()).toEqual([]);
+
+    now = '2026-03-12T08:00:00.000Z'; // the 11th's cards were never reviewed; still due
+    await db.cards.toCollection().modify({ dueDate: '2026-03-20' });
+    await addCard('quiet');
+    expect(await streakDays()).toEqual(['2026-03-12']);
+  });
+
+  it('sending a duplicate word back to box 1 is not a new word', async () => {
+    await cardsDueTomorrow(0);
+    await addCard('brave');
+    await db.streakDays.clear();
+    await db.outbox.clear();
+    expect((await repo.addCard(draft('brave'))).status).toBe('duplicate');
+    expect(await streakDays()).toEqual([]);
+  });
+
+  it('saves the day once, in the profile time zone, and queues it for sync', async () => {
+    now = '2026-03-10T21:00:00.000Z'; // 00:30 on the 11th in Tehran, still the 10th in UTC
+    await addCard('brave');
+    await addCard('calm');
+    expect(await db.streakDays.toArray()).toEqual([
+      { day: '2026-03-11', id: expect.any(String), createdAt: now },
+    ]);
+    expect((await outboxKeys()).filter((k) => k.startsWith('streakDays'))).toEqual([
+      'streakDays:2026-03-11',
+    ]);
+  });
+
+  it('progress: the streak counts earned days in a row and shows yesterday until today counts', async () => {
+    await db.streakDays.bulkAdd(
+      ['2026-03-06', '2026-03-08', '2026-03-09'].map((day) => ({ day, id: day, createdAt: now })),
+    );
+    expect((await repo.progress()).streak).toBe(2); // the 10th is not earned yet
+    await addCard('brave'); // nothing due: rule 3 earns the 10th
+    expect((await repo.progress()).streak).toBe(3);
+    now = '2026-03-12T08:00:00.000Z'; // the 11th was missed
+    expect((await repo.progress()).streak).toBe(0);
+  });
+
+  it('progress: words learned counts cards that passed box 1 and never goes down', async () => {
+    const [a, b] = await cardsDueTomorrow(2);
+    expect((await repo.progress()).wordsLearned).toBe(0);
+    await repo.recordAnswer(a, true, 'scheduled');
+    await repo.recordAnswer(b, false, 'scheduled');
+    await repo.recordAnswer(b, true, 'practice');
+    expect((await repo.progress()).wordsLearned).toBe(1);
+
+    now = '2026-03-13T08:00:00.000Z';
+    await repo.recordAnswer(a, false, 'scheduled'); // back to box 1
+    await repo.sendCardBackToStart(a);
+    expect((await repo.progress()).wordsLearned).toBe(1);
+  });
+
+  it('progress refreshes a live query after an answer', async () => {
+    const [id] = await cardsDueTomorrow(1);
+    const seen: number[] = [];
+    const sub = liveQuery(() => repo.progress()).subscribe((p) => seen.push(p.wordsLearned));
+    await vi.waitFor(() => expect(seen).toEqual([0]));
+    await repo.recordAnswer(id, true, 'scheduled');
+    await vi.waitFor(() => expect(seen[seen.length - 1]).toBe(1));
+    sub.unsubscribe();
   });
 });

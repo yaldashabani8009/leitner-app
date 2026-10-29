@@ -3,7 +3,7 @@
  * Safe to run any time: offline it fails and the outbox simply waits for the next run.
  */
 
-import type { CardRow, EntryRow, LeitnerDb, OutboxRow, SyncedTable } from '../db';
+import type { CardRow, EntryRow, LeitnerDb, OutboxRow, StreakDayRow, SyncedTable } from '../db';
 import {
   cardFromRemote,
   cardToRemote,
@@ -11,6 +11,8 @@ import {
   entryToRemote,
   logFromRemote,
   logToRemote,
+  streakDayFromRemote,
+  streakDayToRemote,
 } from './mapping';
 import { planEntryMerge, remoteWins, shouldAddLog, timeMs } from './merge';
 import { DuplicateWordError, type Cursor, type PullTable, type SyncRemote } from './remote';
@@ -21,12 +23,13 @@ export const PULL_PAGE = 1000;
 export const PULL_OVERLAP_MS = 60_000;
 
 /** The database needs a card before its entries and logs (RLS), so push in this order. */
-const PUSH_ORDER: SyncedTable[] = ['cards', 'entries', 'reviewLogs'];
-const PULL_ORDER: PullTable[] = ['cards', 'card_entries', 'review_logs'];
+const PUSH_ORDER: SyncedTable[] = ['cards', 'entries', 'reviewLogs', 'streakDays'];
+const PULL_ORDER: PullTable[] = ['cards', 'card_entries', 'review_logs', 'streak_days'];
 const LOCAL_TABLE: Record<PullTable, SyncedTable> = {
   cards: 'cards',
   card_entries: 'entries',
   review_logs: 'reviewLogs',
+  streak_days: 'streakDays',
 };
 
 export interface SyncDeps {
@@ -63,6 +66,13 @@ export function createSync(db: LeitnerDb, remote: SyncRemote, deps: SyncDeps) {
       const rows = (await db.entries.bulkGet(ids)).filter((r): r is EntryRow => r !== undefined);
       await remote.upsertEntries(rows.map(entryToRemote));
       return rows.map((r) => r.id);
+    }
+    if (table === 'streakDays') {
+      const rows = (await db.streakDays.bulkGet(ids)).filter(
+        (r): r is StreakDayRow => r !== undefined,
+      );
+      await remote.insertStreakDays(rows.map(streakDayToRemote));
+      return rows.map((r) => r.day);
     }
     const rows = (await db.reviewLogs.bulkGet(ids)).filter((r) => r !== undefined);
     await remote.insertLogs(rows.map(logToRemote));
@@ -161,8 +171,15 @@ export function createSync(db: LeitnerDb, remote: SyncRemote, deps: SyncDeps) {
 
   async function applyRemote(table: PullTable, rows: unknown[]): Promise<void> {
     const local = LOCAL_TABLE[table];
-    await db.transaction('rw', [db.cards, db.entries, db.reviewLogs, db.outbox], async () => {
+    const tables = [db.cards, db.entries, db.reviewLogs, db.streakDays, db.outbox];
+    await db.transaction('rw', tables, async () => {
       for (const raw of rows) {
+        if (table === 'streak_days') {
+          // One row per day: a day this device already earned keeps its own row.
+          const day = streakDayFromRemote(raw as Parameters<typeof streakDayFromRemote>[0]);
+          if (!(await db.streakDays.get(day.day))) await db.streakDays.add(day);
+          continue;
+        }
         if (table === 'review_logs') {
           const log = logFromRemote(raw as Parameters<typeof logFromRemote>[0]);
           if (shouldAddLog(await db.reviewLogs.get(log.id))) await db.reviewLogs.add(log);

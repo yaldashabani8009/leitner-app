@@ -99,6 +99,40 @@ describe('StudyFlow', () => {
     expect(await screen.findByRole('heading', { name: "Yali's Leitner." })).toBeInTheDocument();
   });
 
+  it('shows the streak pill on the loading screen once there is a streak', async () => {
+    await db.streakDays.bulkAdd(
+      ['2026-03-08', '2026-03-09'].map((day) => ({ day, id: day, createdAt: now })),
+    );
+    render(<StudyFlow repo={repo} minLoadingMs={60_000} />);
+    // The 10th is not earned yet: the streak still shows the run up to yesterday.
+    expect(await screen.findByText('2 days in a row')).toBeInTheDocument();
+  });
+
+  it('hides the loading streak pill while the streak is 0', async () => {
+    render(<StudyFlow repo={repo} minLoadingMs={60_000} />);
+    await screen.findByRole('heading', { name: "Yali's Leitner." });
+    expect(screen.queryByText(/in a row/)).not.toBeInTheDocument();
+  });
+
+  it('shows words learned and the streak in the top bar, and the streak on Session complete', async () => {
+    await addCards('brave', 'calm'); // day 1: nothing was due, a word was added → streak 1
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    expect(await screen.findByText('0 words learned')).toBeInTheDocument();
+    expect(screen.getByText('1-day streak')).toBeInTheDocument();
+
+    await flipAndAnswer('Knew it!');
+    expect(await screen.findByText('1 word learned')).toBeInTheDocument();
+    await flipAndAnswer('Not yet');
+    await flipAndAnswer('Knew it!'); // practice: changes nothing
+
+    // Both due cards were reviewed: day 2 counts too.
+    expect(await screen.findByText(/2 days in a row!/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: "I'm done for now" }));
+    expect(await screen.findByText('1 word learned')).toBeInTheDocument();
+    expect(screen.getByText('2-day streak')).toBeInTheDocument();
+  });
+
   it('shows the front, then the back after a tap', async () => {
     await addCards('brave');
     now = DAY_2;

@@ -13,8 +13,10 @@ import {
   type FieldErrors,
   type ListField,
 } from '../domain/card/validate';
-import { answer, newCard, resetToBox1 } from '../domain/leitner/engine';
+import { answer, isDue, newCard, resetToBox1 } from '../domain/leitner/engine';
+import { currentStreak, wordsLearned } from '../domain/progress/progress';
 import { pickSessionCards, reviewsDoneToday } from '../domain/session/pick';
+import { dayCountsForStreak } from '../domain/session/streakDay';
 import { isOnOrBefore } from '../domain/time/calendarDate';
 import { dateInZone, resolveTimeZone } from '../domain/time/zonedDate';
 import type {
@@ -59,6 +61,13 @@ export type AddCardResult =
 
 export type EditCardResult = { status: 'saved' } | { status: 'invalid'; errors: FieldErrors };
 
+/** The two top-bar numbers (PRD "Streak and progress"). */
+export interface Progress {
+  wordsLearned: number;
+  /** Days in a row; shows the run up to yesterday until today is earned. */
+  streak: number;
+}
+
 export interface CardWithEntries {
   card: CardRow;
   synonyms: EntryRow[];
@@ -93,7 +102,31 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
     return rows.filter((e) => e.deletedAt === null).sort((a, b) => a.position - b.position);
   }
 
-  const ALL_TABLES = [db.cards, db.entries, db.reviewLogs, db.outbox, db.profile];
+  const ALL_TABLES = [db.cards, db.entries, db.reviewLogs, db.streakDays, db.outbox, db.profile];
+
+  /**
+   * Save today as a streak day once it meets the PRD rule (ADR-015). Runs inside the write
+   * that may earn it: a scheduled answer or a new word. The rule needs today's due cards,
+   * which can't be worked out later, so the day is saved now and never removed.
+   */
+  async function saveStreakDayIfEarned(now: string, wordsAdded: number): Promise<void> {
+    const [zone, maybeDue, recent] = await Promise.all([
+      timeZone(),
+      maybeDueCards(now),
+      recentLogs(now),
+    ]);
+    const date = dateInZone(now, zone);
+    if (await db.streakDays.get(date)) return;
+    const earned = dayCountsForStreak({
+      scheduledReviews: reviewsDoneToday(recent, now, zone),
+      cardsStillDue: maybeDue.filter((card) => isDue(card, date)).length,
+      // Only the add path passes 1; an answer earns the day by reviews alone.
+      wordsAdded,
+    });
+    if (!earned) return;
+    await db.streakDays.add({ day: date, id: deps.newId(), createdAt: now });
+    await queue('streakDays', date, now);
+  }
 
   return {
     /**
@@ -153,6 +186,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
             await addEntry(cardId, KIND_OF[field], entry, position, now);
           }
         }
+        await saveStreakDayIfEarned(now, 1);
         return { status: 'created', cardId };
       });
     },
@@ -251,6 +285,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         };
         await db.reviewLogs.add(log);
         await queue('reviewLogs', log.id, now);
+        if (kind === 'scheduled') await saveStreakDayIfEarned(now, 0);
         return log;
       });
     },
@@ -284,6 +319,19 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
 
     reviewsDoneToday: countReviewsToday,
 
+    /** Words learned and the streak, for the top bar, Loading and Session complete. */
+    async progress(): Promise<Progress> {
+      const now = deps.now();
+      // All reads start before the first await, so useLiveQuery refreshes on each change.
+      const [profile, box1Logs, days] = await Promise.all([
+        db.profile.toCollection().first(),
+        db.reviewLogs.where('boxBefore').equals(1).toArray(),
+        db.streakDays.toCollection().primaryKeys(),
+      ]);
+      const today = dateInZone(now, resolveTimeZone(profile?.timeZone));
+      return { wordsLearned: wordsLearned(box1Logs), streak: currentStreak(days, today) };
+    },
+
     /** The card ids for the next session; empty means "All done for today". */
     async nextSessionCardIds(): Promise<string[]> {
       const now = deps.now();
@@ -292,12 +340,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       // query; awaiting a plain async helper first would hide the later ones.)
       const [profile, maybeDue, recent] = await Promise.all([
         db.profile.toCollection().first(),
-        // The latest "today" anywhere on Earth; narrowed to the profile's day below.
-        db.cards
-          .where('dueDate')
-          .belowOrEqual(dateInZone(now, LATEST_TIME_ZONE))
-          .filter((card) => card.deletedAt === null)
-          .toArray(),
+        maybeDueCards(now),
         recentLogs(now),
       ]);
       const zone = resolveTimeZone(profile?.timeZone);
@@ -306,6 +349,15 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       return pickSessionCards(due, reviewsDoneToday(recent, now, zone), date);
     },
   };
+
+  /** Live cards due by the latest "today" anywhere on Earth; narrow to the profile's day after. */
+  function maybeDueCards(now: string) {
+    return db.cards
+      .where('dueDate')
+      .belowOrEqual(dateInZone(now, LATEST_TIME_ZONE))
+      .filter((card) => card.deletedAt === null)
+      .toArray();
+  }
 
   /** Review logs recent enough to include the whole of "today" in any time zone. */
   function recentLogs(now: string) {

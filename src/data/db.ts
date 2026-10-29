@@ -46,7 +46,19 @@ export interface ReviewLogRow {
   createdAt: string;
 }
 
-export type SyncedTable = 'cards' | 'entries' | 'reviewLogs';
+/**
+ * A day that earned the streak (roadmap 7.11, ADR-015). Saved the moment the day counts,
+ * because the PRD rule depends on how many cards were due that day. Append-only.
+ * Keyed by day: if another device earned the same day, the first row we see is kept.
+ */
+export interface StreakDayRow {
+  /** Calendar date in the profile time zone, YYYY-MM-DD. */
+  day: string;
+  id: string;
+  createdAt: string;
+}
+
+export type SyncedTable = 'cards' | 'entries' | 'reviewLogs' | 'streakDays';
 
 /** "This row changed; send it to the cloud." One row per changed row, however often it changed. */
 export interface OutboxRow {
@@ -78,6 +90,7 @@ export class LeitnerDb extends Dexie {
   outbox!: EntityTable<OutboxRow, 'key'>;
   profile!: EntityTable<ProfileRow, 'userId'>;
   meta!: EntityTable<MetaRow, 'key'>;
+  streakDays!: EntityTable<StreakDayRow, 'day'>;
 
   constructor(name: string) {
     super(name);
@@ -90,6 +103,11 @@ export class LeitnerDb extends Dexie {
     });
     // v2 (roadmap 7.6): sync cursors.
     this.version(2).stores({ meta: 'key' });
+    // v3 (roadmap 7.11): earned streak days, and boxBefore so "words learned" reads only box-1 logs.
+    this.version(3).stores({
+      reviewLogs: 'id, cardId, reviewedAt, boxBefore',
+      streakDays: 'day',
+    });
   }
 }
 

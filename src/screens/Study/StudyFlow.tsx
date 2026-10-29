@@ -31,6 +31,7 @@ type StudyRepo = Pick<
   | 'editCard'
   | 'findCardIdByWord'
   | 'sendCardBackToStart'
+  | 'progress'
 >;
 
 interface StudyFlowProps {
@@ -49,6 +50,7 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
   const profile = useLiveQuery(async () => (await repo.getProfile()) ?? null, [repo]);
   const cardCount = useLiveQuery(() => repo.countCards(), [repo]);
   const dueIds = useLiveQuery(() => repo.nextSessionCardIds(), [repo]);
+  const progress = useLiveQuery(() => repo.progress(), [repo]);
 
   const [waited, setWaited] = useState(minLoadingMs === 0);
   useEffect(() => {
@@ -84,7 +86,7 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
   );
 
   if (!waited || profile === undefined || cardCount === undefined || dueIds === undefined) {
-    return <LoadingScreen name={profile?.displayName} />;
+    return <LoadingScreen name={profile?.displayName} streak={progress?.streak} />;
   }
 
   // Start a session as soon as cards are due (also on first open of the day).
@@ -98,7 +100,13 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
     setView('study');
   }
 
-  const top = <TopBar onAdd={() => setEditor({ mode: 'add' })} />;
+  const top = (
+    <TopBar
+      wordsLearned={progress?.wordsLearned}
+      streak={progress?.streak}
+      onAdd={() => setEditor({ mode: 'add' })}
+    />
+  );
   const sheet = (
     <AddEditSheet
       repo={repo}
@@ -130,6 +138,7 @@ export function StudyFlow({ repo, minLoadingMs = MIN_LOADING_MS }: StudyFlowProp
       <SessionComplete
         wordCount={session.scheduled.length}
         nextCount={dueIds.length}
+        streak={progress?.streak}
         onNext={startNext}
         onDone={() => {
           if (dueIds.length > 0) {
