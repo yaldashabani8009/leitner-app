@@ -32,6 +32,8 @@ npm run dev         # local dev server
 npm run check       # typecheck + lint + css lint + tests with coverage + build (run before every commit)
 npm run test        # unit tests (Vitest)
 npm run coverage    # tests + coverage for src/domain (fails below 100%)
+npm run e2e         # Playwright end-to-end tests on the built app (WebKit + Chromium; ADR-017)
+npm run e2e -- --project=android-chromium   # Chromium only (WebKit isn't installed in cloud sessions)
 ```
 
 Dev-only pages (never in the built site), for screenshots and review:
@@ -47,6 +49,7 @@ Screenshots for Yali: Playwright at iPhone size (393×852, deviceScaleFactor 3, 
 - Leitner numbers live only in `src/domain/leitner/config.ts`.
 - Styles: CSS Modules, camelCase classes, **only `var(--token)`** for colours/radii/shadows/fonts. New design values go into `tokens.css` and `docs/design/tokens.md` together.
 - UI reads data with `useLiveQuery`; avoid `useEffect` for data fetching.
+- End-to-end tests live in `e2e/` and run a test build (`--mode e2e`) whose cloud is the in-memory stand-in in `src/e2e/fakeServices.ts`; never point them at the real Supabase.
 - Screen tests start with `// @vitest-environment jsdom` and use Testing Library; the app gets Supabase through `AppServices` (see `src/main.tsx`), so tests pass fakes.
 - Every local write goes through the repository layer (`src/data/repository.ts`), which also writes to the sync outbox in the same transaction (ADR-003).
 - Each account has its own on-device database, `leitner-<userId>` (ADR-012).

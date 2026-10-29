@@ -43,6 +43,16 @@ if (devPage?.has('kit')) {
       </StrictMode>,
     ),
   );
+} else if (import.meta.env.MODE === 'e2e') {
+  // End-to-end test build only (roadmap 7.14, ADR-017): the cloud is an in-memory stand-in.
+  // Vite drops this branch, and the file it loads, from the published site.
+  void import('./e2e/fakeServices').then(({ createE2EServices }) =>
+    root.render(
+      <StrictMode>
+        <App services={createE2EServices()} />
+      </StrictMode>,
+    ),
+  );
 } else {
   root.render(
     <StrictMode>
