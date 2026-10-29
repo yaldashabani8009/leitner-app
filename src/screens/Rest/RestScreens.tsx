@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Button } from '../../ui/Button';
+import { FlameIcon } from '../../ui/icons';
 import { RestLayout } from './RestLayout';
 
 interface SessionCompleteProps {
@@ -9,10 +10,18 @@ interface SessionCompleteProps {
   nextCount: number;
   onNext: () => void;
   onDone: () => void;
+  /** Days in a row, shown in the mascot's speech bubble; hidden until streaks exist (7.11). */
+  streak?: number;
 }
 
 /** Celebrating mascot. No score on purpose (decided 2026-10-28). */
-export function SessionComplete({ wordCount, nextCount, onNext, onDone }: SessionCompleteProps) {
+export function SessionComplete({
+  wordCount,
+  nextCount,
+  onNext,
+  onDone,
+  streak,
+}: SessionCompleteProps) {
   const words = wordCount === 1 ? '1 word' : `${wordCount} words`;
   return (
     <RestLayout
@@ -20,6 +29,14 @@ export function SessionComplete({ wordCount, nextCount, onNext, onDone }: Sessio
       panel="orange"
       title="Session complete!"
       text={`You went through ${words}. Nice work.`}
+      textIn="stage"
+      bubble={
+        streak !== undefined && (
+          <>
+            <FlameIcon /> {streak === 1 ? '1 day in a row!' : `${streak} days in a row!`}
+          </>
+        )
+      }
       actions={
         <>
           {nextCount > 0 && (
@@ -58,7 +75,13 @@ export function AllDone({ emptyBox, top, onAddWord }: AllDoneProps) {
       top={top}
       title={emptyBox ? 'Nothing to review yet' : 'All done for today'}
       text={text}
-      actions={onAddWord && <Button onClick={onAddWord}>Add a new word</Button>}
+      actions={
+        onAddWord && (
+          <Button variant="secondary" onClick={onAddWord}>
+            Add a new word
+          </Button>
+        )
+      }
     />
   );
 }
@@ -77,7 +100,11 @@ export function Resting({ top, onKeepGoing }: RestingProps) {
       top={top}
       title="Nice work!"
       text="More words are waiting whenever you're ready."
-      actions={<Button onClick={onKeepGoing}>Keep going</Button>}
+      actions={
+        <Button variant="secondary" onClick={onKeepGoing}>
+          Keep going
+        </Button>
+      }
     />
   );
 }

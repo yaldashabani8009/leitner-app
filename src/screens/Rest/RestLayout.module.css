@@ -6,17 +6,28 @@
   overflow: hidden;
 }
 
-/* Centres the mascot in the space above the panel. */
+/* Centres the mascot (and, on Session complete, the words under it) above the panel. */
 .stage {
   position: relative;
   display: flex;
   flex: 1;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-5) 0;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-5);
+}
+
+.stageWords {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
 }
 
 .mascotCircle {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,4 +67,22 @@
   width: 100%;
   margin-top: auto;
   padding-top: var(--space-4);
+}
+
+/* The mascot "says" it: a speech bubble above its left side (canvas 07 idea D). */
+.bubble {
+  position: absolute;
+  top: -38px;
+  left: -44px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 10px var(--space-4);
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-input) var(--radius-input) var(--radius-input) var(--radius-highlight);
+  background: var(--color-white);
+  font-size: 16px;
+  font-weight: var(--weight-black);
+  white-space: nowrap;
 }

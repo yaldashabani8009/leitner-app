@@ -26,7 +26,8 @@ Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as it
 - Very round: cards 40px, bottom panels 52–56px top radius, inputs 22px, every button/tag a full pill.
 - Chunky 2.5px ink outlines on cards, pills, buttons.
 - Squishy buttons: hard shadow `0 5px 0`; on press, drop 5px and lose the shadow.
-- Button colours (Yali, 2026-10-29): every big button has the chunky ink outline and an ink shadow, so the outline stays visible. Orange on the cream page, forms and aqua panels; **aqua** on orange panels and for "Knew it!"; cream for "Not yet". The top-bar + is orange with an ink outline. No black-filled buttons.
+- Button colours (Yali, 2026-10-29): every big button has the chunky ink outline and an ink shadow, so the outline stays visible. **Orange** on the cream page and forms; **cream** on aqua panels (like screen 08) and for "Not yet"; **aqua** on orange panels and for "Knew it!" (in the aqua practice round "Knew it!" stays orange so it differs from "Not yet"). The top-bar + is orange with an ink outline. No black-filled buttons.
+- Session complete (2026-10-29): the mascot stays centred, "Session complete!" and the text sit under it, the orange panel holds only the buttons, and the streak is a speech bubble from the mascot (so nothing else looks like a button).
 - Tilted card stack: aqua + peach cards peek behind the current card.
 - Big rounded colour panel at the bottom holds actions: orange (card front, session complete), **white on the card back** (answer buttons, canvas 03), aqua (practice, all done). Review panels ~124–160px tall.
 - Card screens: the progress bar sits 48px under the top bar and the card stack 40px under it (canvas 03, 2026-10-29).
