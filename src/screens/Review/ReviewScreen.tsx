@@ -136,7 +136,9 @@ export function ReviewScreen({
 
       <BottomPanel
         color={practice ? 'aqua' : 'orange'}
-        className={styles.panel}
+        className={[styles.panel, flipped && !practice && styles.answerPanel]
+          .filter(Boolean)
+          .join(' ')}
         mascot={<Mascot pose={pose} size="small" body={practice ? 'white' : 'aqua'} decorative />}
       >
         {!flipped ? (
@@ -162,7 +164,10 @@ export function ReviewScreen({
               <Button variant="secondary" onClick={() => swipe.flyOut('left')}>
                 Not yet
               </Button>
-              <Button onClick={() => swipe.flyOut('right')}>Knew it!</Button>
+              {/* Aqua on the white review panel; orange on the aqua practice panel. */}
+              <Button variant={practice ? 'primary' : 'aqua'} onClick={() => swipe.flyOut('right')}>
+                Knew it!
+              </Button>
             </div>
           </>
         )}

@@ -12,7 +12,9 @@
 .progress {
   position: relative;
   height: 16px;
-  margin: var(--space-3) 28px 0;
+
+  /* Lower, closer to the cards (canvas 03, 2026-10-29). */
+  margin: var(--space-7) 28px 0;
   overflow: hidden;
   border: var(--border-chunky) solid var(--color-ink);
   border-radius: var(--radius-pill);
@@ -32,7 +34,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 10px var(--space-5) 0;
+  margin: 40px var(--space-5) 0;
   padding: 10px var(--space-4);
   border: var(--border-chunky) solid var(--color-ink);
   border-radius: var(--radius-pill);
@@ -63,7 +65,7 @@
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  padding: 44px 0 72px;
+  padding: 40px 0 72px;
 }
 
 .stackFront,
@@ -198,6 +200,11 @@
 .panel {
   flex-shrink: 0;
   gap: var(--space-1);
+}
+
+/* Card back: a white panel holds the answer buttons (canvas 03, 2026-10-29). */
+.answerPanel {
+  background: var(--color-white);
 }
 
 .panelTitle {

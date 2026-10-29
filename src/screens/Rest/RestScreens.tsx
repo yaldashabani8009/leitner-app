@@ -23,7 +23,7 @@ export function SessionComplete({ wordCount, nextCount, onNext, onDone }: Sessio
       actions={
         <>
           {nextCount > 0 && (
-            <Button onClick={onNext}>
+            <Button variant="aqua" onClick={onNext}>
               {nextCount === 1 ? 'Next word' : `Next ${nextCount} words`}
             </Button>
           )}

@@ -14,7 +14,7 @@ describe('Button', () => {
     expect(button.className).toMatch(/primary/);
   });
 
-  it.each(['secondary', 'text'] as const)('uses the %s style', (variant) => {
+  it.each(['aqua', 'secondary', 'text'] as const)('uses the %s style', (variant) => {
     render(<Button variant={variant}>Not yet</Button>);
     expect(screen.getByRole('button', { name: 'Not yet' }).className).toMatch(variant);
   });
@@ -38,7 +38,7 @@ describe('IconButton', () => {
     render(<IconButton label="Add word" icon={<PlusIcon />} />);
     const button = screen.getByRole('button', { name: 'Add word' });
     expect(button).toHaveAttribute('type', 'button');
-    expect(button.className).toMatch(/ink/);
+    expect(button.className).toMatch(/primary/);
     // The icon itself is hidden from screen readers.
     expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
