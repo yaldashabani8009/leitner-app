@@ -9,7 +9,7 @@
 | 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; first mascot motion built in 7.8 (small loops and hops); final motion design still open                                                   |
 | 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                                                                                                    |
 | 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                                                                    |
-| 7. Build the MVP               | 🟡 In progress: 7.1–7.5 and 7.7–7.10 done, 7.6 merged (manual test in 7.10)                                                                                                           |
+| 7. Build the MVP               | 🟡 In progress: 7.1–7.5 and 7.7–7.10 done; 7.6 waits for its phone + laptop test. **Next: 7.11**                                                                                      |
 | 8. Deploy & install            | 🟡 Site live at https://yaldashabani8009.github.io/leitner-app/ (auto-deploys). Sign-ups off and own user created. Still to do: reset-link URL in Supabase ([setup](setup/deploy.md)) |
 | 9. Use & iterate               | ⬜                                                                                                                                                                                    |
 
@@ -33,3 +33,21 @@ Each task = one branch + one pull request. CI must be green before merging.
 | 7.12    | Export / Import backup                                                       | Round-trip test                                                                                                                                                                                                             |
 | 7.13    | Laptop layout + keyboard shortcuts                                           | Space / ← → / E / Esc work                                                                                                                                                                                                  |
 | 7.14    | Playwright E2E: review, add word, offline launch                             | Green in CI (WebKit + Chromium)                                                                                                                                                                                             |
+
+## Where we are (end of session 2026-10-29)
+
+**Still to do on the phone (Yali):**
+
+- [ ] 7.6 phone + laptop sync test: add words on the iPhone, check they appear on the laptop; edit one on the laptop, check the phone. Then mark 7.6 ✅.
+- [ ] Confirm the add/edit sheet with the real iPhone keyboard (sheet follows the visible area; no autofocus on open).
+- [ ] When words are due: try flip, swipe and the practice round.
+
+**Changes after Yali's iPhone tests (all merged, canvas updated):**
+
+- Buttons: orange / aqua / cream with the ink outline and shadow, no black fills (rules in `docs/design/README.md`).
+- Card back: white answer panel; progress bar 48px under the top bar, cards 40px under it.
+- Session complete: words under the mascot, streak as the mascot's speech bubble, panel holds only the buttons.
+- Buttons on rest screens 48px higher; loading shows 2.5 s; empty box says "Your box is empty".
+- Add / Edit: one comma field each for similar words and Persian (`,` or `،`), "+ sentence" under the sentences, drag the handle down to close.
+
+**Next task: 7.11 Streak + words learned.** It also switches on the pieces that are hidden until then: the two top-bar pills, the streak pill on Loading and the speech bubble on Session complete (`SessionComplete` already takes a `streak` prop).
