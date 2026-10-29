@@ -4,21 +4,22 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 
 ## Colour
 
-| Token                    | Hex            | Role                                                                |
-| ------------------------ | -------------- | ------------------------------------------------------------------- |
-| `--color-bg`             | #FFF3E4        | App background                                                      |
-| `--color-cream`          | #FFEAD3        | Soft fills, card stack, Persian bubble, mascot circles              |
-| `--color-aqua`           | #BFE7EA        | Synonym chips, practice/all-done panels, KNEW IT stamp, mascot body |
-| `--color-aqua-dark`      | #8FD0D6        | Mascot back wall                                                    |
-| `--color-orange`         | #E89B5B        | Review & session-complete panels, streak flame, progress fill       |
-| `--color-terracotta`     | #D46743        | Accents (mascot card, confetti dots, wordmark dot)                  |
-| `--color-ink`            | #2B1D16        | Text, outlines, primary button                                      |
-| `--color-text-secondary` | #6E5648        | Labels, helper text                                                 |
-| `--color-error`          | #B5502E        | Validation messages                                                 |
-| `--color-white`          | #FFFFFF        | Inputs, pills, text on ink buttons                                  |
-| `--color-black`          | #000000        | Only the shadow under ink buttons                                   |
-| `--color-line`           | #D9C3AE        | Sheet handle, empty-field outline, soft dividers                    |
-| `--color-overlay`        | #2B1D16 at 45% | Dim layer behind sheets and dialogs                                 |
+| Token                    | Hex              | Role                                                                                                                       |
+| ------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `--color-bg`             | #FFF3E4          | App background                                                                                                             |
+| `--color-cream`          | #FFEAD3          | Soft fills, card stack, Persian bubble, mascot circles                                                                     |
+| `--color-aqua`           | #BFE7EA          | Synonym chips, practice/all-done panels, KNEW IT stamp, mascot body                                                        |
+| `--color-aqua-dark`      | #8FD0D6          | Mascot back wall                                                                                                           |
+| `--color-orange`         | #E89B5B          | Review & session-complete panels, streak flame, progress fill                                                              |
+| `--color-terracotta`     | #D46743          | Accents (mascot card, confetti dots, wordmark dot)                                                                         |
+| `--color-focus-ring`     | terracotta / ink | Keyboard focus ring: terracotta on cream and white, ink on orange and aqua panels (set by `BottomPanel`; audit 2026-10-29) |
+| `--color-ink`            | #2B1D16          | Text, outlines, primary button                                                                                             |
+| `--color-text-secondary` | #6E5648          | Labels, helper text                                                                                                        |
+| `--color-error`          | #B5502E          | Validation messages                                                                                                        |
+| `--color-white`          | #FFFFFF          | Inputs, pills, text on ink buttons                                                                                         |
+| `--color-black`          | #000000          | Only the shadow under ink buttons                                                                                          |
+| `--color-line`           | #D9C3AE          | Sheet handle, empty-field outline, soft dividers                                                                           |
+| `--color-overlay`        | #2B1D16 at 45%   | Dim layer behind sheets and dialogs                                                                                        |
 
 ## Type
 

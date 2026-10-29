@@ -105,7 +105,7 @@
 }
 
 .front:focus-visible {
-  outline: 3px solid var(--color-terracotta);
+  outline: 3px solid var(--color-focus-ring);
   outline-offset: -8px;
 }
 
@@ -219,6 +219,8 @@
 
 /* Card back: a white panel holds the answer buttons (canvas 03, 2026-10-29). */
 .answerPanel {
+  --color-focus-ring: var(--color-terracotta);
+
   background: var(--color-white);
 }
 

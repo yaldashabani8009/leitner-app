@@ -70,7 +70,7 @@ Yali uses the app daily and notes what feels wrong, slow or missing; each note b
 
 **Backlog (waiting for Yali's decision)** — from the [UX/UI audit of 2026-10-29](audits/2026-10-29-ux-ui-audit.md):
 
-- [ ] 01 Focus ring invisible on orange / aqua panels (1.59:1 and 2.72:1, needs 3:1). Options A / B / C, recommended B.
+- [x] 01 Focus ring invisible on orange / aqua panels: **B** chosen (Yali, 2026-10-29) and built: ink ring on orange (7.19:1) and aqua (12.27:1), terracotta elsewhere.
 - [ ] 03 "Create an account" leads to a form that always fails while sign-ups are closed. Recommended: hide it.
 - [ ] 02b After the last card, keyboard focus is lost on "Session complete!".
 - [ ] 05 Screen readers say "0-day streak" on a new box. Option: "no streak yet".
