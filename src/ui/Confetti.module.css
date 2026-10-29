@@ -1,0 +1,73 @@
+.confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sparkle,
+.triangle,
+.dot {
+  position: absolute;
+}
+
+.sparkle {
+  width: 26px;
+  height: 26px;
+}
+
+.sparkleInk {
+  top: 18%;
+  left: 10%;
+  fill: var(--color-ink);
+}
+
+.sparkleOrange {
+  right: 16%;
+  bottom: 16%;
+  width: 22px;
+  height: 22px;
+  fill: var(--color-orange);
+}
+
+.triangle {
+  top: 24%;
+  right: 12%;
+  width: 38px;
+  height: 38px;
+  fill: var(--color-aqua);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.dot {
+  border-radius: var(--radius-pill);
+}
+
+.dotTerracotta {
+  top: 58%;
+  right: 4%;
+  width: 14px;
+  height: 14px;
+  border: var(--border-chunky) solid var(--color-ink);
+  background: var(--color-terracotta);
+}
+
+.dotInk {
+  top: 8%;
+  left: 40%;
+  width: 10px;
+  height: 10px;
+  background: var(--color-ink);
+}
+
+.dotCream {
+  top: 36%;
+  left: 8%;
+  width: 22px;
+  height: 22px;
+  border: var(--border-chunky) solid var(--color-ink);
+  background: var(--color-cream);
+}

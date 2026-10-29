@@ -25,5 +25,6 @@ Once **Accepted**, an ADR is not edited. To change a decision, write a new ADR t
 | [011](0011-hosting-github-pages.md)                   | GitHub Pages auto-deploy (until >10 users)         | Accepted                  |
 | [012](0012-one-local-database-per-account.md)         | One on-device database per account                 | Accepted                  |
 | [013](0013-sync-server-time-and-older-write-guard.md) | Sync by server time; database refuses older writes | Accepted                  |
+| [014](0014-swipe-gesture-use-gesture.md)              | Swipe gesture with @use-gesture/react              | Accepted                  |
 
 Template: [template.md](template.md)

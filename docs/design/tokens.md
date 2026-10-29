@@ -38,6 +38,8 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 | `--radius-panel-tall`     | 56px, complete / all done panels |
 | `--radius-sheet`          | 44px, add / edit sheet           |
 | `--radius-input`          | 22px                             |
+| `--radius-stamp`          | 18px, KNEW IT! / NOT YET stamps  |
+| `--radius-highlight`      | 6px, word marked in a sentence   |
 | `--radius-pill`           | 999px                            |
 | `--border-chunky`         | 2.5px                            |
 | `--press-depth`           | 5px                              |

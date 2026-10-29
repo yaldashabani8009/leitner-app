@@ -1,0 +1,35 @@
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: 100%;
+  padding: var(--space-5);
+  overflow: hidden;
+}
+
+.mascotCircle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 220px;
+  height: 220px;
+  border-radius: var(--radius-pill);
+  background: var(--color-cream);
+}
+
+.title {
+  position: relative;
+  margin: 0;
+  font-size: 44px;
+  font-weight: var(--weight-black);
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+.dot {
+  color: var(--color-terracotta);
+}

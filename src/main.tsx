@@ -24,12 +24,22 @@ void requestPersistentStorage();
 
 const root = createRoot(document.getElementById('root')!);
 
-// Roadmap 7.7: a gallery of the UI kit at ?kit, only on the dev server (never in the built site).
-if (import.meta.env.DEV && new URLSearchParams(location.search).has('kit')) {
+// Dev server only (never in the built site): the UI kit gallery at ?kit (roadmap 7.7) and the
+// study screens with sample words at ?demo (roadmap 7.9).
+const devPage = import.meta.env.DEV ? new URLSearchParams(location.search) : null;
+if (devPage?.has('kit')) {
   void import('./dev/KitPage').then(({ KitPage }) =>
     root.render(
       <StrictMode>
         <KitPage />
+      </StrictMode>,
+    ),
+  );
+} else if (devPage?.has('demo')) {
+  void import('./dev/DemoPage').then(({ DemoPage }) =>
+    root.render(
+      <StrictMode>
+        <DemoPage />
       </StrictMode>,
     ),
   );

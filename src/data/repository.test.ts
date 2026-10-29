@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto';
+import { liveQuery } from 'dexie';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CardDraft } from '../domain/card/validate';
 import { databaseNameFor, LeitnerDb, openDatabase } from './db';
@@ -397,6 +398,25 @@ describe('reads', () => {
     );
     expect(await repo.reviewsDoneToday()).toBe(100);
     expect(await repo.nextSessionCardIds()).toEqual([]); // cap reached → All done
+  });
+
+  it('nextSessionCardIds updates live after an answer (useLiveQuery)', async () => {
+    const id = await addCard();
+    now = '2026-03-11T08:00:00.000Z';
+    const seen: number[] = [];
+    const sub = liveQuery(() => repo.nextSessionCardIds()).subscribe((ids) =>
+      seen.push(ids.length),
+    );
+    await vi.waitFor(() => expect(seen).toEqual([1]));
+    await repo.recordAnswer(id, true, 'scheduled');
+    await vi.waitFor(() => expect(seen).toEqual([1, 0]));
+    sub.unsubscribe();
+  });
+
+  it('nextSessionCardIds uses the profile day, not the latest day on Earth', async () => {
+    await addCard(); // due 2026-03-11 (Tehran)
+    now = '2026-03-10T19:00:00.000Z'; // 22:30 on the 10th in Tehran, 09:00 on the 11th at UTC+14
+    expect(await repo.nextSessionCardIds()).toEqual([]);
   });
 
   it('reviewsDoneToday ignores yesterday (profile day)', async () => {

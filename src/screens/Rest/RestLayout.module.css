@@ -1,0 +1,59 @@
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+/* Centres the mascot in the space above the panel. */
+.stage {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5) 0;
+}
+
+.mascotCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 230px;
+  height: 230px;
+  border-radius: var(--radius-pill);
+  background: var(--color-cream);
+}
+
+.panel {
+  position: relative;
+  gap: 10px;
+}
+
+.title {
+  margin: 0;
+  font-size: 34px;
+  font-weight: var(--weight-black);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.text {
+  max-width: 330px;
+  margin: 0;
+  font-size: 17px;
+  text-wrap: balance;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  margin-top: auto;
+  padding-top: var(--space-4);
+}

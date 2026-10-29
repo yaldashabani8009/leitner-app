@@ -1,6 +1,6 @@
 import { POSES, type MascotPose } from './poses';
 import styles from './Mascot.module.css';
-import { useReducedMotion } from './useReducedMotion';
+import { useReducedMotion } from '../useReducedMotion';
 
 export type { MascotPose } from './poses';
 

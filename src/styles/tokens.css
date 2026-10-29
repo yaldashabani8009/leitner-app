@@ -32,6 +32,8 @@
   --radius-panel-tall: 56px; /* session complete / all done bottom panels */
   --radius-sheet: 44px; /* add / edit bottom sheet */
   --radius-input: 22px;
+  --radius-stamp: 18px; /* KNEW IT! / NOT YET stamps */
+  --radius-highlight: 6px; /* the word marked inside a sentence */
   --radius-pill: 999px;
 
   /* Outline */
