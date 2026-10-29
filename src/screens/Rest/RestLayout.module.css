@@ -86,3 +86,15 @@
   font-weight: var(--weight-black);
   white-space: nowrap;
 }
+
+/* A button with an icon before its label (canvas 08: "+ Add a new word"). */
+.withIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.withIcon svg {
+  stroke-width: 3;
+}

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Button } from '../../ui/Button';
-import { FlameIcon } from '../../ui/icons';
+import { FlameIcon, PlusIcon } from '../../ui/icons';
+import styles from './RestLayout.module.css';
 import { RestLayout } from './RestLayout';
 
 interface SessionCompleteProps {
@@ -77,8 +78,8 @@ export function AllDone({ emptyBox, top, onAddWord }: AllDoneProps) {
       text={text}
       actions={
         onAddWord && (
-          <Button variant="secondary" onClick={onAddWord}>
-            Add a new word
+          <Button variant="secondary" onClick={onAddWord} className={styles.withIcon}>
+            <PlusIcon /> Add a new word
           </Button>
         )
       }
