@@ -2,12 +2,14 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   type CSSProperties,
   type FocusEvent,
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
 } from 'react';
+import { useDrag } from '@use-gesture/react';
 import { createPortal } from 'react-dom';
 import { IconButton } from './IconButton';
 import { CloseIcon } from './icons';
@@ -57,6 +59,7 @@ export function Sheet({
 
   useModalBehaviour(open, layerRef, panelRef, initialFocusRef);
   const visible = useVisibleArea(open && variant === 'bottom');
+  const drag = useDragToClose(onClose, open && variant === 'bottom');
 
   if (!open) return null;
 
@@ -93,9 +96,10 @@ export function Sheet({
         tabIndex={-1}
         className={
           isBottom
-            ? styles.bottom
+            ? [styles.bottom, drag.dragging && styles.dragging].filter(Boolean).join(' ')
             : [styles.dialog, mascot && styles.withMascot].filter(Boolean).join(' ')
         }
+        style={isBottom ? ({ '--drag-y': `${drag.offset}px` } as CSSProperties) : undefined}
         onKeyDown={handleKeyDown}
       >
         {mascot && (
@@ -103,7 +107,12 @@ export function Sheet({
             {mascot}
           </div>
         )}
-        {isBottom && <div className={styles.handle} aria-hidden="true" />}
+        {isBottom && (
+          // Drag the handle strip down to close (Yali, 2026-10-29); ✕ and Esc still work.
+          <div className={styles.grab} {...drag.bind()} aria-hidden="true">
+            <div className={styles.handle} />
+          </div>
+        )}
         <div
           className={isBottom ? styles.body : styles.dialogBody}
           onFocus={isBottom ? revealField : undefined}
@@ -158,6 +167,31 @@ function useModalBehaviour(
       opener?.focus();
     };
   }, [open, layerRef, panelRef, initialFocusRef]);
+}
+
+/** Pull past this many px (or flick down) to close the sheet. */
+export const CLOSE_DRAG_PX = 110;
+
+/** Swipe the bottom sheet down by its handle to close it; a short drag springs back. */
+function useDragToClose(onClose: () => void, enabled: boolean) {
+  const [offset, setOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const bind = useDrag(
+    ({ active, movement: [, my], velocity: [, vy], direction: [, dy] }) => {
+      const down = Math.max(0, my);
+      if (active) {
+        setDragging(true);
+        setOffset(down);
+        return;
+      }
+      setDragging(false);
+      setOffset(0);
+      // Far enough, or a quick flick down that still travelled a little.
+      if (down >= CLOSE_DRAG_PX || (down > 60 && vy > 0.8 && dy > 0)) onClose();
+    },
+    { enabled, axis: 'y', filterTaps: true },
+  );
+  return { bind, offset, dragging };
 }
 
 /** Once the keyboard has opened, scroll the tapped field into view inside the sheet. */

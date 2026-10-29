@@ -31,16 +31,32 @@
   background: var(--color-bg);
   color: var(--color-ink);
   outline: none;
+  transform: translateY(var(--drag-y, 0));
+  transition: transform var(--duration-base) var(--ease-bounce);
   animation: slide-up var(--duration-base) ease-out;
 }
 
-/* Decorative grab handle; the round ✕ in the header is what closes the sheet. */
+/* Follows the finger while the handle is dragged. */
+.bottom.dragging {
+  transition: none;
+}
+
+/* The strip around the handle: a big, easy target for dragging the sheet down. */
+.grab {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  padding: var(--space-3) 0 var(--space-2);
+  cursor: grab;
+  touch-action: none;
+}
+
+/* Grab handle: drag it down to close (the round ✕ closes too). */
 .handle {
   flex-shrink: 0;
   align-self: center;
   width: 44px;
   height: 6px;
-  margin: var(--space-3) 0 var(--space-2);
   border-radius: var(--radius-pill);
   background: var(--color-line);
 }

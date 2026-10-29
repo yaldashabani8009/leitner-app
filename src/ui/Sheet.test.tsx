@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -203,5 +203,34 @@ describe('Sheet', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('closes when the handle is dragged down far enough, and stays open after a short drag', async () => {
+    Element.prototype.setPointerCapture ??= () => {};
+    Element.prototype.releasePointerCapture ??= () => {};
+    Element.prototype.hasPointerCapture ??= () => false;
+    const onClose = vi.fn();
+    await openSheet({ onClose });
+    const grab = screen.getByRole('dialog').querySelector('[class*="grab"]')!;
+    const drag = (dy: number, pointerId: number) => {
+      const start = {
+        pointerId,
+        clientX: 100,
+        clientY: 100,
+        buttons: 1,
+        isPrimary: true,
+        pointerType: 'touch',
+      };
+      fireEvent.pointerDown(grab, start);
+      for (let step = 1; step <= 5; step++) {
+        fireEvent.pointerMove(grab, { ...start, clientY: 100 + (dy * step) / 5 });
+      }
+      fireEvent.pointerUp(grab, { ...start, clientY: 100 + dy, buttons: 0 });
+    };
+
+    drag(40, 1);
+    expect(onClose).not.toHaveBeenCalled();
+    drag(200, 2);
+    expect(onClose).toHaveBeenCalledOnce();
   });
 });

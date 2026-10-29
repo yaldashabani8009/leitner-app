@@ -9,17 +9,17 @@
 
 ## UI kit (roadmap 7.7)
 
-| Component     | Variants                                                                                       |
-| ------------- | ---------------------------------------------------------------------------------------------- |
-| `Button`      | `primary` (orange), `aqua` ("Knew it!", orange panels), `secondary` (cream, "Not yet"), `text` |
-| `IconButton`  | `primary` 52px orange (top bar +), `cream` 44px (pencil), `white` 44px (sheet ✕); spoken label |
-| `Pill`        | `stat` (top bar), `tag` (similar words), `label` (cream / aqua); `AddPill` dashed              |
-| `Card`        | White word card; `CardStack` adds the tilted aqua + peach cards behind                         |
-| `BottomPanel` | `orange` / `aqua`, `compact` / `tall`, optional peeking mascot                                 |
-| `Sheet`       | `bottom` (add / edit, round ✕ closes it) / `dialog` (duplicate word, mascot circle)            |
-| `TopBar`      | Option A: words-learned pill, streak pill, + button                                            |
+| Component     | Variants                                                                                                       |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
+| `Button`      | `primary` (orange), `aqua` ("Knew it!", orange panels), `secondary` (cream, "Not yet"), `text`                 |
+| `IconButton`  | `primary` 52px orange (top bar +), `cream` 44px (pencil), `white` 44px (sheet ✕); spoken label                 |
+| `Pill`        | `stat` (top bar), `tag` (similar words), `label` (cream / aqua); `AddPill` dashed                              |
+| `Card`        | White word card; `CardStack` adds the tilted aqua + peach cards behind                                         |
+| `BottomPanel` | `orange` / `aqua`, `compact` / `tall`, optional peeking mascot                                                 |
+| `Sheet`       | `bottom` (add / edit; ✕, Esc or dragging the handle down closes it) / `dialog` (duplicate word, mascot circle) |
+| `TopBar`      | Option A: words-learned pill, streak pill, + button                                                            |
 
-Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as its content and grows as fields are added, up to 76px from the top, then scrolls (decided 2026-10-28; the canvas shows it full height): page behind is `inert`, Tab stays inside, Esc / overlay / ✕ close it, focus returns to the opener.
+Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as its content and grows as fields are added, up to 76px from the top, then scrolls (decided 2026-10-28; the canvas shows it full height): page behind is `inert`, Tab stays inside, Esc / overlay / ✕ / dragging the handle down (2026-10-29) close it, focus returns to the opener.
 
 ## Screen rules (v2)
 
