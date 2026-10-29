@@ -6,11 +6,11 @@
 
 ## Summary
 
-| Severity      | Count | Status                           |
-| ------------- | ----- | -------------------------------- |
-| Accessibility | 2     | 01 for Yali to decide · 02 fixed |
-| Major         | 1     | for Yali to decide               |
-| Note          | 3     | for Yali to decide               |
+| Severity      | Count | Status                         |
+| ------------- | ----- | ------------------------------ |
+| Accessibility | 2     | 01 fixed (option B) · 02 fixed |
+| Major         | 1     | for Yali to decide             |
+| Note          | 3     | for Yali to decide             |
 
 The foundations are strong: no text contrast failures, no tap target under 44px, no unnamed control, no console errors and no overflow on any of the 12 screens measured.
 
@@ -31,7 +31,7 @@ on white card   #FFFFFF → 3.61:1   pass
 same ring in ink #2B1D16: 7.19 · 12.27 · 14.88 · 16.28 (all pass)
 ```
 
-**Options (Yali's decision):** A. ink ring everywhere (simplest, always passes) · B. ink ring only on orange / aqua panels, terracotta stays on cream and white (keeps the current look where it works) · C. two-tone ring (ink outline + cream gap). **Recommendation: B.**
+**Options (Yali's decision):** A. ink ring everywhere (simplest, always passes) · B. ink ring only on orange / aqua panels, terracotta stays on cream and white (keeps the current look where it works) · C. two-tone ring (ink outline + cream gap). **Yali chose B (2026-10-29); built:** `--color-focus-ring` is terracotta by default and ink inside `BottomPanel` orange / aqua. Re-measured: 7.19:1 on orange, 12.27:1 on aqua, 3.30:1 on cream, 3.61:1 on the white answer panel.
 
 ### 02 · Accessibility · Review — **fixed in this PR**
 
@@ -109,7 +109,7 @@ text on screen that is ≥ semibold: 100% on every screen (e.g. card back 14 of 
 
 ## Where to start (impact ÷ effort)
 
-1. **01** focus ring on coloured panels: a few lines of CSS once you pick the option.
+1. ~~**01** focus ring on coloured panels~~ (done, option B).
 2. **03** hide "Create an account": one line plus a test.
 3. **02 follow-up** focus on "Session complete!": small.
 4. **05** "no streak yet": one line.

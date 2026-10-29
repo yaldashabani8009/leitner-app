@@ -35,6 +35,7 @@ Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as it
 - Memphis confetti (sparkles, triangles, dots) on loading, session complete, all done; only a touch on review.
 - Copy: "Knew it!" / "Not yet"; stamps KNEW IT! / NOT YET while swiping.
 - "Not yet" is neutral, never red. Never small white text on terracotta.
+- Keyboard focus ring (2026-10-29): 3px `--color-focus-ring`, terracotta on cream and white, ink on the orange and aqua panels (terracotta is too faint there). Only shows for keyboard use, never on tap or click.
 
 ## Laptop (roadmap 7.13)
 
