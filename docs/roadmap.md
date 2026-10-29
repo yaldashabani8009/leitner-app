@@ -71,9 +71,9 @@ Yali uses the app daily and notes what feels wrong, slow or missing; each note b
 **Backlog (waiting for Yali's decision)** — from the [UX/UI audit of 2026-10-29](audits/2026-10-29-ux-ui-audit.md):
 
 - [x] 01 Focus ring invisible on orange / aqua panels: **B** chosen (Yali, 2026-10-29) and built: ink ring on orange (7.19:1) and aqua (12.27:1), terracotta elsewhere.
-- [ ] 03 "Create an account" leads to a form that always fails while sign-ups are closed. Recommended: hide it.
-- [ ] 02b After the last card, keyboard focus is lost on "Session complete!".
-- [ ] 05 Screen readers say "0-day streak" on a new box. Option: "no streak yet".
+- [x] 03 "Create an account" hidden while sign-ups are closed (Yali, 2026-10-29): one switch, `SIGNUPS_OPEN` in `src/app/features.ts`, flipped together with the Supabase setting.
+- [x] 02b After the last keyboard answer, focus moves to "Session complete!".
+- [x] 05 Screen readers say "no streak yet" instead of "0-day streak".
 - [ ] 04 No hover state for mouse users (laptop). With the motion pass (step 4).
 
 Done in step 9: GitHub Actions updated (Node 24) and runners pinned to Ubuntu 24.04; keyboard focus kept after answering a card (audit 02).

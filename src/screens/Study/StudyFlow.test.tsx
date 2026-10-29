@@ -362,6 +362,18 @@ describe('StudyFlow with a keyboard (laptop, roadmap 7.13)', () => {
     expect(await frontWord()).not.toBe(first);
   });
 
+  it('after the last keyboard answer, focus moves to "Session complete!"', async () => {
+    for (let i = 0; i < 2; i++) {
+      const word = await frontWord();
+      await userEvent.keyboard(' ');
+      await screen.findByLabelText(`Answer for ${word}`);
+      screen.getByRole('button', { name: 'Knew it!' }).focus();
+      await userEvent.keyboard('{Enter}');
+    }
+    const title = await screen.findByRole('heading', { name: 'Session complete!' });
+    await waitFor(() => expect(title).toHaveFocus());
+  });
+
   it('leaves browser shortcuts alone (Ctrl / ⌘ held)', async () => {
     const word = await frontWord();
     await userEvent.keyboard(' ');

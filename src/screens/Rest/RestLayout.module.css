@@ -56,6 +56,11 @@
   line-height: 1.1;
 }
 
+/* Focused only from code (after a keyboard answer) so a screen reader reads it; not a control. */
+.title:focus {
+  outline: none;
+}
+
 .text {
   max-width: 330px;
   margin: 0;

@@ -13,6 +13,12 @@ describe('TopBar', () => {
     expect(screen.getByText('12')).toBeVisible();
   });
 
+  it('says "no streak yet" instead of "0-day streak" (audit 2026-10-29)', () => {
+    render(<TopBar wordsLearned={0} streak={0} onAdd={() => {}} />);
+    expect(screen.getByText('no streak yet')).toBeInTheDocument();
+    expect(screen.queryByText('0-day streak')).not.toBeInTheDocument();
+  });
+
   it('says "1 word learned" for a single word', () => {
     render(<TopBar wordsLearned={1} streak={0} onAdd={() => {}} />);
     expect(screen.getByText('1 word learned')).toBeInTheDocument();

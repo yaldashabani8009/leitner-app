@@ -13,6 +13,8 @@ interface SessionCompleteProps {
   onDone: () => void;
   /** Days in a row, shown in the mascot's speech bubble; hidden while unknown or 0. */
   streak?: number;
+  /** Focus "Session complete!" when it appears (the last answer came from the keyboard). */
+  focusOnStart?: boolean;
 }
 
 /** Celebrating mascot. No score on purpose (decided 2026-10-28). */
@@ -22,6 +24,7 @@ export function SessionComplete({
   onNext,
   onDone,
   streak,
+  focusOnStart = false,
 }: SessionCompleteProps) {
   const words = wordCount === 1 ? '1 word' : `${wordCount} words`;
   return (
@@ -31,6 +34,7 @@ export function SessionComplete({
       title="Session complete!"
       text={`You went through ${words}. Nice work.`}
       textIn="stage"
+      focusTitle={focusOnStart}
       bubble={
         streak !== undefined &&
         streak > 0 && (

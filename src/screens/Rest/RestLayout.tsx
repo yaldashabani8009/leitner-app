@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { BottomPanel } from '../../ui/BottomPanel';
 import { Confetti } from '../../ui/Confetti';
 import { Mascot, type MascotPose } from '../../ui/Mascot/Mascot';
@@ -21,6 +21,8 @@ interface RestLayoutProps {
   textIn?: 'panel' | 'stage';
   /** A speech bubble from the mascot, e.g. the streak on Session complete. */
   bubble?: ReactNode;
+  /** Move focus to the title when the screen appears (after a keyboard answer, audit 02). */
+  focusTitle?: boolean;
 }
 
 /**
@@ -36,10 +38,18 @@ export function RestLayout({
   actions,
   textIn = 'panel',
   bubble,
+  focusTitle = false,
 }: RestLayoutProps) {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (focusTitle) titleRef.current?.focus({ preventScroll: true });
+  }, [focusTitle]);
+
   const words = (
     <>
       <h1
+        ref={titleRef}
+        tabIndex={-1}
         className={[styles.title, textIn === 'stage' && styles.bigTitle].filter(Boolean).join(' ')}
       >
         {title}

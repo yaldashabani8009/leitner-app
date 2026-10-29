@@ -30,7 +30,11 @@ export function TopBar({ wordsLearned, streak, onAdd }: TopBarProps) {
         </Pill>
       )}
       {streak !== undefined && (
-        <Pill variant="stat" icon={<FlameIcon />} srLabel={`${streak}-day streak`}>
+        <Pill
+          variant="stat"
+          icon={<FlameIcon />}
+          srLabel={streak === 0 ? 'no streak yet' : `${streak}-day streak`}
+        >
           {streak}
         </Pill>
       )}

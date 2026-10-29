@@ -68,9 +68,15 @@ describe('Sign in', () => {
     expect(await screen.findByRole('button', { name: 'Sign in' })).toBeInTheDocument();
   });
 
-  it('links to Forgot password and Create an account', async () => {
+  it('hides "Create an account" while sign-ups are closed (audit 2026-10-29)', () => {
+    render(<SignIn auth={fakeAuth()} onNavigate={() => {}} />);
+    expect(screen.getByRole('button', { name: 'Forgot password?' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Create an account' })).not.toBeInTheDocument();
+  });
+
+  it('links to Forgot password and, when sign-ups are open, Create an account', async () => {
     const onNavigate = vi.fn();
-    render(<SignIn auth={fakeAuth()} onNavigate={onNavigate} />);
+    render(<SignIn auth={fakeAuth()} onNavigate={onNavigate} signupsOpen />);
     await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }));
     await userEvent.click(screen.getByRole('button', { name: 'Create an account' }));
     expect(onNavigate.mock.calls).toEqual([['forgotPassword'], ['signUp']]);
