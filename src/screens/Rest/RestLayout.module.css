@@ -104,7 +104,10 @@
   font-size: 16px;
   font-weight: var(--weight-black);
   white-space: nowrap;
-  animation: pop-in var(--duration-slow) var(--ease-bounce) calc(var(--stagger) * 4) backwards;
+  transform-origin: left bottom;
+
+  /* Pops out of the mascot, overshoots and wobbles into place (follow-through). */
+  animation: bubble-in var(--duration-slow) ease-out calc(var(--stagger) * 4) backwards;
 }
 
 /* A button with an icon before its label (canvas 08: "+ Add a new word"). */
@@ -146,5 +149,24 @@
 @keyframes slide-up {
   from {
     translate: 0 100%;
+  }
+}
+
+@keyframes bubble-in {
+  0% {
+    opacity: 0;
+    scale: 0.6;
+    rotate: -8deg;
+  }
+
+  60% {
+    opacity: 1;
+    scale: 1.06;
+    rotate: 3deg;
+  }
+
+  80% {
+    scale: 0.98;
+    rotate: -1deg;
   }
 }

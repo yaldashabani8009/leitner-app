@@ -87,6 +87,8 @@ export function ReviewScreen({
     swipe.dragging && styles.dragging,
     swipe.leaving === 'right' && styles.leaveRight,
     swipe.leaving === 'left' && styles.leaveLeft,
+    // Answered with a button or key (not dragged): a small pull-back first (anticipation).
+    swipe.leaving && swipe.offset === 0 && styles.flick,
   ]
     .filter(Boolean)
     .join(' ');

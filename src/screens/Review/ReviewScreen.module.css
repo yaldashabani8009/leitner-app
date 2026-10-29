@@ -208,6 +208,16 @@
   transform: rotate(16deg);
 }
 
+/* Button or key answer: the card pulls back a little (anticipation), then flies off on a turn
+   (motion.md). A dragged card needs none: the drag was the anticipation. Same 220ms. */
+.flick.leaveRight {
+  animation: flick-right 220ms ease-in forwards;
+}
+
+.flick.leaveLeft {
+  animation: flick-left 220ms ease-in forwards;
+}
+
 .leaveRight .stampRight,
 .leaveLeft .stampLeft {
   opacity: 1;
@@ -255,6 +265,34 @@
 
 .answers > * {
   flex: 1;
+}
+
+@keyframes flick-right {
+  0% {
+    transform: none;
+  }
+
+  25% {
+    transform: translateX(-4%) rotate(-2deg);
+  }
+
+  100% {
+    transform: translateX(140%) rotate(20deg);
+  }
+}
+
+@keyframes flick-left {
+  0% {
+    transform: none;
+  }
+
+  25% {
+    transform: translateX(4%) rotate(2deg);
+  }
+
+  100% {
+    transform: translateX(-140%) rotate(-20deg);
+  }
 }
 
 @keyframes deal-in {

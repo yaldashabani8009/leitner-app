@@ -8,6 +8,25 @@ Motion in Leitner has three jobs, and nothing moves without one of them:
 
 Rules: motion never blocks input (nothing waits for an animation, except the 220ms card fly-out); repeating loops are slow and small; **"Reduce motion" on the phone turns everything off** (`global.css` cuts every animation and transition to an instant, delays included; the mascot stands still).
 
+## The 12 principles of animation (Yali, 2026-10-29)
+
+The classic Disney principles, applied where they make the app clearer or friendlier. The UI stays calm: the strongest use is on the mascot.
+
+| #   | Principle                       | Where it shows in Leitner                                                                                                                                                                     |
+| --- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Squash and stretch              | Mascot hop: squashes as it pushes off, stretches in the air, squashes on landing. Flame stretches up and squashes down. Buttons squish when pressed.                                          |
+| 2   | Anticipation                    | Mascot crouches before the hop and leans back before the nod. A card answered with a button or key pulls back a hair before it flies off (a swipe needs none: the drag is the anticipation).  |
+| 3   | Staging                         | One thing at a time: on Session complete the mascot arrives first, then the words, the bubble, the confetti, the buttons. The review screen's confetti stays still so the word has the stage. |
+| 4   | Straight ahead and pose to pose | Pose to pose for everything designed (keyframes). Straight ahead for the swipe: the card follows your finger frame by frame.                                                                  |
+| 5   | Follow-through and overlap      | The index cards inside the mascot keep moving after the body lands. The wave lines follow the arm a beat later. The speech bubble overshoots and wobbles into place.                          |
+| 6   | Slow in and slow out            | Easing everywhere; the hop eases out going up and eases in coming down, like gravity. Nothing moves linearly.                                                                                 |
+| 7   | Arcs                            | The arm waves on an arc from the shoulder; cards turn as they fly off and as they're dealt in; the z z z drift sideways as they rise.                                                         |
+| 8   | Secondary action                | The mascot blinks every few seconds while idle, waving or writing; the wave lines pulse with the wave.                                                                                        |
+| 9   | Timing                          | Weight decides speed: button 120ms, card 220–240ms, mascot and celebrations 420–700ms, breathing 2.8s. See the tokens below.                                                                  |
+| 10  | Exaggeration                    | Session complete exaggerates the hop (15px instead of 9px, deeper squash) and does it twice. Everyday answers stay small.                                                                     |
+| 11  | Solid drawing                   | Squash and stretch keep the volume (width × height ≈ 1), so the box reads as a solid object, not a rubber sheet.                                                                              |
+| 12  | Appeal                          | One consistent character with a few clear emotions (wave, happy, warm nod, celebrate, sleep); soft, round, bouncy, never frantic.                                                             |
+
 ## Timing tokens (`src/styles/tokens.css`)
 
 | Token             | Value                        | Used for                                                              |
