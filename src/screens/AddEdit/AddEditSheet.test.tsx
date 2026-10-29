@@ -71,8 +71,12 @@ describe('Add word', () => {
 
     expect(await screen.findByText('Type the word.')).toBeInTheDocument();
     expect(field('The word')).toHaveAccessibleDescription('Type the word.');
-    expect(field('Similar words')).toHaveAccessibleDescription('Add at least one similar word.');
-    expect(field('In Persian')).toHaveAccessibleDescription('Add at least one Persian meaning.');
+    expect(field('Similar words')).toHaveAccessibleDescription(
+      'Separate them with a comma. Add at least one similar word.',
+    );
+    expect(field('In Persian')).toHaveAccessibleDescription(
+      expect.stringContaining('Add at least one Persian meaning.'),
+    );
     expect(field('In a sentence')).toHaveAccessibleDescription('Add at least one sentence.');
     expect(save).toBeEnabled();
     expect(await repo.countCards()).toBe(0);
@@ -98,28 +102,44 @@ describe('Add word', () => {
     expect(card).toMatchObject({ word: 'calm', box: 1, dueDate: '2026-03-11' });
   });
 
-  it('adds another field with "+ similar word", focuses it, and ignores it when left empty', async () => {
+  it('splits similar words and meanings on "," and "،" (Yali, 2026-10-29)', async () => {
+    const { onClose } = open({ mode: 'add' });
+    await screen.findByRole('dialog');
+    await userEvent.type(field('The word'), 'calm');
+    await userEvent.type(field('Similar words'), 'peaceful, quiet,, serene ');
+    await userEvent.type(field('In Persian'), 'آرام، ساکت,آسوده');
+    await userEvent.type(field('In a sentence'), 'Stay calm, please.');
+    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
+
+    await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
+    const [card] = await db.cards.toArray();
+    const saved = await repo.getCard(card.id);
+    expect(saved?.synonyms.map((e) => e.text)).toEqual(['peaceful', 'quiet', 'serene']);
+    expect(saved?.meanings.map((e) => e.text)).toEqual(['آرام', 'ساکت', 'آسوده']);
+    // Sentences are never split: they contain commas.
+    expect(saved?.sentences.map((e) => e.text)).toEqual(['Stay calm, please.']);
+  });
+
+  it('adds a sentence field right under the sentences, focuses it, and ignores it when left empty', async () => {
     const { onClose } = open({ mode: 'add' });
     await screen.findByRole('dialog');
     await fillNewWord('calm');
-    await userEvent.click(screen.getByRole('button', { name: '+ similar word' }));
-    expect(field('Similar word 2')).toHaveFocus();
-    expect(field('Similar word 2')).toHaveAttribute('placeholder', 'another one?');
-    // No ✕ while adding (only in edit, decided 2026-10-29).
+    expect(screen.queryByRole('button', { name: '+ similar word' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: '+ sentence' }));
+    expect(field('Sentence 2')).toHaveFocus();
+    // No ✕ while adding.
     expect(screen.queryByRole('button', { name: /Remove/ })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
     await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
     const [card] = await db.cards.toArray();
-    expect((await repo.getCard(card.id))?.synonyms.map((e) => e.text)).toEqual(['calm']);
+    expect((await repo.getCard(card.id))?.sentences.map((e) => e.text)).toEqual(['Stay calm.']);
   });
 
   it('writes Persian right to left', async () => {
     open({ mode: 'add' });
     await screen.findByRole('dialog');
-    await userEvent.click(screen.getByRole('button', { name: '+ meaning' }));
     expect(field('In Persian')).toHaveAttribute('lang', 'fa');
-    expect(field('Persian meaning 2')).toHaveAttribute('lang', 'fa');
   });
 });
 
@@ -164,9 +184,10 @@ describe('Adding a word you already have', () => {
 });
 
 describe('Edit word', () => {
-  it('starts filled in, says the schedule stays, and saves without moving the card', async () => {
+  it('starts filled in (lists joined by commas), says the schedule stays, and saves without moving the card', async () => {
     const id = await existing();
     await db.cards.update(id, { box: 3, dueDate: '2026-03-14' });
+    const before = await repo.getCard(id);
     const { onClose } = open({ mode: 'edit', cardId: id });
 
     expect(await screen.findByRole('dialog', { name: 'Edit word' })).toBeInTheDocument();
@@ -174,9 +195,11 @@ describe('Edit word', () => {
       screen.getByText("Editing won't change when you see this word next."),
     ).toBeInTheDocument();
     expect(field('The word')).toHaveValue('brave');
-    expect(field('Similar words')).toHaveValue('bold');
-    expect(field('Similar word 2')).toHaveValue('daring');
+    expect(field('Similar words')).toHaveValue('bold, daring');
+    expect(field('In Persian')).toHaveValue('شجاع');
 
+    await userEvent.clear(field('Similar words'));
+    await userEvent.type(field('Similar words'), 'daring, fearless');
     await userEvent.click(screen.getByRole('button', { name: '+ sentence' }));
     await userEvent.type(field('Sentence 2'), 'A brave choice.');
     await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
@@ -184,27 +207,29 @@ describe('Edit word', () => {
     await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
     const saved = await repo.getCard(id);
     expect(saved?.card).toMatchObject({ box: 3, dueDate: '2026-03-14' });
+    expect(saved?.synonyms.map((e) => e.text)).toEqual(['daring', 'fearless']);
+    // "daring" kept its saved entry, so only the real change syncs.
+    const daring = before?.synonyms.find((e) => e.text === 'daring');
+    expect(saved?.synonyms[0].id).toBe(daring?.id);
     expect(saved?.sentences.map((e) => e.text)).toEqual(['She was brave.', 'A brave choice.']);
   });
 
-  it('shows a ✕ next to each item while a list has more than one, and removes it on save', async () => {
+  it('shows a ✕ next to each sentence while there is more than one, and removes it on save', async () => {
     const id = await existing();
     const { onClose } = open({ mode: 'edit', cardId: id });
     await screen.findByRole('dialog', { name: 'Edit word' });
+    expect(screen.queryByRole('button', { name: /Remove/ })).not.toBeInTheDocument();
 
-    // Two similar words → two ✕; one meaning and one sentence → none.
-    expect(screen.getByRole('button', { name: 'Remove similar word 1' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Remove persian/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Remove sentence/ })).not.toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('button', { name: 'Remove similar word 1' }));
+    await userEvent.click(screen.getByRole('button', { name: '+ sentence' }));
+    await userEvent.type(field('Sentence 2'), 'Brave again.');
+    await userEvent.click(screen.getByRole('button', { name: 'Remove sentence 1' }));
     // The last one can't be removed.
-    expect(screen.queryByRole('button', { name: /Remove similar/ })).not.toBeInTheDocument();
-    expect(field('Similar words')).toHaveValue('daring');
+    expect(screen.queryByRole('button', { name: /Remove sentence/ })).not.toBeInTheDocument();
+    expect(field('In a sentence')).toHaveValue('Brave again.');
 
     await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect((await repo.getCard(id))?.synonyms.map((e) => e.text)).toEqual(['daring']);
+    expect((await repo.getCard(id))?.sentences.map((e) => e.text)).toEqual(['Brave again.']);
   });
 
   it('refuses a word you already have, with the error under the word', async () => {

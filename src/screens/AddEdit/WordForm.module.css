@@ -15,6 +15,13 @@
   border-color: var(--color-line);
 }
 
+.hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .addRow {
   display: flex;
   flex-wrap: wrap;

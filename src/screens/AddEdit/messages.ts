@@ -9,13 +9,24 @@ import {
 /** Words for each list, in the order of the form (canvas 09 / 10). */
 export const LISTS: Record<
   ListField,
-  { label: string; one: string; add: string; required: string; lang?: 'fa'; placeholder?: string }
+  {
+    label: string;
+    one: string;
+    add: string;
+    required: string;
+    lang?: 'fa';
+    placeholder?: string;
+    /** Shown under comma fields. */
+    hint?: string;
+  }
 > = {
   synonyms: {
     label: 'Similar words',
     one: 'Similar word',
     add: 'similar word',
     required: 'Add at least one similar word.',
+    placeholder: 'careful, precise',
+    hint: 'Separate them with a comma.',
   },
   meanings: {
     label: 'In Persian',
@@ -23,7 +34,8 @@ export const LISTS: Record<
     add: 'meaning',
     required: 'Add at least one Persian meaning.',
     lang: 'fa',
-    placeholder: 'معنی فارسی',
+    placeholder: 'معنی فارسی، …',
+    hint: 'Separate them with a comma (، or ,).',
   },
   sentences: {
     label: 'In a sentence',

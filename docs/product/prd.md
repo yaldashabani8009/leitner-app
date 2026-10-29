@@ -46,7 +46,8 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 - Capitals and extra spaces don't make a different word ("Happy" = " happy ").
 - **Duplicate word:** warn, open the existing card instead, and move it back to box 1, due tomorrow. This applies to mastered cards too: they are un-mastered and reviewed again (decided 2026-10-28).
   - The app asks first (decided 2026-10-29): "Open my card" moves the card back and shows it to read (card back with the pencil, and "Done"); "Cancel" changes nothing and keeps what you typed.
-- Removing a list item: in Edit, each item has a ✕ while its list has more than one; in Add, an extra field left empty is simply ignored (decided 2026-10-29).
+- Similar words and Persian meanings are typed in **one field each, separated by a comma** (`,` or the Persian `،`); empty pieces and repeats are dropped. Add or remove an item by typing (decided 2026-10-29, after Yali's iPhone test).
+- Sentences are never split (they contain commas): one field per sentence, "+ sentence" right under them, and in Edit a ✕ next to each sentence while there is more than one (decided 2026-10-29).
 - Validation: Save is never disabled; the error appears under the empty field.
 
 ## Leitner algorithm
@@ -96,7 +97,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 4. Card front (word) → tap → back (similar words, in Persian, in a sentence, pencil to edit).
 5. Answer: swipe right = Knew it, left = Not yet, or tap buttons. No swiping on the front.
 6. After 20: practice round for misses → "Session complete" (celebrating mascot; streak counts). "Next N words" shows only when more are due and under the cap. "I'm done for now" while more are due → a calm resting screen ("Nice work! More words are waiting whenever you're ready." + "Keep going"); otherwise → All done (decided 2026-10-28).
-7. Add word: bottom sheet (top bar + or All done). Save checks required fields and duplicates. The sheet is only as tall as its fields and sits above the phone keyboard; sentence fields grow with the text.
+7. Add word: bottom sheet (top bar + or All done). Save checks required fields and duplicates. The sheet is only as tall as its fields and sits above the phone keyboard; fields grow with the text. Drag the handle down (or tap ✕) to close it.
 8. Edit: pencil on card back → same sheet, pre-filled, with the reminder "Editing won't change when you see this word next."
 
 Laptop: Space flips, ← / → answer, E edits, Esc closes; centred 560px column; add/edit is a centred modal.
