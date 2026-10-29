@@ -1,17 +1,17 @@
 # Roadmap
 
-| Step                           | Status                                                                                                                                                                                          |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Requirements (PRD)          | ✅ Done                                                                                                                                                                                         |
-| 2. Domain & algorithm spec     | ✅ Done                                                                                                                                                                                         |
-| 3. User flows                  | ✅ Done                                                                                                                                                                                         |
-| 3b. Screen design (iPhone, v2) | ✅ Done (laptop added in 7.13)                                                                                                                                                                  |
-| 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; first mascot motion built in 7.8 (small loops and hops); final motion design still open                                                             |
-| 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                                                                                                              |
-| 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                                                                              |
-| 7. Build the MVP               | 🟡 In progress: all built (7.1–7.5, 7.7–7.14); 7.6 waits for its phone + laptop test                                                                                                            |
-| 8. Deploy & install            | 🟡 Site live, auto-deploys after all tests; live smoke check after every deploy. Sign-ups off, own user and profile checked. **Yali:** reset-link URL in Supabase ([4 clicks](setup/deploy.md)) |
-| 9. Use & iterate               | ⬜                                                                                                                                                                                              |
+| Step                           | Status                                                                                                                              |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Requirements (PRD)          | ✅ Done                                                                                                                             |
+| 2. Domain & algorithm spec     | ✅ Done                                                                                                                             |
+| 3. User flows                  | ✅ Done                                                                                                                             |
+| 3b. Screen design (iPhone, v2) | ✅ Done (laptop added in 7.13)                                                                                                      |
+| 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; first mascot motion built in 7.8 (small loops and hops); final motion design still open |
+| 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                                                  |
+| 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                  |
+| 7. Build the MVP               | 🟡 In progress: all built (7.1–7.5, 7.7–7.14); 7.6 waits for its phone + laptop test                                                |
+| 8. Deploy & install            | ✅ Done: site live, auto-deploys after all tests, live smoke check after every deploy; sign-ups off; reset-link URL set in Supabase |
+| 9. Use & iterate               | ⬜                                                                                                                                  |
 
 ## Step 7 tasks (in order)
 
@@ -44,6 +44,7 @@ Each task = one branch + one pull request. CI must be green before merging.
 - [ ] 7.11: after a session that clears all due words, the top-bar flame goes up by one, and the phone and laptop show the same streak after syncing.
 - [ ] 7.13: on the laptop, review a few words with Space and the arrow keys, and press E on a card back.
 - [ ] 7.14: once, open the installed app on the iPhone in flight mode: it should open on your box (the automatic test can't do this part in Safari's engine).
+- [ ] 8: tap **Forgot password?**, open the email on the phone, set a new password: you should land back in the app, signed in.
 
 **Changes after Yali's iPhone tests (all merged, canvas updated):**
 

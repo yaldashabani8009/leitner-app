@@ -7,7 +7,7 @@
 - [x] **Authentication → Sign In / Providers:** Email enabled. Turn **off** "Allow new users to sign up" (ADR-010). _(Dashboard only, the owner does this.)_
 - [x] **Authentication → Users → Add user → Create new user:** your email + password, tick **Auto Confirm User**. A profile row is created automatically; set `display_name` (e.g. Yali) and `time_zone` (e.g. America/New_York) in **Table Editor → profiles**.
 
-- [ ] **Authentication → URL Configuration** (the owner does this; it's dashboard-only). Without it, the "forgot password" email links to the wrong place:
+- [x] **Authentication → URL Configuration** (saved by Yali, 2026-10-29; the owner does this, it's dashboard-only). Without it, the "forgot password" email links to the wrong place:
   1. Open https://supabase.com/dashboard/project/lkyqktrpwhzsfkgaqiuo/auth/url-configuration
   2. **Site URL:** `https://yaldashabani8009.github.io/leitner-app/` → **Save**.
   3. **Redirect URLs → Add URL:** `https://yaldashabani8009.github.io/leitner-app/` and again `http://localhost:5173/leitner-app/` → **Save**.
