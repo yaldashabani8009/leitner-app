@@ -52,7 +52,7 @@ Each task = one branch + one pull request. CI must be green before merging.
 
 - Buttons: orange / aqua / cream with the ink outline and shadow, no black fills (rules in `docs/design/README.md`).
 - Card back: white answer panel; progress bar 48px under the top bar, cards 40px under it.
-- Session complete: words under the mascot, streak as the mascot's speech bubble, panel holds only the buttons.
+- Session complete: words under the mascot, streak as the mascot's speech bubble, panel holds only the buttons. With nothing else due, the panel holds one aqua "Done for today" button (2026-10-29).
 - Buttons on rest screens 48px higher; loading shows 2.5 s; empty box says "Your box is empty".
 - Add / Edit: one comma field each for similar words and Persian (`,` or `،`), "+ sentence" under the sentences, drag the handle down to close.
 

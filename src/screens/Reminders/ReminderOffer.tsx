@@ -13,7 +13,7 @@ type OfferRepo = Pick<Repository, 'reminderOfferOpen' | 'closeReminderOffer'>;
 interface ReminderOfferProps {
   repo: OfferRepo;
   reminders?: ReminderService;
-  /** True on the screen after "I'm done for now" (the calm moment after a session). */
+  /** True on the screen after "Done for today" / "I'm done for now" (the calm moment after a session). */
   active: boolean;
 }
 

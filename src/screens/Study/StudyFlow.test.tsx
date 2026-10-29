@@ -128,7 +128,7 @@ describe('StudyFlow', () => {
 
     // Both due cards were reviewed: day 2 counts too.
     expect(await screen.findByText(/2 days in a row!/)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: "I'm done for now" }));
+    await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
     expect(await screen.findByText('1 word learned')).toBeInTheDocument();
     expect(screen.getByText('2-day streak')).toBeInTheDocument();
   });
@@ -208,7 +208,7 @@ describe('StudyFlow', () => {
     expect((await repo.getCard(missed.id))?.card).toEqual(before?.card);
     expect([await boxOf('brave'), await boxOf('calm')].sort()).toEqual([1, 2]);
 
-    await userEvent.click(screen.getByRole('button', { name: "I'm done for now" }));
+    await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
     expect(await screen.findByRole('heading', { name: 'All done for today' })).toBeInTheDocument();
   });
 
