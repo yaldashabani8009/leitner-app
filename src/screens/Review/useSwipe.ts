@@ -6,8 +6,12 @@ import { useReducedMotion } from '../../ui/useReducedMotion';
 export const SWIPE_SHARE = 0.3;
 /** Never less than this many px, so a small wobble is not an answer. */
 export const MIN_SWIPE_PX = 60;
-/** How long the card takes to fly off before the next one shows. */
-export const FLY_OUT_MS = 220;
+/**
+ * From the answer to the next card: the stamp thumps on (0.28s), holds so you can read it,
+ * then the card flies off (Yali, 2026-10-29: 0.22s was too quick to see). Matches the CSS
+ * in ReviewScreen.module.css (--answer-hold, --answer-fly).
+ */
+export const FLY_OUT_MS = 820;
 
 export type SwipeDirection = 'right' | 'left';
 

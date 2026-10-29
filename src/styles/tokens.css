@@ -76,4 +76,6 @@
   --duration-base: 240ms;
   --duration-slow: 680ms; /* celebrations: Session complete, confetti (slowed 2026-10-29, Yali) */
   --stagger: 120ms; /* between pieces that arrive one after another */
+  --answer-hold: 380ms; /* the KNEW IT! / NOT YET stamp lands and stays readable… */
+  --answer-fly: 440ms; /* …then the card flies off (total = FLY_OUT_MS in useSwipe.ts) */
 }
