@@ -9,7 +9,7 @@
 | 4. Visual identity & motion    | 🟡 Style, palette, font, mascot poses done; first mascot motion built in 7.8 (small loops and hops); final motion design still open                                                   |
 | 5. Architecture & ADRs         | ✅ Done: [docs/adr](adr/README.md)                                                                                                                                                    |
 | 6. Engineering setup           | ✅ Done: repo, tooling, tokens, PWA, CI, DB schema                                                                                                                                    |
-| 7. Build the MVP               | 🟡 In progress: 7.1–7.5 and 7.7–7.13 done; 7.6 waits for its phone + laptop test. **Next: 7.14**                                                                                      |
+| 7. Build the MVP               | 🟡 In progress: all built (7.1–7.5, 7.7–7.14); 7.6 waits for its phone + laptop test. **Next: step 8**                                                                                |
 | 8. Deploy & install            | 🟡 Site live at https://yaldashabani8009.github.io/leitner-app/ (auto-deploys). Sign-ups off and own user created. Still to do: reset-link URL in Supabase ([setup](setup/deploy.md)) |
 | 9. Use & iterate               | ⬜                                                                                                                                                                                    |
 
@@ -32,7 +32,7 @@ Each task = one branch + one pull request. CI must be green before merging.
 | 7.11 ✅ | Streak + words learned                                                       | Words learned from review logs; streak days saved when earned and synced (ADR-015); tested; top-bar pills, Loading streak pill and Session complete bubble on                                                               |
 | 7.12 ✅ | Backup reminder + restore (modals only, ADR-016)                             | Round-trip test ✅; "Save a copy?" after 14 days without the cloud; restore when the box is empty and the cloud is unreachable                                                                                              |
 | 7.13 ✅ | Laptop layout + keyboard shortcuts                                           | Space / ← → / E / Esc work ✅ (tested); centred 560px column and centred add/edit modal from 700px wide                                                                                                                     |
-| 7.14    | Playwright E2E: review, add word, offline launch                             | Green in CI (WebKit + Chromium)                                                                                                                                                                                             |
+| 7.14 ✅ | Playwright E2E: review, add word, offline launch                             | Green in CI (WebKit + Chromium) ✅; the deploy waits for it (ADR-017)                                                                                                                                                       |
 
 ## Where we are (end of session 2026-10-29)
 
@@ -58,4 +58,6 @@ Each task = one branch + one pull request. CI must be green before merging.
 
 **7.13 done:** on a laptop the app sits in a centred 560px column, add/edit is a centred modal, and Space / ← → / E / Esc work. Phones are unchanged.
 
-**Next task: 7.14 Playwright E2E: review, add word, offline launch** (green in CI on WebKit + Chromium).
+**7.14 done:** end-to-end tests run the built app in WebKit (iPhone Safari) and Chromium (Android) on every PR and before every deploy: sign in, add words, review the next day (tap, keyboard, practice, Session complete), duplicate word, and opening offline. The cloud is an in-memory stand-in, so no secrets are needed (ADR-017).
+
+**Next:** finish the phone checks above (then mark 7.6 ✅), and step 8: add the reset-link URL in Supabase ([setup](setup/deploy.md)).

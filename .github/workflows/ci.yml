@@ -22,3 +22,26 @@ jobs:
       - run: npm run lint:css
       - run: npm run coverage
       - run: npm run build
+
+  # Roadmap 7.14 (ADR-017): the built app in WebKit (iPhone Safari) and Chromium (Android).
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      # Public by design (ADR-010). The test build never calls Supabase, but the app loads its client.
+      VITE_SUPABASE_URL: https://lkyqktrpwhzsfkgaqiuo.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_X7Np21Bccrdw8UZIFDjtHw_8qn1zhq4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
