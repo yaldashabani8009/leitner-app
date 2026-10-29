@@ -18,6 +18,12 @@
   padding: var(--space-5) var(--space-5);
 }
 
+/* Session complete (canvas 07): the mascot circle starts ~150px from the top, not centred. */
+.stageTop {
+  justify-content: flex-start;
+  padding-top: clamp(96px, 18vh, 150px);
+}
+
 .stageWords {
   display: flex;
   flex-direction: column;
@@ -97,4 +103,14 @@
 
 .withIcon svg {
   stroke-width: 3;
+}
+
+.bigTitle {
+  font-size: 36px;
+}
+
+/* Session complete: the panel holds only the buttons, 190px tall like canvas 07. */
+.panel.buttonsPanel {
+  justify-content: flex-end;
+  min-height: 190px;
 }

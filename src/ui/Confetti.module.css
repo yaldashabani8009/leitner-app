@@ -71,3 +71,73 @@
   border: var(--border-chunky) solid var(--color-ink);
   background: var(--color-cream);
 }
+
+/* ---------- Session complete: positions from canvas 07 (393px-wide frame) ---------- */
+
+.c07 {
+  position: absolute;
+}
+
+.c07Sparkle {
+  top: 146px;
+  left: 34px;
+  width: 26px;
+  height: 26px;
+  fill: var(--color-ink);
+}
+
+.c07Triangle {
+  top: 70px;
+  right: 44px;
+  width: 44px;
+  height: 44px;
+  fill: var(--color-aqua);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.c07Orange {
+  top: 250px;
+  right: 52px;
+  width: 26px;
+  height: 26px;
+  fill: var(--color-orange);
+}
+
+.c07CreamTriangle {
+  top: 560px;
+  left: 26px;
+  width: 30px;
+  height: 30px;
+  fill: var(--color-cream);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.c07Terracotta {
+  top: 190px;
+  left: 90px;
+  width: 14px;
+  height: 14px;
+  border: var(--border-chunky) solid var(--color-ink);
+  background: var(--color-terracotta);
+}
+
+.c07White {
+  top: 210px;
+  right: 36px;
+  width: 18px;
+  height: 18px;
+  border: var(--border-chunky) solid var(--color-ink);
+  background: var(--color-white);
+}
+
+.c07Ink {
+  top: 60px;
+  left: 150px;
+  width: 10px;
+  height: 10px;
+  background: var(--color-ink);
+}

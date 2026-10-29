@@ -26,6 +26,8 @@ type Eyes =
 export interface PoseSpec {
   /** Read by screen readers. */
   label: string;
+  /** A wider view for poses with extras around them (celebrate, as on canvas 07). */
+  viewBox?: string;
   /** Moves the whole mascot (hop, lean). */
   bodyTransform?: string;
   legs: string;
@@ -124,6 +126,7 @@ export const POSES: Record<MascotPose, PoseSpec> = {
   },
   celebrate: {
     label: 'Box mascot celebrating',
+    viewBox: '-16 -34 144 150',
     bodyTransform: 'translate(0 -8)',
     legs: LEGS_HOP,
     armLeft: 'M18 66 L8 44',

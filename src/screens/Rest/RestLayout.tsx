@@ -39,15 +39,21 @@ export function RestLayout({
 }: RestLayoutProps) {
   const words = (
     <>
-      <h1 className={styles.title}>{title}</h1>
+      <h1
+        className={[styles.title, textIn === 'stage' && styles.bigTitle].filter(Boolean).join(' ')}
+      >
+        {title}
+      </h1>
       <p className={styles.text}>{text}</p>
     </>
   );
   return (
     <main className={styles.screen}>
-      <Confetti />
+      <Confetti amount={textIn === 'stage' ? 'celebrate' : 'full'} />
       {top}
-      <div className={styles.stage}>
+      <div
+        className={[styles.stage, textIn === 'stage' && styles.stageTop].filter(Boolean).join(' ')}
+      >
         <div className={styles.mascotCircle}>
           {bubble && <p className={styles.bubble}>{bubble}</p>}
           <Mascot pose={pose} decorative />
@@ -55,7 +61,7 @@ export function RestLayout({
         {textIn === 'stage' && <div className={styles.stageWords}>{words}</div>}
       </div>
       {textIn === 'stage' ? (
-        <BottomPanel color={panel} className={styles.panel}>
+        <BottomPanel color={panel} className={`${styles.panel} ${styles.buttonsPanel}`}>
           {actions && <div className={styles.actions}>{actions}</div>}
         </BottomPanel>
       ) : (
