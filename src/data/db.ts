@@ -88,7 +88,17 @@ export const META = {
   restoreOfferSnoozedUntil: 'backup:restoreSnoozedUntil',
   /** The daily-reminder offer: "done" once answered yes, or the moment "Not now" ends (ADR-018). */
   reminderOffer: 'reminder:offer',
+  /** A deck's session of the day: `${sessionOf}<deck>` → { date, scheduled } (v3 brief 1.6). */
+  sessionOf: 'session:',
 } as const;
+
+/** What is saved when a deck's session starts; the rest is worked out from the review logs. */
+export interface SavedSession {
+  /** Calendar date in the profile time zone the session belongs to. */
+  date: string;
+  /** The card ids picked when it started, in order. */
+  scheduled: string[];
+}
 
 /** Small device-only facts, e.g. where each table's last pull stopped (sync, ADR-013). */
 export interface MetaRow {

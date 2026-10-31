@@ -1,0 +1,156 @@
+/* Colours of the "Mascot · DJ" board, as tokens. */
+.dj {
+  overflow: visible;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.notes ellipse,
+.noteStem {
+  stroke: var(--color-ink);
+  stroke-width: 2;
+}
+
+.notes ellipse {
+  fill: var(--color-orange);
+}
+
+.noteStem,
+.band,
+.shine,
+.cupShine,
+.frameArm,
+.bridge,
+.glint,
+.arm,
+.fader {
+  fill: none;
+}
+
+.arm {
+  stroke: var(--color-ink);
+  stroke-width: 3.5;
+}
+
+.hand {
+  fill: var(--color-aqua);
+  stroke: var(--color-ink);
+  stroke-width: 2.5;
+}
+
+.band {
+  stroke: var(--color-ink);
+  stroke-width: 7;
+}
+
+.shine,
+.cupShine {
+  stroke: var(--color-white);
+  stroke-width: 1.6;
+  opacity: 0.5;
+}
+
+.back {
+  fill: var(--color-aqua-dark);
+  stroke: var(--color-ink);
+  stroke-width: 3;
+}
+
+.front {
+  fill: var(--color-aqua);
+  stroke: var(--color-ink);
+  stroke-width: 3;
+}
+
+.slot {
+  fill: var(--color-bg);
+  stroke: var(--color-ink);
+  stroke-width: 2.5;
+}
+
+.cup {
+  fill: var(--color-ink);
+  stroke: var(--color-ink);
+  stroke-width: 3;
+}
+
+.frameArm {
+  stroke: var(--color-ink);
+  stroke-width: 2.5;
+}
+
+.lens {
+  fill: var(--color-ink);
+}
+
+.bridge {
+  stroke: var(--color-ink);
+  stroke-width: 3;
+}
+
+.glint {
+  stroke: var(--color-white);
+  stroke-width: 1.8;
+  opacity: 0.85;
+}
+
+.cheek {
+  fill: var(--color-orange);
+}
+
+.mouth {
+  fill: var(--color-terracotta);
+  stroke: var(--color-ink);
+  stroke-width: 2.5;
+}
+
+.mixer {
+  fill: var(--color-white);
+  stroke: var(--color-ink);
+  stroke-width: 3;
+}
+
+.record {
+  fill: var(--color-ink);
+}
+
+.labelOrange {
+  fill: var(--color-orange);
+}
+
+.labelAqua {
+  fill: var(--color-aqua);
+}
+
+.fader {
+  stroke: var(--color-ink);
+  stroke-width: 2.5;
+}
+
+.knob {
+  fill: var(--color-orange);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+}
+
+/* Motion idea from the board: the head bobs, the notes drift up. Off with Reduce motion. */
+.moving .body {
+  animation: bob 0.9s ease-in-out infinite alternate;
+}
+
+.moving .notes {
+  animation: drift 2.4s ease-in-out infinite;
+}
+
+@keyframes bob {
+  to {
+    transform: translateY(2px);
+  }
+}
+
+@keyframes drift {
+  50% {
+    opacity: 0.6;
+    transform: translateY(-4px);
+  }
+}

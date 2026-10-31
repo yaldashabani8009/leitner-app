@@ -68,9 +68,14 @@ async function frontWord() {
   return within(button).getByText(
     (_, el) =>
       el?.tagName === 'SPAN' &&
-      /^word|^brave|^calm/.test(el.textContent ?? '') &&
+      /^word|^brave|^calm|^quiet/.test(el.textContent ?? '') &&
       el.children.length === 0,
   ).textContent;
+}
+
+/** On Today, tap the Vocab deck card to start (or continue) its session. */
+async function startVocab() {
+  await userEvent.click(await screen.findByRole('button', { name: /^Vocab, .*(Start|Continue)$/ }));
 }
 
 async function flipAndAnswer(answer: 'Knew it!' | 'Not yet') {
@@ -79,19 +84,77 @@ async function flipAndAnswer(answer: 'Knew it!' | 'Not yet') {
 }
 
 describe('StudyFlow', () => {
-  it('shows "Your box is empty" when the box is empty', async () => {
+  it('opens on Today: the greeting, the DJ and "Mix them all", an empty Vocab deck adds words', async () => {
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
-    expect(await screen.findByRole('heading', { name: 'Your box is empty' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Hi Yali!' })).toBeInTheDocument();
+    expect(screen.getByText('What shall we study today?')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'The mascot as a DJ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Mix them all/ })).toBeInTheDocument();
+    const deck = screen.getByRole('button', { name: 'Vocab, empty. Add words' });
+    expect(deck).toHaveTextContent('Empty');
+    await userEvent.click(deck);
+    const sheet = await screen.findByRole('dialog', { name: 'New word' });
+    expect(within(sheet).getByText('Vocab')).toBeInTheDocument();
   });
 
-  it('shows "All done for today" when no card is due yet', async () => {
+  it('a deck with nothing due says "All done for today"; tapping it offers Add', async () => {
     await addCards('brave'); // due tomorrow
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    const deck = await screen.findByRole('button', { name: 'Vocab, all done for today' });
+    expect(within(deck).getByText('All done for today')).toBeInTheDocument();
+    await userEvent.click(deck);
+    const sheet = await screen.findByRole('dialog', { name: 'Vocab' });
+    expect(within(sheet).getByText('All done for today ✓')).toBeInTheDocument();
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Add vocab' }));
+    expect(await screen.findByRole('dialog', { name: 'New word' })).toBeInTheDocument();
+  });
+
+  it('"Mix them all" with nothing due shows "All done for today"; Home goes back', async () => {
+    await addCards('brave');
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(await screen.findByRole('button', { name: /Mix them all/ }));
     expect(await screen.findByRole('heading', { name: 'All done for today' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Home' }));
+    expect(await screen.findByRole('heading', { name: 'Hi Yali!' })).toBeInTheDocument();
+  });
+
+  it('a deck with cards due shows how many wait; "Mix them all" starts them', async () => {
+    await addCards('brave', 'calm');
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
     expect(
-      screen.getByText('Your next words will be ready tomorrow. Want to add a new one?'),
+      await screen.findByRole('button', { name: 'Vocab, 2 waiting. Start' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Add a new word' })).toBeInTheDocument();
+    expect(screen.getByText('2 cards from all decks')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Mix them all/ }));
+    expect(await screen.findByRole('button', { name: /tap to flip/ })).toBeInTheDocument();
+  });
+
+  it('Home pauses a session (no "are you sure?"); Continue carries on, practice round included', async () => {
+    await addCards('brave', 'calm', 'quiet');
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
+    const missed = await frontWord();
+    await flipAndAnswer('Not yet');
+    await screen.findByRole('button', { name: /tap to flip/ });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Home' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    const deck = await screen.findByRole('button', { name: 'Vocab, paused · 3 left. Continue' });
+    await userEvent.click(deck);
+
+    await flipAndAnswer('Knew it!');
+    await flipAndAnswer('Knew it!');
+    expect(await screen.findByText('Practice round')).toBeInTheDocument();
+    expect(await frontWord()).toBe(missed);
+    await flipAndAnswer('Knew it!');
+    expect(await screen.findByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
+    expect(screen.getByText('You went through 3 words. Nice work.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
+    expect(
+      await screen.findByRole('button', { name: 'Vocab, all done for today' }),
+    ).toBeInTheDocument();
   });
 
   it('shows the loading screen with the name first', async () => {
@@ -121,6 +184,7 @@ describe('StudyFlow', () => {
     expect(await screen.findByText('2 cards in your box')).toBeInTheDocument();
     expect(screen.getByText('1-day streak')).toBeInTheDocument();
 
+    await startVocab();
     await flipAndAnswer('Knew it!');
     await flipAndAnswer('Not yet');
     await flipAndAnswer('Knew it!'); // practice: changes nothing
@@ -191,13 +255,16 @@ describe('StudyFlow', () => {
 
     expect(await screen.findByRole('dialog', { name: 'Your words are back!' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Done' }));
-    expect(await screen.findByRole('button', { name: /tap to flip/ })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: 'Vocab, 1 waiting. Start' }),
+    ).toBeInTheDocument();
   });
 
   it('shows the front, then the back after a tap', async () => {
     await addCards('brave');
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
 
     expect(await frontWord()).toBe('brave');
     expect(screen.getByText('do you know it?')).toBeInTheDocument();
@@ -218,6 +285,7 @@ describe('StudyFlow', () => {
     await addCards('brave', 'calm');
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
 
     await flipAndAnswer('Knew it!');
     await flipAndAnswer('Not yet');
@@ -240,13 +308,16 @@ describe('StudyFlow', () => {
     expect([await boxOf('brave'), await boxOf('calm')].sort()).toEqual([1, 2]);
 
     await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
-    expect(await screen.findByRole('heading', { name: 'All done for today' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: 'Vocab, all done for today' }),
+    ).toBeInTheDocument();
   });
 
-  it('offers the next cards when more are due, and a calm rest when you stop', async () => {
+  it('offers the next cards when more are due; stopping goes back to Today', async () => {
     await addCards(...wordsLike(23));
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
 
     for (let i = 0; i < 20; i++) await flipAndAnswer('Knew it!');
     expect(await screen.findByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
@@ -254,9 +325,7 @@ describe('StudyFlow', () => {
     expect(await screen.findByRole('button', { name: 'Next 3 words' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: "I'm done for now" }));
-    expect(await screen.findByRole('heading', { name: 'Nice work!' })).toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('button', { name: 'Keep going' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Vocab, 3 waiting. Start' }));
     expect(await screen.findByRole('button', { name: /tap to flip/ })).toBeInTheDocument();
   });
 
@@ -264,17 +333,19 @@ describe('StudyFlow', () => {
     await addCards('brave', 'calm');
     now = DAY_2;
     const view = render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
     await flipAndAnswer('Knew it!');
     await screen.findByRole('button', { name: /tap to flip/ });
     view.unmount();
 
-    expect(await repo.nextSessionCardIds()).toHaveLength(1);
+    expect((await repo.deckStatuses(['vocab']))[0]).toMatchObject({ waiting: 1, pausedLeft: 1 });
   });
 
   it('answers with a swipe on the back, but not on the front', async () => {
     await addCards('brave', 'calm');
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
     const first = (await frontWord())!;
 
     // Dragging the front does nothing.
@@ -296,6 +367,7 @@ describe('StudyFlow', () => {
     await addCards('brave', 'calm');
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
     const front = await screen.findByRole('button', { name: /tap to flip/ });
     const word = front.textContent;
 
@@ -315,6 +387,7 @@ describe('StudyFlow', () => {
     await addCards('brave');
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
     await userEvent.click(await screen.findByRole('button', { name: /tap to flip/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Edit word' }));
     const sheet = await screen.findByRole('dialog', { name: 'Edit word' });
@@ -334,6 +407,7 @@ describe('StudyFlow with a keyboard (laptop, roadmap 7.13)', () => {
     await addCards('brave', 'calm');
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
     await screen.findByRole('button', { name: /tap to flip/ });
   });
 

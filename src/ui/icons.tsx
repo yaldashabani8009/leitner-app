@@ -40,6 +40,15 @@ export function BoxIcon({ className, ...props }: IconProps) {
   );
 }
 
+/** House: back to the Today screen from a session (canvas N6). */
+export function HomeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
+    </Icon>
+  );
+}
+
 /** Chevron pointing left: back (canvas N8). */
 export function BackIcon(props: IconProps) {
   return (

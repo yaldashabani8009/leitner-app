@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { DECKS } from '../domain/decks/decks';
+import { TodayScreen } from '../screens/Today/TodayScreen';
 import { BottomPanel } from '../ui/BottomPanel';
 import { Button } from '../ui/Button';
 import { Card, CardStack } from '../ui/Card';
@@ -17,6 +18,7 @@ import styles from './KitPage.module.css';
  * Dev-only gallery of the UI kit (roadmap 7.7). Open http://localhost:5173/leitner-app/?kit
  * Add &open=bottom or &open=dialog to start with a sheet open (for screenshots), and
  * &decks=all to see the + roll-out with all three decks (canvas N2; only vocab is enabled).
+ * &screen=today shows the Today screen with all three decks, as on canvas N1.
  * main.tsx only loads this when import.meta.env.DEV, so it never ships.
  */
 export function KitPage() {
@@ -26,6 +28,25 @@ export function KitPage() {
   );
   const close = () => setSheet(null);
   const allDecks = new URLSearchParams(location.search).get('decks') === 'all';
+
+  if (new URLSearchParams(location.search).get('screen') === 'today') {
+    const all = DECKS.map((deck) => ({ ...deck, enabled: true }));
+    return (
+      <TodayScreen
+        name="Yali"
+        decks={all}
+        statuses={[
+          { deck: 'vocab', cardCount: 120, waiting: 20, pausedLeft: null, addedToday: 0 },
+          { deck: 'spelling', cardCount: 167, waiting: 7, pausedLeft: 7, addedToday: 0 },
+          { deck: 'phrases', cardCount: 25, waiting: 0, pausedLeft: null, addedToday: 5 },
+        ]}
+        top={<TopBar cardCount={312} streak={13} onAdd={() => {}} decks={all} />}
+        onMix={() => {}}
+        onStudy={() => {}}
+        onAdd={() => {}}
+      />
+    );
+  }
 
   return (
     <main className={styles.page}>

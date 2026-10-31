@@ -16,25 +16,32 @@ test('sign in, add words, then review them the next day', async ({ page }) => {
   await page.clock.setFixedTime(DAY_1);
   await signIn(page);
 
-  // A new box: add the first word from the empty screen, the second from the top bar.
-  await expect(page.getByRole('heading', { name: 'Your box is empty' })).toBeVisible();
-  await page.getByRole('button', { name: 'Add a new word' }).click();
+  // A new box opens on Today: the empty Vocab deck adds the first word, the top bar + the second.
+  await expect(page.getByRole('heading', { name: 'Hi Yali!' })).toBeVisible();
+  await page.getByRole('button', { name: 'Vocab, empty. Add words' }).click();
   await saveWord(page, BRAVE);
-  await expect(page.getByRole('heading', { name: 'All done for today' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
   await page.getByRole('button', { name: 'Add word' }).click();
   await saveWord(page, CALM);
   // Nothing was due and a word was added: day 1 counts for the streak.
   await expect(spoken(page, '1-day streak')).toBeAttached();
   await expect(spoken(page, '2 cards in your box')).toBeAttached();
 
-  // The next day both words are due.
+  // The next day both words are due: Today → Mix them all.
   await page.clock.setFixedTime(DAY_2);
   await page.reload();
+  await expect(page.getByRole('button', { name: 'Vocab, 2 waiting. Start' })).toBeVisible();
+  await page.getByRole('button', { name: /Mix them all/ }).click();
 
   // First card: tap to flip, then "Knew it!".
   await cardFront(page).click();
   await expect(page.getByLabel(/^Answer for /)).toBeVisible();
   await page.getByRole('button', { name: 'Knew it!' }).click();
+
+  // Home (no "are you sure?"), then Continue where it stopped.
+  await expect(cardFront(page)).toBeVisible();
+  await page.getByRole('button', { name: 'Home' }).click();
+  await page.getByRole('button', { name: 'Vocab, paused · 1 left. Continue' }).click();
 
   // Second card with the keyboard: Space flips, ← is "Not yet".
   await expect(cardFront(page)).toBeVisible();
@@ -52,7 +59,7 @@ test('sign in, add words, then review them the next day', async ({ page }) => {
   await expect(page.getByText('2 days in a row!')).toBeVisible();
 
   await page.getByRole('button', { name: 'Done for today' }).click();
-  await expect(page.getByRole('heading', { name: 'All done for today' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
   await expect(spoken(page, '2 cards in your box')).toBeAttached();
   await expect(spoken(page, '2-day streak')).toBeAttached();
 });
@@ -68,7 +75,7 @@ test('a wrong password is explained, and nothing opens', async ({ page }) => {
 test('add 3 words in a row: the sheet stays open between them (canvas N4)', async ({ page }) => {
   await page.clock.setFixedTime(DAY_1);
   await signIn(page);
-  await page.getByRole('button', { name: 'Add a new word' }).click();
+  await page.getByRole('button', { name: 'Vocab, empty. Add words' }).click();
   const sheet = page.getByRole('dialog', { name: 'New word' });
   await expect(sheet.getByText('Vocab', { exact: true })).toBeVisible();
   for (const word of [BRAVE, CALM, QUIET]) await typeAndSave(page, word);
@@ -84,7 +91,7 @@ test('the same word twice: the form fills in and "Save & start over" keeps one c
 }) => {
   await page.clock.setFixedTime(DAY_1);
   await signIn(page);
-  await page.getByRole('button', { name: 'Add a new word' }).click();
+  await page.getByRole('button', { name: 'Vocab, empty. Add words' }).click();
   await typeAndSave(page, BRAVE);
 
   const sheet = page.getByRole('dialog', { name: 'New word' });
