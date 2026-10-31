@@ -20,6 +20,7 @@ import { answer, isDue, newCard, resetToBox1 } from '../domain/leitner/engine';
 import { currentStreak, wordsLearned } from '../domain/progress/progress';
 import type { DeckId } from '../domain/leitner/config';
 import { pickSessionCards, reviewsDoneToday, waitingInDeck } from '../domain/session/pick';
+import { mixDecks, type Random } from '../domain/session/mix';
 import { resumeSession } from '../domain/session/resume';
 import type { Session } from '../domain/session/session';
 import { dayCountsForStreak } from '../domain/session/streakDay';
@@ -79,6 +80,12 @@ export interface DeckStatus {
   pausedLeft: number | null;
   /** Live cards added (or re-added) today: extra practice is offered when > 0. */
   addedToday: number;
+}
+
+/** A "Mix them all" session, with each card's deck for the chip by the progress bar (N6). */
+export interface MixSession {
+  session: Session;
+  deckOf: Record<string, DeckId>;
 }
 
 export type EditCardResult = { status: 'saved' } | { status: 'invalid'; errors: FieldErrors };
@@ -671,6 +678,84 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         await db.meta.put({ key, value: { date, scheduled } satisfies SavedSession });
         return resumeSession(scheduled, []);
       });
+    },
+
+    /**
+     * "Mix them all" (v3 brief 1.5): each deck's real session (its own size and daily limit),
+     * mixed in random chunks of 3–9. A mix left half way today carries on where it stopped.
+     * Null when nothing is due in any of `decks`.
+     */
+    openMixSession(
+      decks: readonly DeckId[],
+      random: Random = Math.random,
+    ): Promise<MixSession | null> {
+      return db.transaction('rw', [db.profile, db.cards, db.reviewLogs, db.meta], async () => {
+        const now = deps.now();
+        const zone = await timeZone();
+        const date = dateInZone(now, zone);
+        const recent = await recentLogs(now);
+        const todayLogs = recent.filter((log) => dateInZone(log.reviewedAt, zone) === date);
+        const withDecks = async (session: Session): Promise<MixSession> => {
+          const cards = await db.cards.bulkGet([...session.scheduled]);
+          const deckOf: Record<string, DeckId> = {};
+          for (const card of cards) if (card) deckOf[card.id] = card.deck;
+          return { session, deckOf };
+        };
+
+        const saved = (await db.meta.get(META.mixSession))?.value as SavedSession | undefined;
+        if (saved && saved.date === date) {
+          const session = resumeSession(saved.scheduled, todayLogs);
+          if (session.answered < session.scheduled.length + session.practice.length) {
+            return withDecks(session);
+          }
+        }
+
+        const due = (await maybeDueCards(now)).filter((card) => isOnOrBefore(card.dueDate, date));
+        const queues = [];
+        for (const deck of decks) {
+          const inDeck = new Set(await db.cards.where('deck').equals(deck).primaryKeys());
+          const reviews = reviewsDoneToday(
+            recent.filter((log) => inDeck.has(log.cardId)),
+            now,
+            zone,
+          );
+          const deckDue = due.filter((card) => card.deck === deck);
+          queues.push({ deck, cardIds: pickSessionCards(deckDue, reviews, date, deck) });
+        }
+        const scheduled = mixDecks(queues, random);
+        if (scheduled.length === 0) {
+          await db.meta.delete(META.mixSession);
+          return null;
+        }
+        await db.meta.put({
+          key: META.mixSession,
+          value: { date, scheduled } satisfies SavedSession,
+        });
+        return withDecks(resumeSession(scheduled, []));
+      });
+    },
+
+    /** Cards left in today's "Mix them all" left half way; null when there is none. */
+    async mixPausedLeft(): Promise<number | null> {
+      const now = deps.now();
+      const [profile, saved, recent] = await Promise.all([
+        db.profile.toCollection().first(),
+        db.meta.get(META.mixSession),
+        recentLogs(now),
+      ]);
+      const zone = resolveTimeZone(profile?.timeZone);
+      const date = dateInZone(now, zone);
+      const value = saved?.value as SavedSession | undefined;
+      if (!value || value.date !== date) return null;
+      const todayLogs = recent.filter((log) => dateInZone(log.reviewedAt, zone) === date);
+      const session = resumeSession(value.scheduled, todayLogs);
+      const left = session.scheduled.length + session.practice.length - session.answered;
+      return left > 0 && session.answered > 0 ? left : null;
+    },
+
+    /** The mixed session is finished: forget it. */
+    async closeMixSession(): Promise<void> {
+      await db.meta.delete(META.mixSession);
     },
 
     /** The session of a deck is finished: forget it, so the deck no longer says "Paused". */

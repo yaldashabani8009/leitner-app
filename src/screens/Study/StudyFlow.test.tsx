@@ -130,6 +130,41 @@ describe('StudyFlow', () => {
     expect(await screen.findByRole('button', { name: /tap to flip/ })).toBeInTheDocument();
   });
 
+  it('Mix them all shows the deck chip by the progress bar; Home and Mix again carry on', async () => {
+    await addCards('brave', 'calm', 'quiet');
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(await screen.findByRole('button', { name: /Mix them all/ }));
+    const bar = await screen.findByRole('progressbar', { name: 'Session progress' });
+    expect(within(bar.parentElement!).getByText('Vocab')).toBeInTheDocument();
+    await flipAndAnswer('Not yet');
+    await screen.findByRole('button', { name: /tap to flip/ });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Home' }));
+    expect(await screen.findByText('Paused · 3 left')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Mix them all/ }));
+    await flipAndAnswer('Knew it!');
+    await flipAndAnswer('Knew it!');
+    expect(await screen.findByText('Practice round')).toBeInTheDocument();
+    await flipAndAnswer('Knew it!');
+    expect(await screen.findByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
+    expect(screen.getByText('You went through 3 words. Nice work.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
+    expect(
+      await screen.findByRole('button', { name: 'Vocab, all done for today' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Paused/)).not.toBeInTheDocument();
+  });
+
+  it('a single deck session shows no deck chip', async () => {
+    await addCards('brave');
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
+    const bar = await screen.findByRole('progressbar', { name: 'Session progress' });
+    expect(within(bar.parentElement!).queryByText('Vocab')).not.toBeInTheDocument();
+  });
+
   it('Home pauses a session (no "are you sure?"); Continue carries on, practice round included', async () => {
     await addCards('brave', 'calm', 'quiet');
     now = DAY_2;

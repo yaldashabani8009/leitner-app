@@ -23,6 +23,9 @@ import { HomeIcon } from '../../ui/icons';
 import { TodayScreen } from '../Today/TodayScreen';
 import { ReviewScreen } from '../Review/ReviewScreen';
 
+/** The open session: one deck's, or "Mix them all" with each card's deck. */
+type Run = { kind: 'deck'; deck: Deck } | { kind: 'mix'; deckOf: Record<string, DeckId> };
+
 /** PRD user flow 2: the loading screen shows on a cold start. 2.5 s (Yali, 2026-10-29): 1 s flashed by. */
 export const MIN_LOADING_MS = 2500;
 /** How long the mascot reacts to an answer before going back to idle: the hop (1s) and nod (1.3s) finish first. */
@@ -37,6 +40,9 @@ type StudyRepo = Pick<
   | 'deckStatuses'
   | 'openDeckSession'
   | 'closeDeckSession'
+  | 'openMixSession'
+  | 'closeMixSession'
+  | 'mixPausedLeft'
   | 'recordAnswer'
   | 'addCard'
   | 'editCard'
@@ -83,6 +89,7 @@ export function StudyFlow({
     [repo, deckIds],
   );
   const progress = useLiveQuery(() => repo.progress(), [repo]);
+  const mixPausedLeft = useLiveQuery(() => repo.mixPausedLeft(), [repo]);
   const waiting = useLiveQuery(() => repo.waitingToday(), [repo]);
   useAppBadge(waiting);
   /** "Done for today" / "I'm done for now" was tapped on Session complete: the calm moment to offer reminders. */
@@ -96,8 +103,8 @@ export function StudyFlow({
   }, [minLoadingMs]);
 
   const [session, setSession] = useState<Session | null>(null);
-  /** The deck whose session is open. */
-  const [activeDeck, setActiveDeck] = useState<Deck | null>(null);
+  /** What the open session is: one deck's, or Mix them all (with each card's deck for the chip). */
+  const [run, setRun] = useState<Run | null>(null);
   const [view, setView] = useState<'today' | 'study' | 'complete' | 'allDone'>('today');
   /** The all-words page, opened from the box badge; it sits over whatever screen was showing. */
   const [allWordsOpen, setAllWordsOpen] = useState(false);
@@ -132,26 +139,37 @@ export function StudyFlow({
     return <LoadingScreen name={profile?.displayName} streak={progress?.streak} />;
   }
 
-  /** Start, or continue where it stopped, a deck's session. */
-  async function openDeck(deck: Deck) {
-    const opened = await repo.openDeckSession(deck.id);
-    if (!opened) return;
-    setActiveDeck(deck);
+  function begin(opened: Session, next: Run) {
+    setRun(next);
     setSession(opened);
     setFocusNextCard(false);
     setView(isComplete(opened) ? 'complete' : 'study');
   }
 
-  /** "Mix them all": the first deck with a paused session or cards waiting (11.6 mixes them). */
-  function mix() {
-    const index = statuses!.findIndex((status) => status.pausedLeft !== null || status.waiting > 0);
-    if (index === -1) setView('allDone');
-    else void openDeck(decks[index]);
+  /** Start, or continue where it stopped, a deck's session. */
+  async function openDeck(deck: Deck) {
+    const opened = await repo.openDeckSession(deck.id);
+    if (opened) begin(opened, { kind: 'deck', deck });
+  }
+
+  /**
+   * "Mix them all" (v3 brief 1.5): every deck with cards due, in one stream of random 3–9
+   * chunks. With nothing due anywhere: "All done for today" (11.7 makes this extra practice).
+   */
+  async function mix() {
+    const opened = await repo.openMixSession(decks.map((deck) => deck.id));
+    if (opened) begin(opened.session, { kind: 'mix', deckOf: opened.deckOf });
+    else setView('allDone');
+  }
+
+  function openRun(current: Run) {
+    if (current.kind === 'mix') void mix();
+    else void openDeck(current.deck);
   }
 
   function goHome() {
     setSession(null);
-    setActiveDeck(null);
+    setRun(null);
     setView('today');
   }
 
@@ -200,8 +218,9 @@ export function StudyFlow({
         name={profile?.displayName ?? null}
         decks={decks}
         statuses={statuses}
+        mixPausedLeft={mixPausedLeft ?? null}
         top={topBar()}
-        onMix={mix}
+        onMix={() => void mix()}
         onStudy={(deck) => void openDeck(deck)}
         onAdd={(deck) => setEditor({ mode: 'add', deck })}
       />,
@@ -218,16 +237,18 @@ export function StudyFlow({
     );
   }
 
-  if (view === 'complete' && session && activeDeck) {
-    const index = decks.findIndex((deck) => deck.id === activeDeck.id);
-    const nextCount = statuses[index]?.waiting ?? 0;
+  if (view === 'complete' && session && run) {
+    const nextCount =
+      run.kind === 'mix'
+        ? statuses.reduce((sum, status) => sum + status.waiting, 0)
+        : (statuses[decks.findIndex((deck) => deck.id === run.deck.id)]?.waiting ?? 0);
     return withSheet(
       <SessionComplete
         wordCount={session.scheduled.length}
         nextCount={nextCount}
         streak={progress?.streak}
         focusOnStart={focusNextCard}
-        onNext={() => void openDeck(activeDeck)}
+        onNext={() => openRun(run)}
         onDone={() => {
           setDoneForNow(true);
           goHome();
@@ -236,14 +257,14 @@ export function StudyFlow({
     );
   }
 
-  if (!session || !step || !activeDeck) return withSheet(null);
+  if (!session || !step || !run) return withSheet(null);
 
   if (!loaded || loaded.cardId !== step.cardId) return withSheet(null); // the card is loading (a few ms)
   const card = loaded.card;
 
   /** The session is over: forget it (the deck stops saying "Paused") and celebrate. */
-  function finish(deck: Deck) {
-    void repo.closeDeckSession(deck.id);
+  function finish(current: Run) {
+    void (current.kind === 'mix' ? repo.closeMixSession() : repo.closeDeckSession(current.deck.id));
     setView('complete');
   }
 
@@ -251,12 +272,12 @@ export function StudyFlow({
     // The card was deleted on another device mid-session: skip it.
     const next = answerInSession(session, true);
     setSession(next);
-    if (isComplete(next)) finish(activeDeck);
+    if (isComplete(next)) finish(run);
     return withSheet(null);
   }
 
   async function handleAnswer(correct: boolean) {
-    if (!session || !step || !activeDeck || saving.current) return;
+    if (!session || !step || !run || saving.current) return;
     saving.current = true;
     // Touch taps don't focus buttons on iPhone, so this is only true for keyboard and
     // screen-reader use (and mouse clicks in some browsers, where it does no harm).
@@ -266,7 +287,7 @@ export function StudyFlow({
       const next = answerInSession(session, correct);
       setReaction(correct ? 'happy' : 'cheer');
       setSession(next);
-      if (isComplete(next)) finish(activeDeck);
+      if (isComplete(next)) finish(run);
     } finally {
       saving.current = false;
     }
@@ -280,6 +301,9 @@ export function StudyFlow({
       card={card}
       kind={step.kind}
       progress={Math.min(session.answered, scheduledCount) / scheduledCount}
+      deck={
+        run.kind === 'mix' ? decks.find((deck) => deck.id === run.deckOf[card.card.id]) : undefined
+      }
       practiceLeft={scheduledCount + session.practice.length - session.answered}
       reaction={reaction}
       onAnswer={handleAnswer}

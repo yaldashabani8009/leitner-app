@@ -149,3 +149,90 @@ describe('openDeckSession / closeDeckSession (v3 brief 1.6)', () => {
     expect(await repo.openDeckSession('vocab')).toBeNull();
   });
 });
+
+describe('openMixSession (v3 brief 1.5)', () => {
+  const steady = () => 0.5;
+
+  it('mixes each deck’s real session, with each card’s deck', async () => {
+    const vocab = await add('vocab', ...Array.from({ length: 25 }, (_, i) => `v${i}`));
+    const spelling = await add('spelling', 's1', 's2', 's3', 's4');
+    await add('phrases', 'p1');
+    now = DAY_2;
+    const mix = (await repo.openMixSession(['vocab', 'spelling'], steady))!;
+    // Vocab's session size (20) still applies; phrases weren't asked for.
+    expect(mix.session.scheduled).toHaveLength(24);
+    expect(mix.session.scheduled.filter((id) => vocab.includes(id))).toHaveLength(20);
+    expect(mix.session.scheduled.filter((id) => spelling.includes(id))).toHaveLength(4);
+    expect(new Set(Object.values(mix.deckOf))).toEqual(new Set(['vocab', 'spelling']));
+    // Mixed: the decks take turns in chunks.
+    const decks = mix.session.scheduled.map((id) => mix.deckOf[id]);
+    expect(decks.slice(0, 3).every((deck) => deck === decks[0])).toBe(true);
+    expect(new Set(decks.slice(0, 15)).size).toBe(2);
+  });
+
+  it('answers move boxes; leaving and coming back carries on, practice round at the end', async () => {
+    await add('vocab', 'a', 'b');
+    await add('spelling', 's');
+    now = DAY_2;
+    const first = (await repo.openMixSession(['vocab', 'spelling'], steady))!;
+    const missed = currentStep(first.session)!.cardId;
+    await repo.recordAnswer(missed, false, 'scheduled');
+    const again = (await repo.openMixSession(['vocab', 'spelling'], () => 0.1))!;
+    expect(again.session.scheduled).toEqual(first.session.scheduled);
+    expect(again.session).toMatchObject({ answered: 1, practice: [missed] });
+    expect((await db.cards.get(missed))?.box).toBe(1);
+  });
+
+  it('respects each deck’s daily limit', async () => {
+    await add('phrases', ...Array.from({ length: 12 }, (_, i) => `p${i}`));
+    now = DAY_2;
+    // 25 phrases reviewed earlier today: only 5 more fit under the limit of 30.
+    for (let i = 0; i < 25; i++) {
+      await db.reviewLogs.add({
+        id: `old${i}`,
+        cardId: (await db.cards.toCollection().first())!.id,
+        reviewedAt: '2026-03-11T07:00:00.000Z',
+        correct: true,
+        boxBefore: 1,
+        boxAfter: 2,
+        isPractice: false,
+        createdAt: '2026-03-11T07:00:00.000Z',
+      });
+    }
+    const mix = (await repo.openMixSession(['phrases'], steady))!;
+    expect(mix.session.scheduled).toHaveLength(5);
+  });
+
+  it('nothing due anywhere → null; a finished mix is closed', async () => {
+    await add('vocab', 'a');
+    expect(await repo.openMixSession(['vocab'], steady)).toBeNull();
+    now = DAY_2;
+    const mix = (await repo.openMixSession(['vocab'], steady))!;
+    await repo.recordAnswer(mix.session.scheduled[0], true, 'scheduled');
+    await repo.closeMixSession();
+    expect(await repo.openMixSession(['vocab'], steady)).toBeNull();
+  });
+
+  it('a card deleted mid-mix has no deck', async () => {
+    const [a] = await add('vocab', 'a', 'b');
+    now = DAY_2;
+    await repo.openMixSession(['vocab'], steady);
+    await db.cards.delete(a);
+    const again = (await repo.openMixSession(['vocab'], steady))!;
+    expect(again.deckOf[a]).toBeUndefined();
+  });
+});
+
+describe('mixPausedLeft', () => {
+  it('counts what is left of a mix left half way today, and forgets it tomorrow', async () => {
+    await add('vocab', 'a', 'b');
+    now = DAY_2;
+    expect(await repo.mixPausedLeft()).toBeNull();
+    const mix = (await repo.openMixSession(['vocab'], () => 0.5))!;
+    expect(await repo.mixPausedLeft()).toBeNull(); // opened, nothing answered yet
+    await repo.recordAnswer(mix.session.scheduled[0], false, 'scheduled');
+    expect(await repo.mixPausedLeft()).toBe(2); // one more card + one practice
+    now = '2026-03-12T08:00:00.000Z';
+    expect(await repo.mixPausedLeft()).toBeNull();
+  });
+});
