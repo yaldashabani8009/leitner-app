@@ -15,7 +15,7 @@ import {
 } from '../domain/card/validate';
 import { BACKUP_APP, BACKUP_VERSION, type Backup, type BackupEntry } from '../domain/backup/file';
 import { shouldOfferRestore, shouldRemindToSave, snoozeUntil } from '../domain/backup/reminder';
-import { waitingToday } from '../domain/reminder/reminder';
+import { enabledDecks } from '../domain/decks/decks';
 import { answer, isDue, newCard, resetToBox1 } from '../domain/leitner/engine';
 import { currentStreak, wordsLearned } from '../domain/progress/progress';
 import type { DeckId } from '../domain/leitner/config';
@@ -219,6 +219,51 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         }
       }
       return { status: 'saved' };
+    });
+  }
+
+  /** Each deck's state for the Today screen. */
+  async function deckStatusesOf(decks: readonly DeckId[]): Promise<DeckStatus[]> {
+    const now = deps.now();
+    // Every read starts before the first await (see nextSessionCardIds).
+    const [profile, maybeDue, recent, perDeck] = await Promise.all([
+      db.profile.toCollection().first(),
+      maybeDueCards(now),
+      recentLogs(now),
+      Promise.all(
+        decks.map((deck) =>
+          Promise.all([
+            db.cards.where('deck').equals(deck).toArray(),
+            db.meta.get(`${META.sessionOf}${deck}`),
+          ]),
+        ),
+      ),
+    ]);
+    const zone = resolveTimeZone(profile?.timeZone);
+    const date = dateInZone(now, zone);
+    const deckOf = new Map<string, DeckId>();
+    for (const [cards] of perDeck) for (const card of cards) deckOf.set(card.id, card.deck);
+    const logs = recent.map((log) => ({ ...log, deck: deckOf.get(log.cardId) }));
+    const todayLogs = logs.filter((log) => dateInZone(log.reviewedAt, zone) === date);
+
+    return decks.map((deck, index) => {
+      const [cards, meta] = perDeck[index];
+      const live = cards.filter((card) => card.deletedAt === null);
+      const due = maybeDue.filter((card) => card.deck === deck && isDue(card, date)).length;
+      const saved = meta?.value as SavedSession | undefined;
+      let pausedLeft: number | null = null;
+      if (saved && saved.date === date) {
+        const session = resumeSession(saved.scheduled, todayLogs);
+        const left = session.scheduled.length + session.practice.length - session.answered;
+        if (left > 0 && session.answered > 0) pausedLeft = left;
+      }
+      return {
+        deck,
+        cardCount: live.length,
+        waiting: waitingInDeck(due, reviewsDoneToday(logs, now, zone, deck), deck),
+        pausedLeft,
+        addedToday: live.filter((card) => card.addedOn === date).length,
+      };
     });
   }
 
@@ -585,18 +630,10 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       });
     },
 
-    /** Words still to review today (due, within the daily cap): the number on the app icon. */
+    /** Cards still to review today in every enabled deck, each within its daily limit: the app icon number. */
     async waitingToday(): Promise<number> {
-      const now = deps.now();
-      const [profile, maybeDue, recent] = await Promise.all([
-        db.profile.toCollection().first(),
-        maybeDueCards(now),
-        recentLogs(now),
-      ]);
-      const zone = resolveTimeZone(profile?.timeZone);
-      const date = dateInZone(now, zone);
-      const due = maybeDue.filter((card) => isDue(card, date)).length;
-      return waitingToday(due, reviewsDoneToday(recent, now, zone));
+      const statuses = await deckStatusesOf(enabledDecks().map((deck) => deck.id));
+      return statuses.reduce((sum, status) => sum + status.waiting, 0);
     },
 
     /** Should "Want a daily reminder?" be offered on this device? (Not after yes, nor during "Not now".) */
@@ -644,48 +681,8 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
     },
 
     /** Each deck's state for the Today screen. Read with useLiveQuery. */
-    async deckStatuses(decks: readonly DeckId[]): Promise<DeckStatus[]> {
-      const now = deps.now();
-      // Every read starts before the first await (see nextSessionCardIds).
-      const [profile, maybeDue, recent, perDeck] = await Promise.all([
-        db.profile.toCollection().first(),
-        maybeDueCards(now),
-        recentLogs(now),
-        Promise.all(
-          decks.map((deck) =>
-            Promise.all([
-              db.cards.where('deck').equals(deck).toArray(),
-              db.meta.get(`${META.sessionOf}${deck}`),
-            ]),
-          ),
-        ),
-      ]);
-      const zone = resolveTimeZone(profile?.timeZone);
-      const date = dateInZone(now, zone);
-      const deckOf = new Map<string, DeckId>();
-      for (const [cards] of perDeck) for (const card of cards) deckOf.set(card.id, card.deck);
-      const logs = recent.map((log) => ({ ...log, deck: deckOf.get(log.cardId) }));
-      const todayLogs = logs.filter((log) => dateInZone(log.reviewedAt, zone) === date);
-
-      return decks.map((deck, index) => {
-        const [cards, meta] = perDeck[index];
-        const live = cards.filter((card) => card.deletedAt === null);
-        const due = maybeDue.filter((card) => card.deck === deck && isDue(card, date)).length;
-        const saved = meta?.value as SavedSession | undefined;
-        let pausedLeft: number | null = null;
-        if (saved && saved.date === date) {
-          const session = resumeSession(saved.scheduled, todayLogs);
-          const left = session.scheduled.length + session.practice.length - session.answered;
-          if (left > 0 && session.answered > 0) pausedLeft = left;
-        }
-        return {
-          deck,
-          cardCount: live.length,
-          waiting: waitingInDeck(due, reviewsDoneToday(logs, now, zone, deck), deck),
-          pausedLeft,
-          addedToday: live.filter((card) => card.addedOn === date).length,
-        };
-      });
+    deckStatuses(decks: readonly DeckId[]): Promise<DeckStatus[]> {
+      return deckStatusesOf(decks);
     },
 
     /**

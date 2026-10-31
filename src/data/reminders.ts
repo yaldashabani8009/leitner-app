@@ -20,6 +20,17 @@ export interface ReminderService {
   save(subscription: DeviceSubscription): Promise<void>;
   /** Asks the server to send "Reminders are on" to this account's devices now. */
   sendTest(): Promise<void>;
+  /** The account's reminder settings (ADR-020), or null when offline. */
+  settings(userId: string): Promise<ReminderSettings | null>;
+  /** Saves a change; the database then works out the next reminder time. Throws when offline. */
+  saveSettings(userId: string, change: Partial<ReminderSettings>): Promise<void>;
+}
+
+/** Saved on the profile (ADR-020). */
+export interface ReminderSettings {
+  /** "19:00", in the profile time zone. */
+  reminderTime: string;
+  remindersOn: boolean;
 }
 
 export function createSupabaseReminders(client: SupabaseClient<Database>): ReminderService {
@@ -41,6 +52,29 @@ export function createSupabaseReminders(client: SupabaseClient<Database>): Remin
         .from('push_subscriptions')
         .upsert(subscription, { onConflict: 'endpoint' });
       if (error) throw new Error(`Could not save the reminder: ${error.message}`);
+    },
+    async settings(userId) {
+      try {
+        const { data, error } = await client
+          .from('profiles')
+          .select('reminder_time, reminders_on')
+          .eq('user_id', userId)
+          .maybeSingle();
+        if (error || !data) return null;
+        return { reminderTime: data.reminder_time.slice(0, 5), remindersOn: data.reminders_on };
+      } catch {
+        return null; // offline
+      }
+    },
+    async saveSettings(userId, change) {
+      const { error } = await client
+        .from('profiles')
+        .update({
+          ...(change.reminderTime !== undefined && { reminder_time: change.reminderTime }),
+          ...(change.remindersOn !== undefined && { reminders_on: change.remindersOn }),
+        })
+        .eq('user_id', userId);
+      if (error) throw new Error(`Could not save the reminder settings: ${error.message}`);
     },
     async sendTest() {
       const { error } = await client.functions.invoke('reminders-test', { body: {} });

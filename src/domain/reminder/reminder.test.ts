@@ -1,84 +1,87 @@
 import { describe, expect, it } from 'vitest';
-import { isReminderTime, reminderMessage, waitingToday, type ReminderFacts } from './reminder';
+import { DECKS } from '../decks/decks';
+import {
+  isStillTimely,
+  minutesOf,
+  reminderMessage,
+  roundToStep,
+  TEST_MESSAGE,
+  waitingAcrossDecks,
+  type DeckDay,
+} from './reminder';
 
-describe('isReminderTime (from 19:00 in the profile zone, once a day)', () => {
-  // 15:30 UTC = 19:00 in Tehran (UTC+3:30).
-  const tehran = (utc: string, lastRemindedOn: string | null = null) =>
-    isReminderTime({ now: utc, timeZone: 'Asia/Tehran', lastRemindedOn });
+const vocab = (due: number, reviewsToday = 0): DeckDay => ({ deck: 'vocab', due, reviewsToday });
+const facts = (decks: DeckDay[], over: { earnedToday?: boolean; streak?: number } = {}) => ({
+  decks,
+  earnedToday: false,
+  streak: 0,
+  ...over,
+});
 
-  it('not before 19:00 local time', () => {
-    expect(tehran('2026-10-29T15:29:00.000Z')).toBe(false);
-  });
-
-  it('from 19:00 local time', () => {
-    expect(tehran('2026-10-29T15:30:00.000Z')).toBe(true);
-    expect(tehran('2026-10-29T18:00:00.000Z')).toBe(true); // 21:30
-  });
-
-  it('not from 23:00 (the evening was missed)', () => {
-    expect(tehran('2026-10-29T19:30:00.000Z')).toBe(false); // 23:00
-  });
-
-  it('only once a local day', () => {
-    expect(tehran('2026-10-29T16:00:00.000Z', '2026-10-29')).toBe(false);
-    expect(tehran('2026-10-29T16:00:00.000Z', '2026-10-28')).toBe(true);
-  });
-
-  it('follows the profile zone, not UTC', () => {
-    // 19:30 in New York is already the next day in UTC.
-    const nyc = { now: '2026-10-29T23:30:00.000Z', timeZone: 'America/New_York' };
-    expect(isReminderTime({ ...nyc, lastRemindedOn: '2026-10-28' })).toBe(true);
-    expect(isReminderTime({ ...nyc, lastRemindedOn: '2026-10-29' })).toBe(false);
+describe('waitingAcrossDecks', () => {
+  it('adds up every deck, each within its own daily limit', () => {
+    expect(
+      waitingAcrossDecks([
+        vocab(20, 90), // 10 left under 100
+        { deck: 'spelling', due: 40, reviewsToday: 0 },
+        { deck: 'phrases', due: 50, reviewsToday: 25 }, // 5 left under 30
+      ]),
+    ).toBe(55);
   });
 });
 
-describe('waitingToday (the number on the app icon)', () => {
-  it('is the due words, but never past the daily cap', () => {
-    expect(waitingToday(12, 0)).toBe(12);
-    expect(waitingToday(150, 90)).toBe(10);
-    expect(waitingToday(40, 100)).toBe(0);
-    expect(waitingToday(40, 130)).toBe(0);
-    expect(waitingToday(0, 0)).toBe(0);
-  });
-});
-
-describe('reminderMessage', () => {
-  const facts = (f: Partial<ReminderFacts>): ReminderFacts => ({
-    dueCount: 0,
-    reviewsToday: 0,
-    earnedToday: false,
-    streak: 0,
-    ...f,
-  });
-
-  it('nothing when today already counts for the streak', () => {
-    expect(reminderMessage(facts({ earnedToday: true, dueCount: 5 }))).toBeNull();
-  });
-
-  it('words waiting, with the number on the app icon', () => {
-    expect(reminderMessage(facts({ dueCount: 12 }))).toEqual({
+describe('reminderMessage (v3 brief 1.11)', () => {
+  it('cards waiting, counted across decks, naming the deck with the most', () => {
+    expect(
+      reminderMessage(facts([vocab(8), { deck: 'spelling', due: 12, reviewsToday: 0 }]), DECKS),
+    ).toEqual({
       title: 'Time for your words',
-      body: '12 words are waiting for you.',
-      badge: 12,
+      body: '20 cards waiting · mostly spelling',
+      badge: 20,
     });
-    expect(reminderMessage(facts({ dueCount: 1 }))?.body).toBe('1 word is waiting for you.');
   });
 
-  it('never more than the daily cap allows', () => {
-    expect(reminderMessage(facts({ dueCount: 150, reviewsToday: 90 }))?.badge).toBe(10);
-  });
-
-  it('nothing once the daily cap is reached', () => {
-    expect(reminderMessage(facts({ dueCount: 40, reviewsToday: 100 }))).toBeNull();
-    expect(reminderMessage(facts({ dueCount: 40, reviewsToday: 120 }))).toBeNull();
-  });
-
-  it('nothing due: a nudge to add a word for the streak', () => {
-    expect(reminderMessage(facts({ streak: 5 }))).toEqual({
-      title: 'Keep your streak going',
-      body: 'Add a word to keep your 5-day streak.',
-      badge: 0,
+  it('one enabled deck: no deck name; one card in the singular', () => {
+    expect(reminderMessage(facts([vocab(1)]))).toEqual({
+      title: 'Time for your words',
+      body: '1 card waiting',
+      badge: 1,
     });
-    expect(reminderMessage(facts({}))?.body).toBe('Add a new word today and start a streak.');
+  });
+
+  it('nothing due: the streak saver, with or without a streak', () => {
+    expect(reminderMessage(facts([vocab(0)], { streak: 4 }))?.body).toBe(
+      'Add a word to keep your 4-day streak.',
+    );
+    expect(reminderMessage(facts([vocab(0)]))?.body).toBe(
+      'Add a new word today and start a streak.',
+    );
+  });
+
+  it('no reminder when the day is earned or every daily limit is reached', () => {
+    expect(reminderMessage(facts([vocab(5)], { earnedToday: true }))).toBeNull();
+    expect(reminderMessage(facts([vocab(5, 100)]))).toBeNull();
+  });
+
+  it('the test message names no fixed hour', () => {
+    expect(TEST_MESSAGE.body).toContain('your reminder time');
+  });
+});
+
+describe('isStillTimely', () => {
+  it('sends up to 4 hours late, not later', () => {
+    const at = '2026-10-31T15:30:00.000Z';
+    expect(isStillTimely(at, '2026-10-31T15:30:00.000Z')).toBe(true);
+    expect(isStillTimely(at, '2026-10-31T19:30:00.000Z')).toBe(true);
+    expect(isStillTimely(at, '2026-10-31T19:31:00.000Z')).toBe(false);
+  });
+});
+
+describe('time picker steps', () => {
+  it('reads and rounds times to 15 minutes', () => {
+    expect(minutesOf('19:00')).toBe(1140);
+    expect(roundToStep('19:07', 15)).toBe('19:00');
+    expect(roundToStep('19:08', 15)).toBe('19:15');
+    expect(roundToStep('23:55', 15)).toBe('00:00');
   });
 });

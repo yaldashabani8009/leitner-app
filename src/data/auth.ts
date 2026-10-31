@@ -29,6 +29,8 @@ export interface AuthService {
   signUp(input: SignUpInput): Promise<AuthResult>;
   sendPasswordReset(email: string): Promise<AuthResult>;
   setNewPassword(password: string): Promise<AuthResult>;
+  /** Signs out on this device (Settings, canvas N13). The session listener then shows Sign in. */
+  signOut(): Promise<void>;
 }
 
 /** The saved sign-in on this device. */
@@ -77,7 +79,7 @@ export function deviceTimeZone(): string {
 
 type AuthClient = Pick<
   SupabaseClient['auth'],
-  'signInWithPassword' | 'signUp' | 'resetPasswordForEmail' | 'updateUser'
+  'signInWithPassword' | 'signUp' | 'resetPasswordForEmail' | 'updateUser' | 'signOut'
 >;
 
 /**
@@ -117,5 +119,9 @@ export function createSupabaseAuth(
     sendPasswordReset: (email) =>
       result(auth.resetPasswordForEmail(email, { redirectTo: siteUrl })),
     setNewPassword: (password) => result(auth.updateUser({ password })),
+    async signOut() {
+      // Local scope: works offline too; the device forgets the session at once.
+      await auth.signOut({ scope: 'local' });
+    },
   };
 }

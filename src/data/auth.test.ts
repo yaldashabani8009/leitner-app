@@ -41,6 +41,7 @@ function fakeClient(error: { name?: string; code?: string } | null = null) {
     signUp: vi.fn(reply),
     resetPasswordForEmail: vi.fn(reply),
     updateUser: vi.fn(reply),
+    signOut: vi.fn(async () => ({ error: null })),
   };
 }
 
@@ -104,5 +105,13 @@ describe('createSupabaseAuth', () => {
 
   it('uses the device time zone by default', () => {
     expect(() => createSupabaseAuth(fakeClient() as never, SITE)).not.toThrow();
+  });
+});
+
+describe('signOut', () => {
+  it('signs out on this device only', async () => {
+    const client = fakeClient();
+    await make(client).signOut();
+    expect(client.signOut).toHaveBeenCalledWith({ scope: 'local' });
   });
 });

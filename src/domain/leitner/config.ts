@@ -44,7 +44,9 @@ export const BACKUP_REMINDER_AFTER_DAYS = 14;
 /** After "Not now" or a saved copy, the backup modals wait this long before asking again (7.12). */
 export const BACKUP_REMINDER_SNOOZE_DAYS = 7;
 
-/** Daily reminder (Yali, 2026-10-29): from 19:00 in the profile time zone, at most once a day. */
-export const DAILY_REMINDER_HOUR = 19;
-/** No reminder from this hour on, if the server missed the evening (e.g. it was paused). */
-export const DAILY_REMINDER_LAST_HOUR = 23;
+/** Daily reminder (ADR-020): at the user's own time in the profile time zone; 19:00 until changed. */
+export const DEFAULT_REMINDER_TIME = '19:00';
+/** The time picker moves in 15-minute steps (v3 brief 1.10). */
+export const REMINDER_TIME_STEP_MINUTES = 15;
+/** A reminder more than this late (the server was paused) is skipped, not sent at night. */
+export const REMINDER_LATE_LIMIT_HOURS = 4;

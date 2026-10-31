@@ -40,6 +40,17 @@ export function BoxIcon({ className, ...props }: IconProps) {
   );
 }
 
+/** Two sliders: settings (canvas N1). */
+export function SettingsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+      <circle cx="15" cy="7" r="2.2" />
+      <circle cx="9" cy="17" r="2.2" />
+    </Icon>
+  );
+}
+
 /** A circular arrow: practice (canvas N3, N8, N11, N12). */
 export function RetryIcon(props: IconProps) {
   return (

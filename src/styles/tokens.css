@@ -50,6 +50,7 @@
   --radius-deck-face: 22px 22px 18px 18px; /* the white face of a deck card */
   --radius-tile: 13px; /* deck icon tiles */
   --radius-delete: 16px; /* the red Delete revealed by a swipe (canvas N9) */
+  --radius-group: 28px; /* settings card holding rows (canvas N13) */
   --radius-stamp: 18px; /* KNEW IT! / NOT YET stamps */
   --radius-highlight: 6px; /* the word marked inside a sentence */
   --radius-pill: 999px;

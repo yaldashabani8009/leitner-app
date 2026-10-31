@@ -39,6 +39,7 @@ export function DemoPage() {
       repo={repo}
       userId="demo"
       reminders={params.has('reminder') ? demoReminders : undefined}
+      onSignOut={() => alert('Sign out (demo)')}
     />
   ) : null;
 }
@@ -70,10 +71,15 @@ const WORDS = [
 const params = new URLSearchParams(location.search);
 
 /** A pretend cloud for the reminder offer: nothing is saved or sent. */
+let demoSettings = { reminderTime: '19:00', remindersOn: true };
 const demoReminders = {
   publicKey: async () => 'BAQIDBA',
   save: async () => {},
   sendTest: async () => {},
+  settings: async () => ({ ...demoSettings }),
+  saveSettings: async (_userId: string, change: Partial<typeof demoSettings>) => {
+    demoSettings = { ...demoSettings, ...change };
+  },
 };
 const demoDb = new LeitnerDb('leitner-dev-demo');
 // Seeded once per page load (React runs effects twice in development).

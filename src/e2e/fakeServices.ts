@@ -49,6 +49,10 @@ export function createE2EServices(): AppServices {
     signUp: async () => ({ ok: false, problem: 'signupsClosed' }),
     sendPasswordReset: async () => ({ ok: true }),
     setNewPassword: async () => ({ ok: true }),
+    async signOut() {
+      localStorage.removeItem(SESSION_KEY);
+      for (const listener of listeners) listener(null);
+    },
   };
 
   const profiles: ProfileSource = {
@@ -66,10 +70,16 @@ export function createE2EServices(): AppServices {
   Object.defineProperty(remote, 'offline', { get: offline });
 
   // No push key: the reminder offer never shows in end-to-end tests (no notifications there).
+  let reminderSettings = { reminderTime: '19:00', remindersOn: true };
   const reminders = {
     publicKey: async () => null,
     save: async () => {},
     sendTest: async () => {},
+    settings: async () => (offline() ? null : { ...reminderSettings }),
+    saveSettings: async (_userId: string, change: Partial<typeof reminderSettings>) => {
+      if (offline()) throw new TypeError('Failed to fetch');
+      reminderSettings = { ...reminderSettings, ...change };
+    },
   };
 
   return { session, auth, profiles, remote, reminders, fromRecoveryLink: false };

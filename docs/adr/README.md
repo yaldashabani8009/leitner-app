@@ -31,5 +31,6 @@ Once **Accepted**, an ADR is not edited. To change a decision, write a new ADR t
 | [017](0017-e2e-tests-with-a-stand-in-cloud.md)        | E2E tests: the real app with a stand-in cloud      | Accepted                  |
 | [018](0018-daily-reminder-web-push.md)                | Daily reminder with web push from Supabase         | Accepted                  |
 | [019](0019-several-decks-in-one-cards-table.md)       | Several decks in one cards table                   | Accepted                  |
+| [020](0020-reminder-time-and-next-reminder-index.md)  | Reminder time per user and next-reminder index     | Accepted                  |
 
 Template: [template.md](template.md)

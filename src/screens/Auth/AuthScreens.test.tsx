@@ -16,6 +16,7 @@ function fakeAuth(result: AuthResult = ok) {
     signUp: vi.fn<AuthService['signUp']>(async () => result),
     sendPasswordReset: vi.fn<AuthService['sendPasswordReset']>(async () => result),
     setNewPassword: vi.fn<AuthService['setNewPassword']>(async () => result),
+    signOut: vi.fn<AuthService['signOut']>(async () => {}),
   } satisfies AuthService;
 }
 

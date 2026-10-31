@@ -5,6 +5,7 @@
 
 import postgres from 'npm:postgres@3.4.5';
 import * as webpush from 'jsr:@negrel/webpush@0.5.0';
+import { enabledDecks } from '../../../src/domain/decks/decks';
 import { currentStreak } from '../../../src/domain/progress/progress';
 import type { ReminderFacts } from '../../../src/domain/reminder/reminder';
 
@@ -69,21 +70,30 @@ export async function factsFor(
   timeZone: string,
   today: string,
 ): Promise<ReminderFacts> {
-  const [{ due }] = await sql`
-    select count(*)::int as due from public.cards
+  const decks = enabledDecks().map((deck) => deck.id);
+  const due = await sql`
+    select deck, count(*)::int as n from public.cards
     where user_id = ${userId} and deleted_at is null and mastered_at is null
-      and due_date <= ${today}::date`;
-  const [{ reviews }] = await sql`
-    select count(*)::int as reviews from public.review_logs
-    where user_id = ${userId} and not is_practice
-      and (reviewed_at at time zone ${timeZone})::date = ${today}::date`;
+      and due_date <= ${today}::date
+    group by deck`;
+  const reviews = await sql`
+    select c.deck, count(*)::int as n from public.review_logs l
+    join public.cards c on c.id = l.card_id
+    where l.user_id = ${userId} and not l.is_practice
+      and (l.reviewed_at at time zone ${timeZone})::date = ${today}::date
+    group by c.deck`;
   const rows = await sql`
     select day::text as day from public.streak_days
     where user_id = ${userId} and day >= ${today}::date - 400`;
   const days = rows.map((row) => row.day as string);
+  const count = (list: { deck: string; n: number }[], deck: string) =>
+    list.find((row) => row.deck === deck)?.n ?? 0;
   return {
-    dueCount: due,
-    reviewsToday: reviews,
+    decks: decks.map((deck) => ({
+      deck,
+      due: count(due as unknown as { deck: string; n: number }[], deck),
+      reviewsToday: count(reviews as unknown as { deck: string; n: number }[], deck),
+    })),
     earnedToday: days.includes(today),
     // Up to yesterday: today isn't earned yet whenever a reminder is sent.
     streak: currentStreak(
