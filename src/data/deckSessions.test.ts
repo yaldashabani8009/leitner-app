@@ -236,3 +236,40 @@ describe('mixPausedLeft', () => {
     expect(await repo.mixPausedLeft()).toBeNull();
   });
 });
+
+describe('cardsAddedOn (extra practice, v3 brief 1.7)', () => {
+  it('today’s new cards of the asked decks; re-added ones count; deleted ones do not', async () => {
+    const [brave, calm] = await add('vocab', 'brave', 'calm');
+    const [receive] = await add('spelling', 'receive');
+    await add('phrases', 'break the ice');
+    await db.cards.update(calm, { deletedAt: now });
+    expect(await repo.cardsAddedOn(['vocab', 'spelling'])).toEqual(
+      expect.arrayContaining([
+        { id: brave, deck: 'vocab' },
+        { id: receive, deck: 'spelling' },
+      ]),
+    );
+    expect(await repo.cardsAddedOn(['vocab', 'spelling'])).toHaveLength(2);
+
+    now = DAY_2;
+    expect(await repo.cardsAddedOn(['vocab'])).toEqual([]);
+    expect(await repo.cardsAddedOn(['vocab'], '2026-03-10')).toEqual([
+      { id: brave, deck: 'vocab' },
+    ]);
+    // "Save & start over" makes it a new word of today.
+    await repo.sendCardBackToStart(brave);
+    expect(await repo.cardsAddedOn(['vocab'])).toEqual([{ id: brave, deck: 'vocab' }]);
+  });
+
+  it('practice answers never move a card or count toward limits or the streak', async () => {
+    const [brave] = await add('vocab', 'brave');
+    const before = await db.cards.get(brave);
+    const days = await db.streakDays.count();
+    await repo.recordAnswer(brave, true, 'practice');
+    await repo.recordAnswer(brave, false, 'practice');
+    expect(await db.cards.get(brave)).toEqual(before);
+    expect(await db.streakDays.count()).toBe(days);
+    expect((await repo.deckStatuses(['vocab']))[0].waiting).toBe(0);
+    expect((await db.reviewLogs.toArray()).every((log) => log.isPractice)).toBe(true);
+  });
+});

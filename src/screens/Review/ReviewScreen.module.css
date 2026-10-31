@@ -338,3 +338,49 @@
     transform: perspective(900px) rotateY(80deg);
   }
 }
+
+/* Extra practice (canvas N11): a white banner instead of the progress bar. */
+.extraBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 40px 24px 0;
+  padding: 10px 10px 10px 16px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  font-size: 15px;
+  font-weight: var(--weight-black);
+}
+
+.extraTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.extraLeft {
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua-pale);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* No coloured panel: the answers (on the back) and one quiet line. */
+.calmFooter {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: 0 24px max(56px, env(safe-area-inset-bottom));
+}
+
+.quiet {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+}

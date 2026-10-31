@@ -9,7 +9,7 @@ interface PillProps {
    */
   variant: 'stat' | 'tag' | 'label';
   /** Fill for "label" pills: cream on review cards, aqua in the practice round. */
-  tone?: 'cream' | 'aqua';
+  tone?: 'cream' | 'aqua' | 'aquaPale';
   icon?: ReactNode;
   /**
    * Full text for screen readers when the visible text alone isn't clear,

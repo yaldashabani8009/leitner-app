@@ -10,6 +10,48 @@
   background: var(--color-cream);
 }
 
+/* Canvas N3: aqua, the count in a small white pill on the right. */
+.practice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 6px;
+  padding: 16px 20px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua);
+  box-shadow: var(--shadow-hard);
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: var(--weight-black);
+  cursor: pointer;
+}
+
+.practiceLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.count {
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  font-size: 14px;
+}
+
+.practice:active {
+  transform: translateY(var(--press-depth));
+  box-shadow: none;
+}
+
+.practice:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
 /* Canvas N3: a white pill with the ink outline and shadow, a + before the words. */
 .add {
   display: flex;
@@ -42,4 +84,8 @@
 .add:focus-visible {
   outline: 3px solid var(--color-focus-ring);
   outline-offset: 3px;
+}
+
+.practice + .add {
+  margin-top: 0;
 }

@@ -38,6 +38,12 @@
   background: var(--color-aqua);
 }
 
+/* Extra practice tag "today's new words" (canvas N11). */
+.aquaPale {
+  background: var(--color-aqua-pale);
+  color: var(--color-ink);
+}
+
 .add {
   min-height: 44px;
   padding: 7px 14px;

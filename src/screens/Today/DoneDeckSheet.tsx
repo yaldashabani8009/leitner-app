@@ -1,6 +1,6 @@
 import type { Deck } from '../../domain/decks/decks';
 import { DeckIcon } from '../../ui/DeckIcon';
-import { PlusIcon } from '../../ui/icons';
+import { PlusIcon, RetryIcon } from '../../ui/icons';
 import { Sheet } from '../../ui/Sheet';
 import styles from './DoneDeckSheet.module.css';
 
@@ -9,13 +9,22 @@ interface DoneDeckSheetProps {
   deck: Deck | null;
   onClose: () => void;
   onAdd: (deck: Deck) => void;
+  /** Cards added to this deck today; "Practice today's new words" shows only when > 0. */
+  addedToday: number;
+  onPractice: (deck: Deck) => void;
 }
 
 /**
- * Tapping a finished deck (canvas N3): a small sheet with "Add …". Roadmap 11.7 adds
- * "Practice today's new words" above it, when words were added to the deck today.
+ * Tapping a finished deck (canvas N3): "Practice today's new words" (only when words were
+ * added to it today) and "Add …".
  */
-export function DoneDeckSheet({ deck, onClose, onAdd }: DoneDeckSheetProps) {
+export function DoneDeckSheet({
+  deck,
+  onClose,
+  onAdd,
+  addedToday,
+  onPractice,
+}: DoneDeckSheetProps) {
   return (
     <Sheet
       open={deck !== null}
@@ -30,6 +39,15 @@ export function DoneDeckSheet({ deck, onClose, onAdd }: DoneDeckSheetProps) {
         )
       }
     >
+      {deck && addedToday > 0 && (
+        <button type="button" className={styles.practice} onClick={() => onPractice(deck)}>
+          <span className={styles.practiceLabel}>
+            <RetryIcon size={20} />
+            Practice today's new words
+          </span>
+          <span className={styles.count}>{addedToday}</span>
+        </button>
+      )}
       {deck && (
         <button type="button" className={styles.add} onClick={() => onAdd(deck)}>
           <PlusIcon size={20} />
