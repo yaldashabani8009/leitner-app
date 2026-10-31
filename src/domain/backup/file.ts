@@ -11,8 +11,11 @@ import { assertCalendarDate, type CalendarDate } from '../time/calendarDate';
 import { dateInZone, dateOfTimestampInZone } from '../time/zonedDate';
 
 export const BACKUP_APP = 'leitner-backup';
-/** Version 2 (v3 decks) adds card.deck, card.addedOn and log.typedAnswer. Version 1 files still restore. */
-export const BACKUP_VERSION = 2;
+/**
+ * Version 2 (v3 decks) adds card.deck, card.addedOn and log.typedAnswer; version 3 adds
+ * entry.translation (sentence translations). Version 1 and 2 files still restore.
+ */
+export const BACKUP_VERSION = 3;
 
 export interface BackupCard {
   id: string;
@@ -32,6 +35,8 @@ export interface BackupEntry {
   cardId: string;
   kind: 'synonym' | 'meaning' | 'sentence';
   text: string;
+  /** Sentences only; null for none. */
+  translation: string | null;
   position: number;
   updatedAt: string;
   deletedAt: string | null;
@@ -132,6 +137,7 @@ const ENTRY: Schema = {
   cardId: id,
   kind: oneOf('synonym', 'meaning', 'sentence'),
   text: id,
+  translation: nullable(id),
   position: whole,
   updatedAt: timestamp,
   deletedAt: nullable(timestamp),
@@ -186,6 +192,11 @@ function upgradeCardsV1(raw: unknown, zone: string): unknown {
   });
 }
 
+function withoutTranslations(raw: unknown): unknown {
+  if (!Array.isArray(raw)) return raw;
+  return raw.map((entry) => (isObject(entry) ? { ...entry, translation: null } : entry));
+}
+
 function upgradeLogsV1(raw: unknown): unknown {
   if (!Array.isArray(raw)) return raw;
   return raw.map((log) => (isObject(log) ? { ...log, typedAnswer: null } : log));
@@ -212,14 +223,17 @@ export function readBackup(fileText: string): ReadBackup {
       : 'UTC';
   const cards = pickAll(isV1 ? upgradeCardsV1(raw.cards, zone) : raw.cards, CARD) as
     BackupCard[] | null;
-  const entries = pickAll(raw.entries, ENTRY) as BackupEntry[] | null;
+  const isV2 = raw.version === 2;
+  // Versions 1 and 2 have no translations: every entry gets none.
+  const entries = pickAll(isV1 || isV2 ? withoutTranslations(raw.entries) : raw.entries, ENTRY) as
+    BackupEntry[] | null;
   const reviewLogs = pickAll(isV1 ? upgradeLogsV1(raw.reviewLogs) : raw.reviewLogs, LOG) as
     BackupLog[] | null;
   const streakDays = pickAll(raw.streakDays, STREAK_DAY) as BackupStreakDay[] | null;
   const profile =
     raw.profile === null ? null : (pick(raw.profile, PROFILE) as BackupProfile | null);
   if (
-    (raw.version !== BACKUP_VERSION && !isV1) ||
+    (raw.version !== BACKUP_VERSION && !isV1 && !isV2) ||
     !timestamp(raw.exportedAt) ||
     !id(raw.userId) ||
     !cards ||

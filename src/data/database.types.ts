@@ -56,6 +56,7 @@ export type Database = {
           kind: Database['public']['Enums']['entry_kind'];
           position: number;
           text: string;
+          translation: string | null;
           updated_at: string;
           user_id: string;
           server_updated_at: string;
@@ -67,6 +68,7 @@ export type Database = {
           kind: Database['public']['Enums']['entry_kind'];
           position?: number;
           text: string;
+          translation?: string | null;
           updated_at?: string;
           user_id?: string;
           server_updated_at?: string;
@@ -78,6 +80,7 @@ export type Database = {
           kind?: Database['public']['Enums']['entry_kind'];
           position?: number;
           text?: string;
+          translation?: string | null;
           updated_at?: string;
           user_id?: string;
           server_updated_at?: string;

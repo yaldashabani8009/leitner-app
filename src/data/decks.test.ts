@@ -196,6 +196,16 @@ describe('backup version 2 and old version-1 files', () => {
     await repo.addCard(draft('brave'));
     const spelling = await repo.addCard(draft('brave'), 'spelling');
     if (spelling.status !== 'created') throw new Error(spelling.status);
+    const vocabId = (await repo.findCardIdByWord('brave'))!;
+    const card = (await repo.getCard(vocabId))!;
+    await repo.editCard(vocabId, {
+      word: 'brave',
+      synonyms: card.synonyms,
+      meanings: card.meanings,
+      sentences: [
+        { id: card.sentences[0].id, text: card.sentences[0].text, translation: 'شجاع بود.' },
+      ],
+    });
     await db.reviewLogs.add({
       id: 'l1',
       cardId: spelling.cardId,
@@ -208,7 +218,7 @@ describe('backup version 2 and old version-1 files', () => {
       createdAt: now,
     });
     const file = JSON.stringify(await repo.exportBackup('u1'));
-    expect(JSON.parse(file).version).toBe(2);
+    expect(JSON.parse(file).version).toBe(3);
     const read = readBackup(file);
     if (!read.ok) throw new Error(read.problem);
 
@@ -221,6 +231,11 @@ describe('backup version 2 and old version-1 files', () => {
     expect(await rows(other)).toEqual(await rows(db));
     expect((await rows(other)).cards.map((c) => c.deck).sort()).toEqual(['spelling', 'vocab']);
     expect((await rows(other)).logs[0].typedAnswer).toBe('bravve');
+    // Sentence translations come back too (backup version 3).
+    const entries = await other.entries.toArray();
+    expect(entries.find((e) => e.kind === 'sentence' && e.cardId === vocabId)?.translation).toBe(
+      'شجاع بود.',
+    );
   });
 
   it('a version-1 file restores: every card becomes vocab, added on its creation day', async () => {

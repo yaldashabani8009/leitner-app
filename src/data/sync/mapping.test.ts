@@ -38,11 +38,24 @@ describe('device ↔ cloud rows', () => {
       cardId: 'c1',
       kind: 'meaning',
       text: 'بستنی',
+      translation: null,
       position: 2,
       updatedAt: '2026-03-10T08:00:00.000Z',
       deletedAt: '2026-03-11T08:00:00.000Z',
     };
     expect(entryFromRemote({ ...entryToRemote(entry), ...cloudFields })).toEqual(entry);
+    // A sentence's Persian goes both ways; an old row without one has none.
+    const sentence: EntryRow = {
+      ...entry,
+      kind: 'sentence',
+      text: 'I love it.',
+      translation: 'دوستش دارم.',
+    };
+    expect(entryFromRemote({ ...entryToRemote(sentence), ...cloudFields })).toEqual(sentence);
+    expect(entryToRemote({ ...sentence, translation: undefined }).translation).toBeNull();
+    const old = { ...entryToRemote(sentence), ...cloudFields } as Record<string, unknown>;
+    delete old.translation;
+    expect(entryFromRemote(old as never).translation).toBeNull();
   });
 
   it('a review log survives the round trip, including "mastered" (box after = null)', () => {
