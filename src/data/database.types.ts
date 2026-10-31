@@ -20,6 +20,7 @@ export type Database = {
           id: string;
           user_id: string;
           endpoint: string;
+          next_reminder_at: string | null;
           p256dh: string;
           auth: string;
           created_at: string;
@@ -29,6 +30,7 @@ export type Database = {
           id?: string;
           user_id?: string;
           endpoint: string;
+          next_reminder_at?: string | null;
           p256dh: string;
           auth: string;
           created_at?: string;
@@ -38,6 +40,7 @@ export type Database = {
           id?: string;
           user_id?: string;
           endpoint?: string;
+          next_reminder_at?: string | null;
           p256dh?: string;
           auth?: string;
           created_at?: string;
@@ -91,8 +94,10 @@ export type Database = {
       };
       cards: {
         Row: {
+          added_on: string;
           box: number;
           created_at: string;
+          deck: string;
           deleted_at: string | null;
           due_date: string;
           id: string;
@@ -103,8 +108,10 @@ export type Database = {
           server_updated_at: string;
         };
         Insert: {
+          added_on?: string;
           box?: number;
           created_at?: string;
+          deck?: string;
           deleted_at?: string | null;
           due_date: string;
           id: string;
@@ -115,8 +122,10 @@ export type Database = {
           server_updated_at?: string;
         };
         Update: {
+          added_on?: string;
           box?: number;
           created_at?: string;
+          deck?: string;
           deleted_at?: string | null;
           due_date?: string;
           id?: string;
@@ -132,6 +141,8 @@ export type Database = {
         Row: {
           created_at: string;
           display_name: string | null;
+          reminder_time: string;
+          reminders_on: boolean;
           time_zone: string;
           updated_at: string;
           user_id: string;
@@ -139,6 +150,8 @@ export type Database = {
         Insert: {
           created_at?: string;
           display_name?: string | null;
+          reminder_time?: string;
+          reminders_on?: boolean;
           time_zone?: string;
           updated_at?: string;
           user_id: string;
@@ -146,6 +159,8 @@ export type Database = {
         Update: {
           created_at?: string;
           display_name?: string | null;
+          reminder_time?: string;
+          reminders_on?: boolean;
           time_zone?: string;
           updated_at?: string;
           user_id?: string;
@@ -162,6 +177,7 @@ export type Database = {
           id: string;
           is_practice: boolean;
           reviewed_at: string;
+          typed_answer: string | null;
           user_id: string;
           server_updated_at: string;
         };
@@ -174,6 +190,7 @@ export type Database = {
           id: string;
           is_practice?: boolean;
           reviewed_at: string;
+          typed_answer?: string | null;
           user_id?: string;
           server_updated_at?: string;
         };
@@ -186,6 +203,7 @@ export type Database = {
           id?: string;
           is_practice?: boolean;
           reviewed_at?: string;
+          typed_answer?: string | null;
           user_id?: string;
           server_updated_at?: string;
         };

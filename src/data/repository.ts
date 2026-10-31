@@ -18,6 +18,7 @@ import { shouldOfferRestore, shouldRemindToSave, snoozeUntil } from '../domain/b
 import { waitingToday } from '../domain/reminder/reminder';
 import { answer, isDue, newCard, resetToBox1 } from '../domain/leitner/engine';
 import { currentStreak, wordsLearned } from '../domain/progress/progress';
+import type { DeckId } from '../domain/leitner/config';
 import { pickSessionCards, reviewsDoneToday } from '../domain/session/pick';
 import { dayCountsForStreak } from '../domain/session/streakDay';
 import { isOnOrBefore } from '../domain/time/calendarDate';
@@ -105,10 +106,10 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
   }
 
   /** The live (not deleted) card with this word, if any. */
-  async function findByWord(word: string): Promise<CardRow | undefined> {
+  async function findByWord(word: string, deck: DeckId = 'vocab'): Promise<CardRow | undefined> {
     return db.cards
-      .where('wordKey')
-      .equals(wordKey(word))
+      .where('[deck+wordKey]')
+      .equals([deck, wordKey(word)])
       .filter((card) => card.deletedAt === null)
       .first();
   }
@@ -149,8 +150,8 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
      * The id of the live card with this word (ignoring capitals and extra spaces), if any.
      * The add sheet asks this first, so the duplicate dialog can offer "Open my card" or "Cancel".
      */
-    async findCardIdByWord(word: string): Promise<string | undefined> {
-      return (await findByWord(word))?.id;
+    async findCardIdByWord(word: string, deck: DeckId = 'vocab'): Promise<string | undefined> {
+      return (await findByWord(word, deck))?.id;
     },
 
     /**
@@ -162,7 +163,8 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         const now = deps.now();
         const card = await db.cards.get(cardId);
         if (!card || card.deletedAt !== null) throw new Error(`No card with id ${cardId}`);
-        await db.cards.put({ ...card, ...resetToBox1(await today(now)), updatedAt: now });
+        const date = await today(now);
+        await db.cards.put({ ...card, ...resetToBox1(date), addedOn: date, updatedAt: now });
         await queue('cards', cardId, now);
       });
     },
@@ -171,12 +173,13 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
      * Add a word. If it already exists (ignoring capitals and spaces), no copy is made:
      * the existing card goes back to box 1, due tomorrow (mastered or not), and its id is returned.
      */
-    addCard(draft: CardDraft): Promise<AddCardResult> {
+    addCard(draft: CardDraft, deck: DeckId = 'vocab'): Promise<AddCardResult> {
       return db.transaction('rw', ALL_TABLES, async () => {
         const now = deps.now();
-        const existing = await findByWord(draft.word);
+        const existing = await findByWord(draft.word, deck);
+        const date = await today(now);
         if (existing) {
-          await db.cards.put({ ...existing, ...resetToBox1(await today(now)), updatedAt: now });
+          await db.cards.put({ ...existing, ...resetToBox1(date), addedOn: date, updatedAt: now });
           await queue('cards', existing.id, now);
           return { status: 'duplicate', cardId: existing.id };
         }
@@ -189,8 +192,10 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         await db.cards.add({
           id: cardId,
           word: valid.word,
+          deck,
           wordKey: wordKey(valid.word),
-          ...newCard(await today(now)),
+          addedOn: date,
+          ...newCard(date),
           createdAt: now,
           updatedAt: now,
           deletedAt: null,
@@ -222,7 +227,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         if (!result.ok) return { status: 'invalid', errors: result.errors };
         const { card: valid } = result;
 
-        const other = await findByWord(valid.word);
+        const other = await findByWord(valid.word, card.deck);
         if (other && other.id !== cardId)
           return { status: 'invalid', errors: { word: 'duplicate' } };
 
@@ -297,6 +302,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
           boxBefore: card.box,
           boxAfter,
           isPractice: kind === 'practice',
+          typedAnswer: null,
           createdAt: now,
         };
         await db.reviewLogs.add(log);
@@ -391,6 +397,8 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         cards: cards.map((card) => ({
           id: card.id,
           word: card.word,
+          deck: card.deck,
+          addedOn: card.addedOn,
           box: card.box,
           dueDate: card.dueDate,
           masteredAt: card.masteredAt,
@@ -399,7 +407,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
           deletedAt: card.deletedAt,
         })),
         entries,
-        reviewLogs,
+        reviewLogs: reviewLogs.map((log) => ({ ...log, typedAnswer: log.typedAnswer ?? null })),
         streakDays,
       };
     },
@@ -428,7 +436,8 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         for (const card of backup.cards) {
           const row: CardRow = { ...card, wordKey: wordKey(card.word) };
           const local = await db.cards.get(card.id);
-          const same = local || card.deletedAt !== null ? undefined : await findByWord(card.word);
+          const same =
+            local || card.deletedAt !== null ? undefined : await findByWord(card.word, card.deck);
           if (same) {
             target.set(card.id, same.id);
             mergedInto.set(card.id, same.id);

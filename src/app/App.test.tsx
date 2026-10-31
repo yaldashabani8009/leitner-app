@@ -68,6 +68,8 @@ describe('App start-up', () => {
       {
         id: crypto.randomUUID(),
         word: 'brave',
+        deck: 'vocab',
+        added_on: '2026-03-10',
         box: 1,
         due_date: '2026-03-11',
         mastered_at: null,

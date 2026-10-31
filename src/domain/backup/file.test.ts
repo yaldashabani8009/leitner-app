@@ -6,7 +6,7 @@ const T = '2026-03-10T08:00:00.000Z';
 function sample(): Backup {
   return {
     app: 'leitner-backup',
-    version: 1,
+    version: 2,
     exportedAt: T,
     userId: 'u1',
     profile: { displayName: 'Yali', timeZone: 'Asia/Tehran' },
@@ -14,6 +14,8 @@ function sample(): Backup {
       {
         id: 'c1',
         word: 'brave',
+        deck: 'vocab',
+        addedOn: '2026-03-10',
         box: 2,
         dueDate: '2026-03-12',
         masteredAt: null,
@@ -25,6 +27,8 @@ function sample(): Backup {
       {
         id: 'c2',
         word: 'calm',
+        deck: 'spelling',
+        addedOn: '2026-03-10',
         box: 1,
         dueDate: '2026-03-11',
         masteredAt: null,
@@ -53,6 +57,7 @@ function sample(): Backup {
         boxBefore: 1,
         boxAfter: 2,
         isPractice: false,
+        typedAnswer: null,
         createdAt: T,
       },
       {
@@ -63,6 +68,7 @@ function sample(): Backup {
         boxBefore: 5,
         boxAfter: null,
         isPractice: false,
+        typedAnswer: null,
         createdAt: T,
       },
     ],
@@ -99,7 +105,7 @@ describe('readBackup', () => {
   });
 
   it('refuses a backup from a newer version of the app', () => {
-    expect(read({ ...sample(), version: 2 })).toEqual({ ok: false, problem: 'newerVersion' });
+    expect(read({ ...sample(), version: 3 })).toEqual({ ok: false, problem: 'newerVersion' });
   });
 
   const card = sample().cards[0];
@@ -107,7 +113,7 @@ describe('readBackup', () => {
   const log = sample().reviewLogs[0];
   it.each<[string, Record<string, unknown>]>([
     ['version 0', { version: 0 }],
-    ['version as text', { version: '1' }],
+    ['version as text', { version: '2' }],
     ['no export time', { exportedAt: undefined }],
     ['an export time that is not a time', { exportedAt: 'yesterday' }],
     ['no account', { userId: '' }],
@@ -127,6 +133,9 @@ describe('readBackup', () => {
     ['a streak day that is not a date', { streakDays: [{ day: 'today', id: 's', createdAt: T }] }],
     ['a list item without its card', { entries: [{ ...entry, cardId: 'gone' }] }],
     ['a review without its card', { reviewLogs: [{ ...log, cardId: 'gone' }] }],
+    ['an unknown deck', { cards: [{ ...card, deck: 'grammar' }] }],
+    ['a card without addedOn', { cards: [{ ...card, addedOn: undefined }] }],
+    ['a typed answer that is a number', { reviewLogs: [{ ...log, typedAnswer: 5 }] }],
   ])('refuses %s as damaged', (_label, change) => {
     expect(read({ ...sample(), ...change })).toEqual({ ok: false, problem: 'damaged' });
   });
@@ -147,5 +156,61 @@ describe('backupFileName', () => {
     expect(backupFileName('2026-03-10T21:00:00.000Z', 'America/New_York')).toBe(
       'leitner-backup-2026-03-10.json',
     );
+  });
+});
+
+function omit(row: object, ...keys: string[]): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(row).filter(([key]) => !keys.includes(key)));
+}
+
+describe('readBackup: version 1 files still restore', () => {
+  /** A version-1 file: no deck, addedOn or typedAnswer. */
+  function v1(): Record<string, unknown> {
+    const base = sample();
+    return {
+      ...base,
+      version: 1,
+      cards: base.cards.map((card) => omit(card, 'deck', 'addedOn')),
+      reviewLogs: base.reviewLogs.map((log) => omit(log, 'typedAnswer')),
+    };
+  }
+
+  it('makes every card vocab, added on its creation day in the profile time zone', () => {
+    const file = v1();
+    // 23:30 UTC is already the next day in Tehran.
+    (file.cards as Record<string, unknown>[])[0].createdAt = '2026-03-10T23:30:00.000Z';
+    // A row pulled from the cloud keeps Postgres' format.
+    (file.cards as Record<string, unknown>[])[1].createdAt = '2026-03-10 08:00:00.123456+00:00';
+    const result = read(file);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.backup.version).toBe(2);
+    expect(result.backup.cards.map((c) => [c.deck, c.addedOn])).toEqual([
+      ['vocab', '2026-03-11'],
+      ['vocab', '2026-03-10'],
+    ]);
+    expect(result.backup.reviewLogs.every((l) => l.typedAnswer === null)).toBe(true);
+  });
+
+  it('uses UTC when the file has no profile', () => {
+    const file = v1();
+    file.profile = null;
+    (file.cards as Record<string, unknown>[])[0].createdAt = '2026-03-10T23:30:00.000Z';
+    const result = read(file);
+    expect(result.ok && result.backup.cards[0].addedOn).toBe('2026-03-10');
+  });
+
+  it('still refuses a damaged version-1 file', () => {
+    const noTime = v1();
+    (noTime.cards as Record<string, unknown>[])[0].createdAt = 'yesterday';
+    expect(read(noTime)).toEqual({ ok: false, problem: 'damaged' });
+    expect(read({ ...v1(), cards: ['brave'], reviewLogs: ['x'] })).toEqual({
+      ok: false,
+      problem: 'damaged',
+    });
+    expect(read({ ...v1(), cards: {}, reviewLogs: {} })).toEqual({
+      ok: false,
+      problem: 'damaged',
+    });
   });
 });

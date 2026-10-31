@@ -21,3 +21,9 @@ Option 2. `cards.deck` is `vocab | spelling | phrases` (existing cards become `v
 - Everything must work with one or with all three decks enabled; tests use fixtures with all enabled.
 - Old data without a deck (cloud rows, v1 backups) is read as `vocab` (`deckOrVocab`).
 - Cross-deck features (Mix them all, box badge, reminders) count over all decks and filter by `deck` where needed.
+
+## Data (roadmap 11.2)
+
+- Cloud: migration `20261031182050_decks` adds `cards.deck`, `cards.added_on` (backfilled from `created_at` in the profile zone), the unique index `(user_id, deck, lower(word))`, the index `(user_id, deck, due_date)`, `review_logs.typed_answer`, and the reminder columns of ADR-020. `20261031182115_decks_added_on_default` gives `added_on` a default, so the app before v3 keeps syncing until it updates.
+- Device: Dexie version 4 adds `deck`, `addedOn` and the compound index `[deck+wordKey]`; its upgrade makes every old card vocab, added on its creation day.
+- Backup: version 2 carries `deck`, `addedOn` and `typedAnswer`; version-1 files still restore (every card vocab).

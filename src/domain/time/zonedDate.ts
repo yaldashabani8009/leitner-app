@@ -80,3 +80,26 @@ export function hourInZone(instant: string, timeZone: string): number {
   }
   return Number(formatter.format(new Date(Date.parse(instant))));
 }
+
+const ANY_TIMESTAMP =
+  /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(?::(\d{2}))?(?:\.(\d+))?(Z|[+-]\d{2}(?::?\d{2})?)?$/;
+
+/**
+ * The calendar date in `timeZone` of a timestamp from the device ("…T08:15:00.000Z") or from
+ * Postgres ("… 08:15:00.123456+00:00"). Used to give old cards their `addedOn` day (v3 upgrade).
+ * A timestamp it can't read falls back to its own first ten characters, so an upgrade never fails.
+ */
+export function dateOfTimestampInZone(timestamp: string, timeZone: string): CalendarDate {
+  const match = ANY_TIMESTAMP.exec(timestamp);
+  if (!match) return timestamp.slice(0, 10);
+  const [, date, hm, seconds = '00', fraction = '0', zone = 'Z'] = match;
+  let offset = '';
+  if (zone === 'Z') offset = 'Z';
+  else {
+    const digits = zone.replace(':', '');
+    offset = `${digits.slice(0, 3)}:${digits.slice(3, 5).padEnd(2, '0')}`;
+  }
+  const ms = Date.parse(`${date}T${hm}:${seconds}.${fraction.slice(0, 3).padEnd(3, '0')}${offset}`);
+  if (Number.isNaN(ms)) return timestamp.slice(0, 10);
+  return dateInZone(new Date(ms).toISOString(), timeZone);
+}

@@ -4,6 +4,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DeckId } from '../../domain/leitner/config';
 import type { Database } from '../database.types';
 import type {
   CardUpload,
@@ -48,11 +49,11 @@ export interface SyncRemote {
     limit: number,
   ): Promise<RemoteRows[T][]>;
   /** The cloud's live card with this word, ignoring capitals. */
-  findCardByWord(word: string): Promise<RemoteCard | null>;
+  findCardByWord(word: string, deck: DeckId): Promise<RemoteCard | null>;
   entriesOfCard(cardId: string): Promise<RemoteEntry[]>;
 }
 
-/** The cloud already has a live card with this word (unique index cards_user_word_unique). */
+/** The cloud already has a live card with this word (unique index cards_user_deck_word_unique). */
 export class DuplicateWordError extends Error {
   constructor() {
     super('A card with this word already exists in the cloud.');
@@ -106,10 +107,11 @@ export function createSupabaseRemote(client: SupabaseClient<Database>): SyncRemo
       check(error);
       return (data ?? []) as unknown as RemoteRows[typeof table][];
     },
-    async findCardByWord(word) {
+    async findCardByWord(word, deck) {
       const { data, error } = await client
         .from('cards')
         .select('*')
+        .eq('deck', deck)
         .ilike('word', exactPattern(word))
         .is('deleted_at', null)
         .limit(1)
