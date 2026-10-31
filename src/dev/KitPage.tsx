@@ -26,7 +26,7 @@ export function KitPage() {
 
   return (
     <main className={styles.page}>
-      <TopBar wordsLearned={128} streak={12} onAdd={() => setSheet('bottom')} />
+      <TopBar cardCount={312} streak={12} onAdd={() => setSheet('bottom')} />
 
       <Section title="Mascot" id="mascot">
         <div className={styles.mascotGrid}>

@@ -12,3 +12,13 @@
   stroke: var(--color-ink);
   stroke-width: 2.2;
 }
+
+.box {
+  fill: var(--color-cream);
+  stroke: var(--color-ink);
+  stroke-width: 2.2;
+}
+
+.boxLine {
+  fill: none;
+}

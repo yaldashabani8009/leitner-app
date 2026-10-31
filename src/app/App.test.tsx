@@ -54,6 +54,14 @@ describe('App start-up', () => {
     expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
   });
 
+  it('cold start: only the cream page while the session loads, never a nameless "Leitner"', async () => {
+    const { value } = services({ userId: null, offline: false });
+    value.session.load = () => new Promise(() => {}); // still loading
+    render(<App services={value} />);
+    expect(screen.getByLabelText('Opening your box')).toBeInTheDocument();
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+  });
+
   it('signed in → loading with the profile name copied onto the device, then the box', async () => {
     const userId = `u-${crypto.randomUUID()}`;
     render(<App services={services({ userId, offline: false }, { minLoadingMs: 300 }).value} />);

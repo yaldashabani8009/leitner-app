@@ -114,23 +114,54 @@ describe('StudyFlow', () => {
     expect(screen.queryByText(/in a row/)).not.toBeInTheDocument();
   });
 
-  it('shows words learned and the streak in the top bar, and the streak on Session complete', async () => {
+  it('shows every card in the box and the streak in the top bar, and the streak on Session complete', async () => {
     await addCards('brave', 'calm'); // day 1: nothing was due, a word was added → streak 1
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
-    expect(await screen.findByText('0 words learned')).toBeInTheDocument();
+    expect(await screen.findByText('2 cards in your box')).toBeInTheDocument();
     expect(screen.getByText('1-day streak')).toBeInTheDocument();
 
     await flipAndAnswer('Knew it!');
-    expect(await screen.findByText('1 word learned')).toBeInTheDocument();
     await flipAndAnswer('Not yet');
     await flipAndAnswer('Knew it!'); // practice: changes nothing
 
     // Both due cards were reviewed: day 2 counts too.
     expect(await screen.findByText(/2 days in a row!/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
-    expect(await screen.findByText('1 word learned')).toBeInTheDocument();
+    // The badge counts every card, whatever its box.
+    expect(await screen.findByText('2 cards in your box')).toBeInTheDocument();
     expect(screen.getByText('2-day streak')).toBeInTheDocument();
+  });
+
+  it('the box badge opens the all-words page; Back returns to where you were', async () => {
+    await addCards('brave');
+    now = '2026-03-10T09:00:00.000Z';
+    await addCards('calm');
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(await screen.findByRole('button', { name: '2 cards in your box' }));
+    expect(await screen.findByRole('heading', { name: /In your box/ })).toBeInTheDocument();
+    const list = await screen.findByRole('list');
+    // Newest first.
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['calm', 'brave']);
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(await screen.findByRole('button', { name: '2 cards in your box' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /In your box/ })).not.toBeInTheDocument();
+  });
+
+  it('the all-words page of an empty box says so', async () => {
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(await screen.findByRole('button', { name: '0 cards in your box' }));
+    expect(await screen.findByText('Your box is empty', { selector: 'p' })).toBeInTheDocument();
+  });
+
+  it('shows one Loading screen, already with the name (never a nameless "Leitner" first)', async () => {
+    render(<StudyFlow repo={repo} minLoadingMs={60_000} />);
+    expect(await screen.findByRole('heading', { name: "Yali's Leitner." })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Leitner.' })).not.toBeInTheDocument();
   });
 
   it('restoring a backup keeps "Your words are back!" open while the review starts behind it', async () => {

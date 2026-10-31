@@ -14,7 +14,7 @@ test('sign in, add words, then review them the next day', async ({ page }) => {
   await saveWord(page, CALM);
   // Nothing was due and a word was added: day 1 counts for the streak.
   await expect(spoken(page, '1-day streak')).toBeAttached();
-  await expect(spoken(page, '0 words learned')).toBeAttached();
+  await expect(spoken(page, '2 cards in your box')).toBeAttached();
 
   // The next day both words are due.
   await page.clock.setFixedTime(DAY_2);
@@ -42,7 +42,7 @@ test('sign in, add words, then review them the next day', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done for today' }).click();
   await expect(page.getByRole('heading', { name: 'All done for today' })).toBeVisible();
-  await expect(spoken(page, '1 word learned')).toBeAttached();
+  await expect(spoken(page, '2 cards in your box')).toBeAttached();
   await expect(spoken(page, '2-day streak')).toBeAttached();
 });
 
