@@ -41,7 +41,8 @@ test('sign in, add words, then review them the next day', async ({ page }) => {
   // Home (no "are you sure?"), then Continue where it stopped.
   await expect(cardFront(page)).toBeVisible();
   await page.getByRole('button', { name: 'Home' }).click();
-  await page.getByRole('button', { name: 'Vocab, paused · 1 left. Continue' }).click();
+  await expect(page.getByText('Paused · 1 left')).toBeVisible();
+  await page.getByRole('button', { name: /Mix them all/ }).click();
 
   // Second card with the keyboard: Space flips, ← is "Not yet".
   await expect(cardFront(page)).toBeVisible();

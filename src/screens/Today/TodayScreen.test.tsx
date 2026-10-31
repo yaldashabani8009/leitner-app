@@ -113,4 +113,19 @@ describe('TodayScreen (canvas N1)', () => {
     expect(items[0].className).toMatch(/top/);
     expect(items[1].className).toMatch(/middle/);
   });
+
+  it('a mix left half way says so under "Mix them all"', () => {
+    const handlers = { onMix: vi.fn(), onStudy: vi.fn(), onAdd: vi.fn() };
+    render(
+      <TodayScreen
+        name="Yali"
+        decks={[ALL[0]]}
+        statuses={[status('vocab', { waiting: 4 })]}
+        mixPausedLeft={3}
+        top={null}
+        {...handlers}
+      />,
+    );
+    expect(screen.getByText('Paused · 3 left')).toBeInTheDocument();
+  });
 });

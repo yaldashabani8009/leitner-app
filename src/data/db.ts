@@ -90,6 +90,8 @@ export const META = {
   reminderOffer: 'reminder:offer',
   /** A deck's session of the day: `${sessionOf}<deck>` → { date, scheduled } (v3 brief 1.6). */
   sessionOf: 'session:',
+  /** Today's "Mix them all" session → { date, scheduled } (v3 brief 1.5). */
+  mixSession: 'session-mix',
 } as const;
 
 /** What is saved when a deck's session starts; the rest is worked out from the review logs. */

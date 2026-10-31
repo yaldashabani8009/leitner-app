@@ -9,12 +9,23 @@
 
 /* ---------- Progress / practice banner ---------- */
 
+/* Lower, closer to the cards (canvas 03, 2026-10-29). */
+.progressAlone,
+.progressRow {
+  display: flex;
+  align-items: center;
+  margin: var(--space-7) 28px 0;
+}
+
+/* Mix them all (canvas N6): the deck chip, then the bar. */
+.progressRow {
+  gap: 12px;
+}
+
 .progress {
   position: relative;
+  flex-grow: 1;
   height: 16px;
-
-  /* Lower, closer to the cards (canvas 03, 2026-10-29). */
-  margin: var(--space-7) 28px 0;
   overflow: hidden;
   border: var(--border-chunky) solid var(--color-ink);
   border-radius: var(--radius-pill);

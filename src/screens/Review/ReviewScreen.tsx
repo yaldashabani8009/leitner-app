@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import type { Deck } from '../../domain/decks/decks';
+import { DeckChip } from '../../ui/DeckChip';
 import type { CardWithEntries } from '../../data/repository';
 import { BottomPanel } from '../../ui/BottomPanel';
 import { Button } from '../../ui/Button';
@@ -18,6 +20,8 @@ interface ReviewScreenProps {
   kind: 'scheduled' | 'practice';
   /** 0 … 1 through the scheduled part (shown as a bar, no numbers). */
   progress: number;
+  /** In Mix them all: the deck of this card, shown as a chip next to the progress bar (N6). */
+  deck?: Deck;
   /** Practice cards left, this one included. */
   practiceLeft: number;
   /** The mascot's short reaction to the previous answer. */
@@ -41,6 +45,7 @@ export function ReviewScreen({
   card,
   kind,
   progress,
+  deck,
   practiceLeft,
   reaction,
   onAnswer,
@@ -105,18 +110,21 @@ export function ReviewScreen({
           <span className={styles.practiceLeft}>{practiceLeft} left</span>
         </div>
       ) : (
-        <div
-          className={styles.progress}
-          role="progressbar"
-          aria-label="Session progress"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(progress * 100)}
-        >
+        <div className={deck ? styles.progressRow : styles.progressAlone}>
+          {deck && <DeckChip deck={deck} variant="session" />}
           <div
-            className={styles.progressFill}
-            style={{ width: `${Math.max(progress, 0.06) * 100}%` }}
-          />
+            className={styles.progress}
+            role="progressbar"
+            aria-label="Session progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(progress * 100)}
+          >
+            <div
+              className={styles.progressFill}
+              style={{ width: `${Math.max(progress, 0.06) * 100}%` }}
+            />
+          </div>
         </div>
       )}
 

@@ -14,6 +14,8 @@ interface TodayScreenProps {
   decks: readonly Deck[];
   /** Each deck's state, in the same order. */
   statuses: readonly DeckStatus[];
+  /** Cards left in a "Mix them all" left half way today; null when there is none. */
+  mixPausedLeft?: number | null;
   top: ReactNode;
   /** "Mix them all". */
   onMix: () => void;
@@ -38,6 +40,7 @@ export function TodayScreen({
   name,
   decks,
   statuses,
+  mixPausedLeft = null,
   top,
   onMix,
   onStudy,
@@ -97,9 +100,11 @@ export function TodayScreen({
             </svg>
           </button>
           <span className={styles.mixCount}>
-            {waiting === 0
-              ? 'All done for today'
-              : `${waiting} ${waiting === 1 ? 'card' : 'cards'} from all decks`}
+            {mixPausedLeft !== null
+              ? `Paused · ${mixPausedLeft} left`
+              : waiting === 0
+                ? 'All done for today'
+                : `${waiting} ${waiting === 1 ? 'card' : 'cards'} from all decks`}
           </span>
         </div>
       </div>
