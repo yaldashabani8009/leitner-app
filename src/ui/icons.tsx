@@ -34,17 +34,17 @@ export function BookIcon(props: IconProps) {
 export function BoxIcon({ className, ...props }: IconProps) {
   return (
     <Icon className={[styles.box, className].filter(Boolean).join(' ')} {...props}>
-      <path d="M3 8.5 12 4l9 4.5v9L12 22l-9-4.5z" />
-      <path className={styles.boxLine} d="M3 8.5 12 13l9-4.5M12 13v9" />
+      <path d="M3 8l9-4 9 4v9l-9 4-9-4z" />
+      <path className={styles.boxLine} d="M3 8l9 4 9-4M12 12v9" />
     </Icon>
   );
 }
 
-/** Arrow pointing left: back. */
+/** Chevron pointing left: back (canvas N8). */
 export function BackIcon(props: IconProps) {
   return (
     <Icon {...props}>
-      <path d="M19 12H5M12 19l-7-7 7-7" />
+      <path d="M15 5l-7 7 7 7" />
     </Icon>
   );
 }

@@ -24,11 +24,21 @@ export function AllWordsScreen({ cards, onBack, onAdd }: AllWordsScreenProps) {
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
-        <IconButton label="Back" variant="white" icon={<BackIcon size={22} />} onClick={onBack} />
-        <h1 className={styles.title}>
-          In your box
-          {cards !== undefined && <span className={styles.total}>{cards.length}</span>}
-        </h1>
+        <IconButton
+          label="Back"
+          variant="white"
+          icon={<BackIcon size={20} />}
+          onClick={onBack}
+          className={styles.back}
+        />
+        <div className={styles.heading}>
+          <h1 className={styles.title}>In your box</h1>
+          {cards !== undefined && (
+            <span className={styles.total}>
+              {cards.length === 1 ? '1 card' : `${cards.length} cards`}
+            </span>
+          )}
+        </div>
         <IconButton label="Add word" icon={<PlusIcon size={26} />} onClick={onAdd} />
       </header>
       {cards !== undefined && cards.length === 0 && (
