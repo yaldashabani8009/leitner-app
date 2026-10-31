@@ -6,7 +6,7 @@
 
 import { DECK_IDS, DECK_LIMITS, type DeckId, type DeckLimits } from '../leitner/config';
 
-export type DeckIcon = 'book' | 'ear' | 'chat';
+export type DeckIcon = 'book' | 'speaker' | 'sparkles';
 
 export interface Deck {
   readonly id: DeckId;
@@ -34,7 +34,7 @@ export const DECKS: readonly Deck[] = [
   {
     id: 'spelling',
     label: 'Spelling',
-    icon: 'ear',
+    icon: 'speaker',
     edgeColor: '--color-deck-spelling-edge',
     tileColor: '--color-deck-spelling-tile',
     limits: DECK_LIMITS.spelling,
@@ -43,7 +43,7 @@ export const DECKS: readonly Deck[] = [
   {
     id: 'phrases',
     label: 'Phrases',
-    icon: 'chat',
+    icon: 'sparkles',
     edgeColor: '--color-deck-phrases-edge',
     tileColor: '--color-deck-phrases-tile',
     limits: DECK_LIMITS.phrases,

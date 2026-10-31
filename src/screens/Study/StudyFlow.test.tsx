@@ -292,25 +292,23 @@ describe('StudyFlow', () => {
     await screen.findByRole('button', { name: /tap to flip/ });
     expect(await boxOf(first)).toBe(2);
   });
-  it('adds words from the top bar, and "Open my card" shows the card until Done', async () => {
+  it('adds a word from the top bar mid-session; ✕ goes back to the same card', async () => {
     await addCards('brave', 'calm');
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
-    await screen.findByRole('button', { name: /tap to flip/ });
+    const front = await screen.findByRole('button', { name: /tap to flip/ });
+    const word = front.textContent;
 
+    // One deck enabled: + opens its add sheet straight away (no roll-out).
     await userEvent.click(screen.getByRole('button', { name: 'Add word' }));
-    await userEvent.type(await screen.findByLabelText('The word'), 'Calm');
-    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Open my card' }));
+    const sheet = await screen.findByRole('dialog', { name: 'New word' });
+    expect(within(sheet).getByText('Vocab')).toBeInTheDocument();
+    await userEvent.type(within(sheet).getByLabelText('The word'), 'Calm');
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Save word' }));
+    expect(await within(sheet).findByText('Already in your Vocab box')).toBeInTheDocument();
 
-    expect(await screen.findByLabelText('Your card: calm')).toBeInTheDocument();
-    expect(
-      screen.getByText("It's back at the start. You'll see it again tomorrow."),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit word' })).toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
-    expect(await screen.findByRole('button', { name: /tap to flip/ })).toBeInTheDocument();
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Close' }));
+    expect((await screen.findByRole('button', { name: /tap to flip/ })).textContent).toBe(word);
   });
 
   it('edits the card being reviewed with the pencil, and shows the change at once', async () => {

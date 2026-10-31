@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 import styles from './IconButton.module.css';
 
 interface IconButtonProps extends Omit<
@@ -12,8 +12,10 @@ interface IconButtonProps extends Omit<
    * "primary": 52px round orange button with an ink outline (top bar +).
    * "cream": 44px round cream button (pencil on the card back).
    * "white": 44px round white button (✕ in the add / edit sheet).
+   * "whiteRaised": 52px white button with the + button's shadow (✕ of the rolled-out +, canvas N2).
    */
-  variant?: 'primary' | 'cream' | 'white';
+  variant?: 'primary' | 'cream' | 'white' | 'whiteRaised';
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /** Round icon-only button; squishes like the big pill buttons. */

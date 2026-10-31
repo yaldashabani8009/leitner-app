@@ -17,7 +17,7 @@ import { ReminderOffer } from '../Reminders/ReminderOffer';
 import { BlankScreen, LoadingScreen } from '../Loading/LoadingScreen';
 import { AllWordsScreen } from '../AllWords/AllWordsScreen';
 import { AllDone, Resting, SessionComplete } from '../Rest/RestScreens';
-import { CardViewScreen } from '../Review/CardViewScreen';
+import { enabledDecks } from '../../domain/decks/decks';
 import { ReviewScreen } from '../Review/ReviewScreen';
 
 /** PRD user flow 2: the loading screen shows on a cold start. 2.5 s (Yali, 2026-10-29): 1 s flashed by. */
@@ -36,7 +36,7 @@ type StudyRepo = Pick<
   | 'addCard'
   | 'editCard'
   | 'findCardIdByWord'
-  | 'sendCardBackToStart'
+  | 'saveAndStartOver'
   | 'progress'
   | 'backupStatus'
   | 'snoozeBackup'
@@ -98,12 +98,6 @@ export function StudyFlow({
   /** The last answer came while something on the card had focus (keyboard, screen reader). */
   const [focusNextCard, setFocusNextCard] = useState(false);
   const [editor, setEditor] = useState<Editor | null>(null);
-  /** A card opened from the duplicate dialog ("Open my card"). */
-  const [viewingId, setViewingId] = useState<string | null>(null);
-  const viewing = useLiveQuery(
-    async () => (viewingId ? ((await repo.getCard(viewingId)) ?? null) : null),
-    [repo, viewingId],
-  );
 
   useEffect(() => {
     if (!reaction) return;
@@ -136,17 +130,10 @@ export function StudyFlow({
       cardCount={cardCount}
       onOpenBox={() => setAllWordsOpen(true)}
       streak={progress?.streak}
-      onAdd={() => setEditor({ mode: 'add' })}
+      onAdd={(deck) => setEditor({ mode: 'add', deck })}
     />
   );
-  const sheet = (
-    <AddEditSheet
-      repo={repo}
-      editor={editor}
-      onClose={() => setEditor(null)}
-      onOpenCard={setViewingId}
-    />
-  );
+  const sheet = <AddEditSheet repo={repo} editor={editor} onClose={() => setEditor(null)} />;
   // Every screen after loading goes through here, even the in-between empty frames, so the
   // sheets and backup modals stay mounted (and keep their state) while screens change.
   const withSheet = (screen: ReactNode) => (
@@ -163,7 +150,7 @@ export function StudyFlow({
       <AllWordsScreen
         cards={allCards}
         onBack={() => setAllWordsOpen(false)}
-        onAdd={() => setEditor({ mode: 'add' })}
+        onAdd={(deck) => setEditor({ mode: 'add', deck })}
       />,
     );
   }
@@ -172,17 +159,6 @@ export function StudyFlow({
   if (view === 'study' && session === null && dueIds.length > 0) {
     setSession(startSession(dueIds));
     return withSheet(null);
-  }
-
-  if (viewingId && viewing && viewing.card.id === viewingId) {
-    return withSheet(
-      <CardViewScreen
-        card={viewing}
-        top={top}
-        onEdit={() => setEditor({ mode: 'edit', cardId: viewingId })}
-        onDone={() => setViewingId(null)}
-      />,
-    );
   }
 
   if (view === 'complete' && session) {
@@ -210,7 +186,11 @@ export function StudyFlow({
 
   if (!session || !step) {
     return withSheet(
-      <AllDone emptyBox={cardCount === 0} top={top} onAddWord={() => setEditor({ mode: 'add' })} />,
+      <AllDone
+        emptyBox={cardCount === 0}
+        top={top}
+        onAddWord={() => setEditor({ mode: 'add', deck: enabledDecks()[0] })}
+      />,
     );
   }
 

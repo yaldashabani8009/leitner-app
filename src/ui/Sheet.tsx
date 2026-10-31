@@ -30,6 +30,12 @@ interface SheetProps {
   footer?: ReactNode;
   /** Element to focus when the sheet opens; by default the sheet itself, so its title is read. */
   initialFocusRef?: RefObject<HTMLElement | null>;
+  /** Shown right after the title, e.g. the deck chip of the add sheet (canvas N4). */
+  titleAddon?: ReactNode;
+  /** A tap on the dim layer closes the sheet (default). The add sheet closes only with ✕, Esc or a drag. */
+  closeOnOverlay?: boolean;
+  /** Sits above the dim layer and the sheet, e.g. the "saved" toast (canvas N4). */
+  toast?: ReactNode;
   children?: ReactNode;
 }
 
@@ -51,6 +57,9 @@ export function Sheet({
   mascot,
   footer,
   initialFocusRef,
+  titleAddon,
+  closeOnOverlay = true,
+  toast,
   children,
 }: SheetProps) {
   const titleId = useId();
@@ -87,7 +96,12 @@ export function Sheet({
           : undefined
       }
     >
-      <div className={styles.overlay} onClick={onClose} aria-hidden="true" />
+      <div
+        className={styles.overlay}
+        onClick={closeOnOverlay ? onClose : undefined}
+        aria-hidden="true"
+      />
+      {toast}
       <div
         ref={panelRef}
         role="dialog"
@@ -119,9 +133,12 @@ export function Sheet({
         >
           {isBottom ? (
             <div className={styles.header}>
-              <h2 id={titleId} className={styles.title}>
-                {title}
-              </h2>
+              <div className={styles.titleGroup}>
+                <h2 id={titleId} className={styles.title}>
+                  {title}
+                </h2>
+                {titleAddon}
+              </div>
               <IconButton label="Close" variant="white" icon={<CloseIcon />} onClick={onClose} />
             </div>
           ) : (

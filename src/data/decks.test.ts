@@ -325,3 +325,59 @@ describe('sync mapping for decks', () => {
     expect(logToRemote({ ...log, typedAnswer: undefined }).typed_answer).toBeNull();
   });
 });
+
+describe('saveAndStartOver (canvas N5)', () => {
+  it('updates the card, sends it back to box 1 and counts it as added today, in one write', async () => {
+    const db = new LeitnerDb(`restart-${crypto.randomUUID()}`);
+    dbs.push(db);
+    let now = '2026-03-10T08:00:00.000Z';
+    const repo = createRepository(db, { now: () => now, newId: () => crypto.randomUUID() });
+    await repo.saveProfile({ userId: 'u1', displayName: 'Yali', timeZone: 'UTC', updatedAt: now });
+    const added = await repo.addCard(draft('brave'));
+    if (added.status !== 'created') throw new Error(added.status);
+    await db.cards.update(added.cardId, { box: 5, masteredAt: now });
+    now = '2026-03-12T08:00:00.000Z';
+    await db.outbox.clear();
+
+    const card = (await repo.getCard(added.cardId))!;
+    expect(
+      await repo.saveAndStartOver(added.cardId, {
+        word: 'brave',
+        synonyms: [...card.synonyms, { text: 'fearless' }],
+        meanings: card.meanings,
+        sentences: card.sentences,
+      }),
+    ).toEqual({ status: 'saved' });
+    expect(await db.cards.get(added.cardId)).toMatchObject({
+      box: 1,
+      dueDate: '2026-03-13',
+      masteredAt: null,
+      addedOn: '2026-03-12',
+    });
+    expect((await repo.getCard(added.cardId))?.synonyms.map((e) => e.text)).toEqual([
+      'bold',
+      'fearless',
+    ]);
+    expect((await db.outbox.toArray()).some((row) => row.key === `cards:${added.cardId}`)).toBe(
+      true,
+    );
+  });
+
+  it('an invalid form changes nothing', async () => {
+    const db = new LeitnerDb(`restart-${crypto.randomUUID()}`);
+    dbs.push(db);
+    const now = '2026-03-10T08:00:00.000Z';
+    const repo = createRepository(db, { now: () => now, newId: () => crypto.randomUUID() });
+    const added = await repo.addCard(draft('brave'));
+    if (added.status !== 'created') throw new Error(added.status);
+    await db.cards.update(added.cardId, { box: 4 });
+    const result = await repo.saveAndStartOver(added.cardId, {
+      word: 'brave',
+      synonyms: [],
+      meanings: [],
+      sentences: [],
+    });
+    expect(result.status).toBe('invalid');
+    expect((await db.cards.get(added.cardId))?.box).toBe(4);
+  });
+});

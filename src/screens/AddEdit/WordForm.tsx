@@ -1,5 +1,4 @@
-import { useId, useState, type FormEvent } from 'react';
-import type { CardWithEntries } from '../../data/repository';
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { itemsFromText, joinList } from '../../domain/card/commaList';
 import {
   type CardDraft,
@@ -26,18 +25,25 @@ interface Item {
 interface WordFormProps {
   id: string;
   mode: 'add' | 'edit';
-  /** Filled in when editing. */
-  initial?: CardWithEntries;
+  /** Filled in when editing, or with the existing card plus what was typed (canvas N5). */
+  initial?: CardDraft;
   /** Errors from the last save; a field's error clears as soon as you change it. */
   errors: FieldErrors;
   onClearError: (field: CardField) => void;
   onSubmit: (draft: CardDraft) => void;
+  /** Leaving the word field: the add sheet checks for the word in this deck (canvas N5). */
+  onWordBlur?: (draft: CardDraft) => void;
+  /** Under the word field, e.g. "Already in your Vocab box". */
+  wordNote?: ReactNode;
+  /** Put the cursor in the word field (after a save, so the next word can be typed; N4). */
+  focusWord?: boolean;
+  wordPlaceholder?: string;
 }
 
 let nextKey = 0;
 const newKey = () => `item-${(nextKey += 1)}`;
 
-function startSentences(initial?: CardWithEntries): Item[] {
+function startSentences(initial?: CardDraft): Item[] {
   const saved = initial?.sentences ?? [];
   return saved.length
     ? saved.map((entry) => ({ key: newKey(), id: entry.id, text: entry.text }))
@@ -47,13 +53,34 @@ function startSentences(initial?: CardWithEntries): Item[] {
 const texts = (entries: readonly { text: string }[] | undefined) =>
   (entries ?? []).map((entry) => entry.text);
 
+/** Saved items (with an id) of a list, so unchanged text keeps its id on save. */
+const saved = (entries: readonly { id?: string; text: string }[] | undefined) =>
+  (entries ?? []).filter((entry): entry is { id: string; text: string } => entry.id !== undefined);
+
 /**
  * The add / edit form (canvas 09 / 10). Similar words and Persian meanings are one field each,
  * split by "," or "،" (Yali, 2026-10-29); sentences stay one field per sentence (they contain
  * commas), with "+ sentence" right under them and a ✕ in edit mode while there is more than one.
  */
-export function WordForm({ id, mode, initial, errors, onClearError, onSubmit }: WordFormProps) {
-  const [word, setWord] = useState(initial?.card.word ?? '');
+export function WordForm({
+  id,
+  mode,
+  initial,
+  errors,
+  onClearError,
+  onSubmit,
+  onWordBlur,
+  wordNote,
+  focusWord = false,
+  wordPlaceholder,
+}: WordFormProps) {
+  const [word, setWord] = useState(initial?.word ?? '');
+  const wordRef = useRef<HTMLInputElement>(null);
+  // Only when the form appears (it is remounted after each save); never while typing elsewhere.
+  useEffect(() => {
+    if (focusWord) wordRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [synonyms, setSynonyms] = useState(() => joinList(texts(initial?.synonyms)));
   const [meanings, setMeanings] = useState(() => joinList(texts(initial?.meanings), true));
   const [sentences, setSentences] = useState<Item[]>(() => startSentences(initial));
@@ -70,14 +97,18 @@ export function WordForm({ id, mode, initial, errors, onClearError, onSubmit }: 
     setFocusKey(item.key);
   }
 
+  function draft(): CardDraft {
+    return {
+      word,
+      synonyms: itemsFromText(synonyms, saved(initial?.synonyms)),
+      meanings: itemsFromText(meanings, saved(initial?.meanings)),
+      sentences: sentences.map(({ id: entryId, text }) => ({ id: entryId, text })),
+    };
+  }
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    onSubmit({
-      word,
-      synonyms: itemsFromText(synonyms, initial?.synonyms),
-      meanings: itemsFromText(meanings, initial?.meanings),
-      sentences: sentences.map(({ id: entryId, text }) => ({ id: entryId, text })),
-    });
+    onSubmit(draft());
   }
 
   return (
@@ -90,6 +121,10 @@ export function WordForm({ id, mode, initial, errors, onClearError, onSubmit }: 
           onClearError('word');
         }}
         error={errors.word && errorText('word', errors.word)}
+        note={wordNote}
+        onBlur={onWordBlur ? () => onWordBlur(draft()) : undefined}
+        ref={wordRef}
+        placeholder={wordPlaceholder}
         autoCapitalize="none"
         autoComplete="off"
         spellCheck={false}

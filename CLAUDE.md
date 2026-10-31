@@ -37,6 +37,8 @@ npm run build:functions   # bundle the Supabase server functions (part of check;
 npm run e2e -- --project=android-chromium   # Chromium only (WebKit isn't installed in cloud sessions)
 ```
 
+In a cloud session without `.env.local`, prefix `npm run dev` and `npm run e2e` with `VITE_SUPABASE_URL=https://demo.invalid VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_demo` (the demo, kit and e2e builds never call the real cloud; without them the app stops at start-up).
+
 Dev-only pages (never in the built site), for screenshots and review:
 
 - `http://localhost:5173/leitner-app/?kit`: the UI kit and all mascot poses (`&open=bottom` / `&open=dialog` opens a sheet)

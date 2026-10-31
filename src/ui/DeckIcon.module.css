@@ -1,0 +1,23 @@
+.icon {
+  flex-shrink: 0;
+  stroke: var(--color-ink);
+  stroke-linejoin: round;
+}
+
+.book {
+  fill: var(--color-orange);
+}
+
+.speaker {
+  fill: var(--color-aqua-dark);
+}
+
+.sparkles {
+  fill: var(--color-terracotta);
+}
+
+/* The speaker's sound waves are lines, not shapes. */
+.line {
+  fill: none;
+  stroke-linecap: round;
+}

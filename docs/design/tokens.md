@@ -37,24 +37,25 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 
 ## Shape & depth
 
-| Token                     | Value                            |
-| ------------------------- | -------------------------------- |
-| `--radius-card`           | 40px                             |
-| `--radius-panel`          | 52px, review / practice panels   |
-| `--radius-panel-tall`     | 56px, complete / all done panels |
-| `--radius-sheet`          | 44px, add / edit sheet           |
-| `--radius-input`          | 22px                             |
-| `--radius-stamp`          | 18px, KNEW IT! / NOT YET stamps  |
-| `--radius-highlight`      | 6px, word marked in a sentence   |
-| `--radius-pill`           | 999px                            |
-| `--border-chunky`         | 2.5px                            |
-| `--press-depth`           | 5px                              |
-| `--press-depth-sm`        | 4px (round + button)             |
-| `--shadow-hard`           | 0 5px 0 ink                      |
-| `--shadow-hard-on-ink`    | 0 5px 0 black (ink buttons)      |
-| `--shadow-hard-sm`        | 0 3px 0 ink (top-bar stat pills) |
-| `--shadow-hard-on-ink-sm` | 0 4px 0 black (round + button)   |
-| `--shadow-card`           | 0 6px 0 ink (word card, dialog)  |
+| Token                     | Value                                        |
+| ------------------------- | -------------------------------------------- |
+| `--radius-card`           | 40px                                         |
+| `--radius-panel`          | 52px, review / practice panels               |
+| `--radius-panel-tall`     | 56px, complete / all done panels             |
+| `--radius-sheet`          | 44px, add / edit sheet                       |
+| `--radius-input`          | 22px                                         |
+| `--radius-stamp`          | 18px, KNEW IT! / NOT YET stamps              |
+| `--radius-highlight`      | 6px, word marked in a sentence               |
+| `--radius-pill`           | 999px                                        |
+| `--border-chunky`         | 2.5px                                        |
+| `--press-depth`           | 5px                                          |
+| `--press-depth-sm`        | 4px (round + button)                         |
+| `--shadow-hard`           | 0 5px 0 ink                                  |
+| `--shadow-hard-on-ink`    | 0 5px 0 black (ink buttons)                  |
+| `--shadow-hard-sm`        | 0 3px 0 ink (top-bar stat pills)             |
+| `--shadow-hard-md`        | 0 4px 0 ink (toast, + roll-out deck buttons) |
+| `--shadow-hard-on-ink-sm` | 0 4px 0 black (round + button)               |
+| `--shadow-card`           | 0 6px 0 ink (word card, dialog)              |
 
 ## Spacing
 

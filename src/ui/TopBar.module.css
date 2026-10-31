@@ -10,8 +10,3 @@
 .add {
   margin-left: auto;
 }
-
-/* The + stroke is a little heavier than the pill icons on the canvas. */
-.add svg {
-  stroke-width: 3;
-}
