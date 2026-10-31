@@ -22,6 +22,16 @@
   --color-white: #fff;
   --color-black: #000; /* only for the shadow under ink buttons */
   --color-line: #d9c3ae; /* sheet handle, empty-field outline, soft dividers */
+  --color-sand: #d9c3ae; /* phrases deck edge (same value as --color-line) */
+  --color-divider: #e7d6c4; /* row dividers on the all-words page */
+  --color-aqua-pale: #e3f4f5; /* spelling icon tile, practice tags, duplicate note */
+  --color-terracotta-pale: #fbe7de; /* phrases icon tile */
+  --color-deck-vocab-edge: var(--color-orange);
+  --color-deck-vocab-tile: var(--color-cream);
+  --color-deck-spelling-edge: var(--color-aqua-dark);
+  --color-deck-spelling-tile: var(--color-aqua-pale);
+  --color-deck-phrases-edge: var(--color-sand);
+  --color-deck-phrases-tile: var(--color-terracotta-pale);
   --color-overlay: rgb(43 29 22 / 45%); /* ink at 45%, behind sheets and dialogs */
 
   /* Type */
