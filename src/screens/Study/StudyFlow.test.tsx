@@ -820,7 +820,8 @@ describe('Mix them all with spelling chunks (v3 brief 1.4)', () => {
     // Said from the "Knew it!" tap itself; no "Tap to start" in Mix after a swipe.
     expect(speech.speak).toHaveBeenCalledOnce();
     const field = await screen.findByRole('textbox', { name: 'Type what you hear' });
-    expect(field).toHaveFocus();
+    // The swipe focused the hidden keyboard field; the card then moves focus into its own field.
+    await waitFor(() => expect(field).toHaveFocus());
     expect(screen.queryByRole('button', { name: 'Tap to start' })).not.toBeInTheDocument();
 
     for (let i = 0; i < 3; i++) {
