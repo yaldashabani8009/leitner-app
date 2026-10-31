@@ -185,3 +185,35 @@ describe('reviewsDoneToday', () => {
     expect(reviewsDoneToday([], NOW, TEHRAN)).toBe(0);
   });
 });
+
+describe('per deck: session size and daily limit (v3 brief 1.1)', () => {
+  it.each([
+    ['vocab', 20],
+    ['spelling', 30],
+    ['phrases', 10],
+  ] as const)('%s picks at most %i', (deck, size) => {
+    expect(pickSessionCards(dueCards(400), 0, TODAY, deck)).toHaveLength(size);
+  });
+
+  it.each([
+    ['vocab', 100],
+    ['spelling', 250],
+    ['phrases', 30],
+  ] as const)('%s stops at its daily limit of %i', (deck, limit) => {
+    expect(pickSessionCards(dueCards(400), limit, TODAY, deck)).toEqual([]);
+    expect(pickSessionCards(dueCards(400), limit - 3, TODAY, deck)).toHaveLength(3);
+  });
+
+  it('counts reviews per deck, and all decks together without a deck', () => {
+    const log = (deck?: 'vocab' | 'spelling' | 'phrases', isPractice = false): LoggedReview => ({
+      reviewedAt: NOW,
+      isPractice,
+      deck,
+    });
+    const logs = [log('vocab'), log(undefined), log('spelling'), log('phrases', true)];
+    expect(reviewsDoneToday(logs, NOW, 'UTC', 'vocab')).toBe(2);
+    expect(reviewsDoneToday(logs, NOW, 'UTC', 'spelling')).toBe(1);
+    expect(reviewsDoneToday(logs, NOW, 'UTC', 'phrases')).toBe(0);
+    expect(reviewsDoneToday(logs, NOW, 'UTC')).toBe(3);
+  });
+});

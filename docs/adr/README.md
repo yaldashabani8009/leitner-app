@@ -30,5 +30,6 @@ Once **Accepted**, an ADR is not edited. To change a decision, write a new ADR t
 | [016](0016-automatic-backup-modals.md)                | Backup by itself; a modal only when it's needed    | Accepted                  |
 | [017](0017-e2e-tests-with-a-stand-in-cloud.md)        | E2E tests: the real app with a stand-in cloud      | Accepted                  |
 | [018](0018-daily-reminder-web-push.md)                | Daily reminder with web push from Supabase         | Accepted                  |
+| [019](0019-several-decks-in-one-cards-table.md)       | Several decks in one cards table                   | Accepted                  |
 
 Template: [template.md](template.md)

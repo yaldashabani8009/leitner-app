@@ -79,3 +79,30 @@ Yali uses the app daily and notes what feels wrong, slow or missing; each note b
 - [x] 04 Hover on laptops: buttons rise 2px and their shadow grows (built in step 4).
 
 Done in step 9: GitHub Actions updated (Node 24) and runners pinned to Ubuntu 24.04; keyboard focus kept after answering a card (audit 02).
+
+## Step 11: v3 — decks, Today screen, all words, extra practice
+
+Build brief: `HANDOFF-v3-build.md` (Yali and Claude, 2026-10-31). Decisions in it are final; anything not covered is noted in the PR under "Decided without asking". One branch and PR per task.
+
+| #       | Task                                                                                | Definition of Done                                                                                                                                     |
+| ------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 11.1 ✅ | Deck registry + config + engine per deck                                            | `src/domain/decks` registry; per-deck limits in config; session picking, daily limit and streak work per deck and across decks; 100% coverage; ADR-019 |
+| 11.2    | Data: migration, Dexie v4, sync, backup v2                                          | Migration applied through the MCP, advisors clean, types regenerated; upgrade tested with fake-indexeddb; v1 and v2 backups both restore               |
+| 11.3    | Quick fixes: single loading screen, badge = all cards, badge opens all words (stub) | Cold start shows one screen with the name; badge counts every deck; tests                                                                              |
+| 11.4    | Add sheet stays open + toast + per-deck duplicate flow + + roll-out                 | Works with 1 or 3 enabled decks; old S11 dialog removed; e2e "add 3 words in a row" passes                                                             |
+| 11.5    | Today screen with the deck wheel + DJ mascot pose                                   | All four card states; Home button inside sessions; pause and resume; the practice round survives a switch; screenshots                                 |
+| 11.6    | Mix them all                                                                        | Random 3–9 chunks, no interstitial, real answers move boxes, per-deck limits, extra practice when nothing is due; tests with seeded randomness         |
+| 11.7    | Extra practice                                                                      | `added_on` logic; never moves boxes; no streak or limits; repeat-missed loop                                                                           |
+| 11.8    | All-words page                                                                      | Chips, Persian search, 3 sorts, dots, swipe-delete + Undo, virtualised, offline; laptop layout                                                         |
+| 11.9    | Settings sheet + reminder time + next-reminder index (ADR-020)                      | Time saved to the profile; cron reads only due rows; switch off = no pushes; sign out works; function redeployed                                       |
+| 11.10   | Laptop shortcuts N / H / / + accessibility pass                                     | Tests for the keys; axe or manual checks noted in the PR                                                                                               |
+| 11.11   | Docs: PRD, design README, canvas notes, roadmap                                     | PRD describes decks, Today, Mix them all, extra practice and all words; "never show box numbers" exception noted                                       |
+
+**Still to do on the phone (Yali), after step 11 is merged:**
+
+- [ ] Add 3 words in a row.
+- [ ] Duplicate → Save & start over.
+- [ ] Today → Mix them all → Home → Continue.
+- [ ] Extra practice.
+- [ ] All words: search in Persian, delete + Undo.
+- [ ] Set the reminder time.

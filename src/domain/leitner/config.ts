@@ -8,8 +8,27 @@ export const BOX_COUNT = 5;
 /** Days until the next review once a card has moved INTO this box. Index 0 = box 1. */
 export const BOX_GAPS_DAYS = [1, 2, 4, 8, 16] as const;
 
-export const SESSION_SIZE = 20;
-export const DAILY_REVIEW_CAP = 100;
+/** The decks a card can belong to (ADR-019). New areas are added here AND in the deck registry. */
+export const DECK_IDS = ['vocab', 'spelling', 'phrases'] as const;
+export type DeckId = (typeof DECK_IDS)[number];
+
+export interface DeckLimits {
+  /** Most cards in one session of this deck. */
+  readonly sessionSize: number;
+  /** Most scheduled reviews of this deck in one day. */
+  readonly dailyLimit: number;
+}
+
+/** Session size and daily limit per deck (v3 brief 1.1). The Leitner boxes and gaps are the same for all. */
+export const DECK_LIMITS: Readonly<Record<DeckId, DeckLimits>> = {
+  vocab: { sessionSize: 20, dailyLimit: 100 },
+  spelling: { sessionSize: 30, dailyLimit: 250 },
+  phrases: { sessionSize: 10, dailyLimit: 30 },
+};
+
+/** The vocab deck's numbers, kept for callers that only know one deck (the reminder, until 11.9). */
+export const SESSION_SIZE = DECK_LIMITS.vocab.sessionSize;
+export const DAILY_REVIEW_CAP = DECK_LIMITS.vocab.dailyLimit;
 
 export type Box = 1 | 2 | 3 | 4 | 5;
 
@@ -17,7 +36,7 @@ export function gapForBox(box: Box): number {
   return BOX_GAPS_DAYS[box - 1];
 }
 
-/** Scheduled reviews in one day that always earn a streak day (Yali's decision, 2026-10-28). */
+/** Scheduled reviews in one day, across ALL decks, that always earn a streak day (Yali's decision, 2026-10-28; v3 brief 1.2). */
 export const STREAK_DAILY_REVIEWS = 20;
 
 /** Days without reaching the cloud (with unsent changes) before the "save a copy" modal (7.12). */

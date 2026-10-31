@@ -1,5 +1,11 @@
 // src/domain/leitner/config.ts
-var DAILY_REVIEW_CAP = 100;
+var DECK_LIMITS = {
+  vocab: { sessionSize: 20, dailyLimit: 100 },
+  spelling: { sessionSize: 30, dailyLimit: 250 },
+  phrases: { sessionSize: 10, dailyLimit: 30 }
+};
+var SESSION_SIZE = DECK_LIMITS.vocab.sessionSize;
+var DAILY_REVIEW_CAP = DECK_LIMITS.vocab.dailyLimit;
 var DAILY_REMINDER_HOUR = 19;
 var DAILY_REMINDER_LAST_HOUR = 23;
 

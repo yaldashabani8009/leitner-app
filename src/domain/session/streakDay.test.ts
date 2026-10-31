@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayCountsForStreak } from './streakDay';
+import { dayCountsForStreak, studiedToday } from './streakDay';
 
 describe('dayCountsForStreak (Q2: option C plus the small-day rules)', () => {
   it.each([
@@ -15,5 +15,41 @@ describe('dayCountsForStreak (Q2: option C plus the small-day rules)', () => {
     ['cards due, none reviewed, a word added', 0, 4, 1, false],
   ] as const)('%s → %s', (_label, scheduledReviews, cardsStillDue, wordsAdded, counts) => {
     expect(dayCountsForStreak({ scheduledReviews, cardsStillDue, wordsAdded })).toBe(counts);
+  });
+});
+
+describe('studiedToday: one streak across all decks (v3 brief 1.2)', () => {
+  it('adds up every area', () => {
+    expect(
+      studiedToday([
+        { scheduledReviews: 12, cardsStillDue: 0, wordsAdded: 1 },
+        { scheduledReviews: 8, cardsStillDue: 2, wordsAdded: 0 },
+      ]),
+    ).toEqual({ scheduledReviews: 20, cardsStillDue: 2, wordsAdded: 1 });
+    expect(studiedToday([])).toEqual({ scheduledReviews: 0, cardsStillDue: 0, wordsAdded: 0 });
+  });
+
+  it('20 reviews in total across decks earn the day, even with cards still due', () => {
+    const day = studiedToday([
+      { scheduledReviews: 10, cardsStillDue: 5, wordsAdded: 0 },
+      { scheduledReviews: 10, cardsStillDue: 5, wordsAdded: 0 },
+    ]);
+    expect(dayCountsForStreak(day)).toBe(true);
+  });
+
+  it('a card still due in one deck keeps a small day from counting', () => {
+    const day = studiedToday([
+      { scheduledReviews: 5, cardsStillDue: 0, wordsAdded: 0 },
+      { scheduledReviews: 0, cardsStillDue: 3, wordsAdded: 0 },
+    ]);
+    expect(dayCountsForStreak(day)).toBe(false);
+  });
+
+  it('nothing due anywhere and a card added in any deck counts', () => {
+    const day = studiedToday([
+      { scheduledReviews: 0, cardsStillDue: 0, wordsAdded: 0 },
+      { scheduledReviews: 0, cardsStillDue: 0, wordsAdded: 1 },
+    ]);
+    expect(dayCountsForStreak(day)).toBe(true);
   });
 });
