@@ -34,6 +34,8 @@ interface WordFormProps {
   /** Put the cursor in the word field (after a save, so the next word can be typed; N4). */
   focusWord?: boolean;
   wordPlaceholder?: string;
+  /** A spelling card: the word is the whole card (v3 brief 1.2: one field, "The word"). */
+  wordOnly?: boolean;
 }
 
 let nextKey = 0;
@@ -74,6 +76,7 @@ export function WordForm({
   wordNote,
   focusWord = false,
   wordPlaceholder,
+  wordOnly = false,
 }: WordFormProps) {
   const [word, setWord] = useState(initial?.word ?? '');
   const wordRef = useRef<HTMLInputElement>(null);
@@ -136,41 +139,45 @@ export function WordForm({
         enterKeyHint="next"
       />
 
-      <CommaField
-        field="synonyms"
-        value={synonyms}
-        error={errors.synonyms && errorText('synonyms', errors.synonyms)}
-        onChange={(text) => {
-          setSynonyms(text);
-          onClearError('synonyms');
-        }}
-      />
+      {!wordOnly && (
+        <>
+          <CommaField
+            field="synonyms"
+            value={synonyms}
+            error={errors.synonyms && errorText('synonyms', errors.synonyms)}
+            onChange={(text) => {
+              setSynonyms(text);
+              onClearError('synonyms');
+            }}
+          />
 
-      <CommaField
-        field="meanings"
-        value={meanings}
-        error={errors.meanings && errorText('meanings', errors.meanings)}
-        onChange={(text) => {
-          setMeanings(text);
-          onClearError('meanings');
-        }}
-      />
+          <CommaField
+            field="meanings"
+            value={meanings}
+            error={errors.meanings && errorText('meanings', errors.meanings)}
+            onChange={(text) => {
+              setMeanings(text);
+              onClearError('meanings');
+            }}
+          />
 
-      <SentenceGroup
-        items={sentences}
-        error={errors.sentences && errorText('sentences', errors.sentences)}
-        removable={mode === 'edit' && sentences.length > 1}
-        inputRef={(key, element) => {
-          if (element && key === focusKey) {
-            element.focus();
-            setFocusKey(null);
-          }
-        }}
-        onChange={updateSentences}
-      />
-      <div className={styles.addRow}>
-        <AddPill onClick={addSentence}>{LISTS.sentences.add}</AddPill>
-      </div>
+          <SentenceGroup
+            items={sentences}
+            error={errors.sentences && errorText('sentences', errors.sentences)}
+            removable={mode === 'edit' && sentences.length > 1}
+            inputRef={(key, element) => {
+              if (element && key === focusKey) {
+                element.focus();
+                setFocusKey(null);
+              }
+            }}
+            onChange={updateSentences}
+          />
+          <div className={styles.addRow}>
+            <AddPill onClick={addSentence}>{LISTS.sentences.add}</AddPill>
+          </div>
+        </>
+      )}
     </form>
   );
 }

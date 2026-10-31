@@ -12,6 +12,8 @@ import {
   type EntryInput,
   type FieldErrors,
   type ListField,
+  normalizeWord,
+  MAX_WORD_LENGTH,
 } from '../domain/card/validate';
 import { BACKUP_APP, BACKUP_VERSION, type Backup, type BackupEntry } from '../domain/backup/file';
 import { shouldOfferRestore, shouldRemindToSave, snoozeUntil } from '../domain/backup/reminder';
@@ -175,7 +177,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       const card = await db.cards.get(cardId);
       if (!card || card.deletedAt !== null) throw new Error(`No card with id ${cardId}`);
 
-      const result = validateCard(draft);
+      const result = validateCard(draft, card.deck);
       if (!result.ok) return { status: 'invalid', errors: result.errors };
       const { card: valid } = result;
 
@@ -317,7 +319,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
           return { status: 'duplicate', cardId: existing.id };
         }
 
-        const result = validateCard(draft);
+        const result = validateCard(draft, deck);
         if (!result.ok) return { status: 'invalid', errors: result.errors };
 
         const { card: valid } = result;
@@ -343,6 +345,49 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         await saveStreakDayIfEarned(now, 1);
         return { status: 'created', cardId };
       });
+    },
+
+    /**
+     * Spelling words from the add sheet's check step (v3 brief 1.2): one card per word, word only,
+     * deck "spelling", added today, all in one write through the outbox. Words already in the
+     * Spelling deck (ignoring capitals) are skipped; Vocab cards are never touched.
+     */
+    addSpellingWords(words: readonly string[]): Promise<{ saved: number }> {
+      return db.transaction('rw', ALL_TABLES, async () => {
+        const now = deps.now();
+        const date = await today(now);
+        let saved = 0;
+        const seen = new Set<string>();
+        for (const raw of words) {
+          const word = normalizeWord(raw);
+          const key = wordKey(word);
+          if (word === '' || [...word].length > MAX_WORD_LENGTH || seen.has(key)) continue;
+          seen.add(key);
+          if (await findByWord(word, 'spelling')) continue;
+          const cardId = deps.newId();
+          await db.cards.add({
+            id: cardId,
+            word,
+            deck: 'spelling',
+            wordKey: key,
+            addedOn: date,
+            ...newCard(date),
+            createdAt: now,
+            updatedAt: now,
+            deletedAt: null,
+          });
+          await queue('cards', cardId, now);
+          saved += 1;
+        }
+        if (saved > 0) await saveStreakDayIfEarned(now, saved);
+        return { saved };
+      });
+    },
+
+    /** The words already in the Spelling deck, as keys (lower case), for "already there" chips. */
+    async spellingKeys(): Promise<Set<string>> {
+      const cards = await db.cards.where('deck').equals('spelling').toArray();
+      return new Set(cards.filter((card) => card.deletedAt === null).map((card) => card.wordKey));
     },
 
     /**

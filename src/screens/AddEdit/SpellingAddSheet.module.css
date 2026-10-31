@@ -1,0 +1,193 @@
+/* Canvas P3–P4. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 15px;
+  font-weight: var(--weight-black);
+}
+
+.box {
+  box-sizing: border-box;
+  width: 100%;
+  height: 300px;
+  padding: 14px 18px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-panel-input);
+  background: var(--color-white);
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: var(--weight-bold);
+  line-height: 1.6;
+  resize: none;
+}
+
+/* The spelling deck's aqua instead of orange around the field you type in (P3). */
+.box:focus-visible {
+  border: 3px solid var(--color-aqua-dark);
+  outline: 2.5px solid var(--color-ink);
+}
+
+.help {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.helpCheck {
+  font-size: 16px;
+}
+
+.main {
+  margin-top: 6px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 48px;
+  padding-left: 4px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+}
+
+.odd {
+  border-style: dashed;
+  border-color: var(--color-odd);
+}
+
+.already {
+  padding: 0 16px;
+  border: 2px solid var(--color-sand);
+  background: var(--color-skipped);
+  color: var(--color-text-secondary);
+  font-size: 17px;
+  font-weight: var(--weight-bold);
+}
+
+.word {
+  height: 44px;
+  padding: 0 2px 0 12px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+}
+
+.word[lang='fa'] {
+  font-family: var(--font-persian);
+}
+
+.edit {
+  width: 9em;
+  height: 40px;
+  margin: 0 0 0 4px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua-pale);
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: var(--weight-bold);
+}
+
+.remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.remove svg {
+  stroke-width: 3.2;
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: 4px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.legend p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.swatch {
+  box-sizing: border-box;
+  width: 28px;
+  height: 16px;
+  border-radius: var(--radius-pill);
+}
+
+.alreadySwatch {
+  border: 2px solid var(--color-sand);
+  background: var(--color-skipped);
+}
+
+.oddSwatch {
+  border: var(--border-chunky) dashed var(--color-odd);
+  background: var(--color-white);
+}
+
+.nothing {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: var(--weight-bold);
+  text-align: center;
+}
+
+.back {
+  align-self: center;
+  min-height: 44px;
+  margin-bottom: 20px;
+  padding: 6px 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: var(--weight-black);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.word:focus-visible,
+.remove:focus-visible,
+.back:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}

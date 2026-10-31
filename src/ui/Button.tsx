@@ -8,7 +8,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
    * "secondary": the cream pill with an ink outline (Not yet).
    * "text": a quiet link-style button.
    */
-  variant?: 'primary' | 'aqua' | 'secondary' | 'text';
+  /** aquaDark: the Spelling deck's main button (Check, Save N words; canvas P3–P4). */
+  variant?: 'primary' | 'aqua' | 'aquaDark' | 'secondary' | 'text';
 }
 
 /** Squishy pill button (docs/design: drops 5px and loses its shadow when pressed). */

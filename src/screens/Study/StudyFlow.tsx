@@ -69,6 +69,8 @@ type StudyRepo = Pick<
   | 'editCard'
   | 'findCardIdByWord'
   | 'saveAndStartOver'
+  | 'addSpellingWords'
+  | 'spellingKeys'
   | 'progress'
   | 'backupStatus'
   | 'snoozeBackup'

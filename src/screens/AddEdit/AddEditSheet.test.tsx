@@ -100,9 +100,9 @@ describe('Add word', () => {
   });
 
   it('shows the deck it adds to next to the title (canvas N4)', async () => {
-    open({ mode: 'add', deck: deckById('spelling') });
+    open(ADD);
     const sheet = await screen.findByRole('dialog', { name: 'New word' });
-    expect(within(sheet).getByText('Spelling')).toBeInTheDocument();
+    expect(within(sheet).getByText('Vocab')).toBeInTheDocument();
   });
 
   it('saves a new card in box 1, due tomorrow, and stays open for the next word (canvas N4)', async () => {
