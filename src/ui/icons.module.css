@@ -17,6 +17,7 @@
   fill: var(--color-cream);
   stroke: var(--color-ink);
   stroke-width: 2.2;
+  stroke-linecap: butt;
 }
 
 .boxLine {

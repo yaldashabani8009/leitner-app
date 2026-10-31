@@ -68,9 +68,9 @@
   white-space: nowrap;
 }
 
-/* A stat pill that is a button (box badge): same look, plus press and focus. */
+/* A stat pill that is a button (box badge): the same size as the streak pill (canvas N1),
+   plus press and focus. */
 .tappable {
-  min-height: 44px;
   font-family: inherit;
   cursor: pointer;
 }
