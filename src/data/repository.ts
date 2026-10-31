@@ -435,12 +435,24 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       const [cards, meanings, misses] = await Promise.all([
         db.cards.filter((card) => card.deletedAt === null).toArray(),
         db.entries
-          .filter((entry) => entry.kind === 'meaning' && entry.deletedAt === null)
+          .filter(
+            (entry) =>
+              entry.deletedAt === null &&
+              (entry.kind === 'meaning' || (entry.kind === 'sentence' && !!entry.translation)),
+          )
           .toArray(),
         db.reviewLogs.filter((log) => !log.correct && !log.isPractice).toArray(),
       ]);
       const meaningsOf = new Map<string, { text: string; position: number }[]>();
+      const translationsOf = new Map<string, string[]>();
       for (const entry of meanings) {
+        if (entry.kind === 'sentence') {
+          translationsOf.set(entry.cardId, [
+            ...(translationsOf.get(entry.cardId) ?? []),
+            entry.translation!,
+          ]);
+          continue;
+        }
         meaningsOf.set(entry.cardId, [...(meaningsOf.get(entry.cardId) ?? []), entry]);
       }
       const missesOf = new Map<string, number>();
@@ -457,6 +469,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
           .sort((a, b) => a.position - b.position)
           .map((entry) => entry.text),
         misses: missesOf.get(card.id) ?? 0,
+        translations: translationsOf.get(card.id) ?? [],
       }));
     },
 

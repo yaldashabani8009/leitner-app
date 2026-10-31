@@ -52,7 +52,7 @@ export async function typeAndSave(page: Page, word: Word): Promise<void> {
   await sheet.getByLabel('The word').fill(word.word);
   await sheet.getByLabel('Similar words').fill(word.similar);
   await sheet.getByLabel('In Persian').fill(word.persian);
-  await sheet.getByLabel('In a sentence').fill(word.sentence);
+  await sheet.getByLabel('Sentence 1', { exact: true }).fill(word.sentence);
   await sheet.getByRole('button', { name: 'Save word' }).click();
   await expect(page.getByRole('status').filter({ hasText: `${word.word} saved` })).toBeVisible();
   await expect(sheet.getByLabel('The word')).toHaveValue('');

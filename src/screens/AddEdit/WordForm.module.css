@@ -32,3 +32,75 @@
   flex: 1;
   min-width: 0;
 }
+
+/* Canvas P1: a sentence and its optional Persian, the ✕ beside the pair. */
+.pairRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.pair {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sentenceInput {
+  padding: 12px 16px;
+  font-size: 16px;
+}
+
+/* Secondary: smaller, soft sand outline, right to left. */
+.persianField {
+  display: block;
+  box-sizing: border-box;
+  overflow: hidden;
+  resize: none;
+  width: 100%;
+  padding: 8px 16px;
+  border: 2px solid var(--color-sand);
+  border-radius: var(--radius-stamp);
+  background: var(--color-field-soft);
+  color: var(--color-ink);
+  font-family: var(--font-persian);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.persianField::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.persianField:focus-visible {
+  border: 3px solid var(--color-orange);
+  outline: 2.5px solid var(--color-ink);
+  outline-offset: 0;
+}
+
+/* A quiet ✕: no circle, muted, 44px to tap. */
+.removePair {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.removePair svg {
+  stroke-width: 3;
+}
+
+.removePair:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}

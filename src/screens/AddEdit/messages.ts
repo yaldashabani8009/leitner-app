@@ -48,6 +48,7 @@ export const LISTS: Record<
 /** The message shown under a field (PRD: errors appear under the field, Save is never disabled). */
 export function errorText(field: CardField, error: FieldError): string {
   if (error === 'duplicate') return 'You already have this word.';
+  if (error === 'orphanTranslation') return 'Add the sentence, or clear the Persian.';
   if (error === 'tooLong') {
     const max = field === 'word' ? MAX_WORD_LENGTH : MAX_ENTRY_LENGTH;
     return `That's too long. Keep it under ${max} characters.`;

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { CardWithEntries } from '../../data/repository';
 import { IconButton } from '../../ui/IconButton';
 import { PencilIcon } from '../../ui/icons';
@@ -41,13 +42,67 @@ export function CardBack({ card, onEdit }: { card: CardWithEntries; onEdit?: () 
       </section>
       <section className={styles.section} aria-label="In a sentence">
         <h2 className={styles.label}>in a sentence</h2>
-        {card.sentences.map((entry) => (
-          <p key={entry.id} className={styles.sentence}>
-            “<Highlight text={entry.text} word={word} />”
-          </p>
-        ))}
+        {card.sentences.map((entry) =>
+          entry.translation ? (
+            <SentenceWithPersian
+              key={entry.id}
+              text={entry.text}
+              translation={entry.translation}
+              word={word}
+            />
+          ) : (
+            <p key={entry.id} className={`${styles.sentence} ${styles.plainSentence}`}>
+              “<Highlight text={entry.text} word={word} />”
+            </p>
+          ),
+        )}
       </section>
     </>
+  );
+}
+
+interface SentenceWithPersianProps {
+  text: string;
+  translation: string;
+  word: string;
+}
+
+/**
+ * A sentence with its Persian hidden at first (v3 step 4, canvas P2): a soft "fa" pill says one
+ * exists; tapping the sentence shows it underneath on a pale background, tapping again hides it.
+ * A real button (Tab, Enter, Space). It never flips the card or answers it; a tap is not a swipe
+ * (the swipe ignores taps, filterTaps), so only a real drag moves the card.
+ * Every card starts hidden again: the card back is drawn fresh for each card.
+ */
+function SentenceWithPersian({ text, translation, word }: SentenceWithPersianProps) {
+  const [open, setOpen] = useState(false);
+  return (
+    <button
+      type="button"
+      className={`${styles.sentenceButton} ${open ? styles.revealed : ''}`}
+      aria-expanded={open}
+      aria-label={open ? undefined : `${text}. Persian translation hidden, tap to show`}
+      onClick={(event) => {
+        event.stopPropagation();
+        setOpen((shown) => !shown);
+      }}
+    >
+      <span className={styles.sentenceLine}>
+        <span className={styles.sentence}>
+          “<Highlight text={text} word={word} />”
+        </span>
+        {!open && (
+          <span className={styles.fa} aria-hidden="true">
+            fa
+          </span>
+        )}
+      </span>
+      {open && (
+        <span lang="fa" dir="rtl" className={styles.translation}>
+          {translation}
+        </span>
+      )}
+    </button>
   );
 }
 

@@ -1,12 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { itemsFromText, joinList } from '../../domain/card/commaList';
-import {
-  type CardDraft,
-  type CardField,
-  type FieldErrors,
-  type ListField,
-} from '../../domain/card/validate';
-import { IconButton } from '../../ui/IconButton';
+import { type CardDraft, type CardField, type FieldErrors } from '../../domain/card/validate';
 import { CloseIcon } from '../../ui/icons';
 import { AddPill } from '../../ui/Pill';
 import { TextField } from '../../ui/TextField';
@@ -20,6 +14,8 @@ interface Item {
   /** The saved entry's id when editing (so edits keep it, ADR-003). */
   id?: string;
   text: string;
+  /** Sentences only: the optional Persian under it (v3 step 4). */
+  translation?: string;
 }
 
 interface WordFormProps {
@@ -46,8 +42,13 @@ const newKey = () => `item-${(nextKey += 1)}`;
 function startSentences(initial?: CardDraft): Item[] {
   const saved = initial?.sentences ?? [];
   return saved.length
-    ? saved.map((entry) => ({ key: newKey(), id: entry.id, text: entry.text }))
-    : [{ key: newKey(), text: '' }];
+    ? saved.map((entry) => ({
+        key: newKey(),
+        id: entry.id,
+        text: entry.text,
+        translation: entry.translation ?? '',
+      }))
+    : [{ key: newKey(), text: '', translation: '' }];
 }
 
 const texts = (entries: readonly { text: string }[] | undefined) =>
@@ -92,7 +93,7 @@ export function WordForm({
   }
 
   function addSentence() {
-    const item = { key: newKey(), text: '' };
+    const item = { key: newKey(), text: '', translation: '' };
     updateSentences([...sentences, item]);
     setFocusKey(item.key);
   }
@@ -102,7 +103,11 @@ export function WordForm({
       word,
       synonyms: itemsFromText(synonyms, saved(initial?.synonyms)),
       meanings: itemsFromText(meanings, saved(initial?.meanings)),
-      sentences: sentences.map(({ id: entryId, text }) => ({ id: entryId, text })),
+      sentences: sentences.map(({ id: entryId, text, translation }) => ({
+        id: entryId,
+        text,
+        translation: translation ?? '',
+      })),
     };
   }
 
@@ -151,8 +156,7 @@ export function WordForm({
         }}
       />
 
-      <ListGroup
-        field="sentences"
+      <SentenceGroup
         items={sentences}
         error={errors.sentences && errorText('sentences', errors.sentences)}
         removable={mode === 'edit' && sentences.length > 1}
@@ -228,8 +232,7 @@ function FieldError({ id, text }: { id: string; text: string }) {
   );
 }
 
-interface ListGroupProps {
-  field: ListField;
+interface SentenceGroupProps {
   items: Item[];
   error?: string;
   removable: boolean;
@@ -237,46 +240,57 @@ interface ListGroupProps {
   onChange: (items: Item[]) => void;
 }
 
-/** One list (similar words, Persian, sentences): a label, one input per item, the error below. */
-function ListGroup({ field, items, error, removable, inputRef, onChange }: ListGroupProps) {
+/**
+ * "In a sentence" (canvas P1): each sentence with a smaller right-to-left "Persian (optional)"
+ * field under it; the ✕ beside a pair removes both. "+ sentence" adds a pair.
+ */
+function SentenceGroup({ items, error, removable, inputRef, onChange }: SentenceGroupProps) {
   const id = useId();
   const errorId = `${id}-error`;
-  const words = LISTS[field];
-
+  const change = (key: string, part: Partial<Item>) =>
+    onChange(items.map((item) => (item.key === key ? { ...item, ...part } : item)));
   return (
-    <div className={fieldStyles.field}>
-      <label htmlFor={`${id}-0`} className={fieldStyles.label}>
-        {words.label}
-      </label>
+    <div className={fieldStyles.field} role="group" aria-labelledby={`${id}-label`}>
+      <span id={`${id}-label`} className={fieldStyles.label}>
+        {LISTS.sentences.label}
+      </span>
       {items.map((item, index) => (
-        <div key={item.key} className={styles.itemRow}>
-          <Input
-            multiline={field === 'sentences'}
-            id={`${id}-${index}`}
-            inputRef={(element) => inputRef(item.key, element)}
-            className={[fieldStyles.input, index > 0 && !item.text && styles.extraEmpty]
-              .filter(Boolean)
-              .join(' ')}
-            value={item.text}
-            lang={words.lang}
-            aria-label={index > 0 ? `${words.one} ${index + 1}` : undefined}
-            placeholder={
-              index > 0 ? (words.lang ? words.placeholder : 'another one?') : words.placeholder
-            }
-            aria-invalid={error ? true : undefined}
-            aria-describedby={error ? errorId : undefined}
-            autoComplete="off"
-            onText={(text) =>
-              onChange(items.map((other) => (other.key === item.key ? { ...other, text } : other)))
-            }
-          />
-          {removable && (
-            <IconButton
-              label={`Remove ${words.one.toLowerCase()} ${index + 1}`}
-              variant="white"
-              icon={<CloseIcon />}
-              onClick={() => onChange(items.filter((other) => other.key !== item.key))}
+        <div key={item.key} className={styles.pairRow}>
+          <div className={styles.pair}>
+            <Input
+              multiline
+              id={`${id}-${index}`}
+              inputRef={(element) => inputRef(item.key, element)}
+              className={`${fieldStyles.input} ${styles.sentenceInput}`}
+              value={item.text}
+              aria-label={`Sentence ${index + 1}`}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? errorId : undefined}
+              autoComplete="off"
+              onText={(text) => change(item.key, { text })}
             />
+            <Input
+              multiline
+              id={`${id}-${index}-fa`}
+              inputRef={() => {}}
+              lang="fa"
+              className={styles.persianField}
+              value={item.translation ?? ''}
+              placeholder="Persian (optional)"
+              aria-label={`Persian for sentence ${index + 1} (optional)`}
+              autoComplete="off"
+              onText={(translation) => change(item.key, { translation })}
+            />
+          </div>
+          {removable && (
+            <button
+              type="button"
+              className={styles.removePair}
+              aria-label={`Remove sentence ${index + 1}`}
+              onClick={() => onChange(items.filter((other) => other.key !== item.key))}
+            >
+              <CloseIcon size={16} />
+            </button>
           )}
         </div>
       ))}

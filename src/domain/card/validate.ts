@@ -31,7 +31,8 @@ export interface CardDraft {
 export const LIST_FIELDS = ['synonyms', 'meanings', 'sentences'] as const;
 export type ListField = (typeof LIST_FIELDS)[number];
 export type CardField = 'word' | ListField;
-export type FieldError = 'required' | 'tooLong' | 'duplicate';
+/** orphanTranslation: a sentence's Persian was typed but the sentence itself is empty (v3 step 4). */
+export type FieldError = 'required' | 'tooLong' | 'duplicate' | 'orphanTranslation';
 export type FieldErrors = Partial<Record<CardField, FieldError>>;
 
 export type Validation = { ok: true; card: CardDraft } | { ok: false; errors: FieldErrors };
@@ -76,7 +77,20 @@ export function validateCard(draft: CardDraft): Validation {
     const list = cleanList(draft[field]);
     lists[field] = list;
     if (list.length === 0) errors[field] = 'required';
-    else if (list.some((entry) => length(entry.text) > MAX_ENTRY_LENGTH)) errors[field] = 'tooLong';
+    else if (
+      list.some(
+        (entry) =>
+          length(entry.text) > MAX_ENTRY_LENGTH ||
+          length(entry.translation ?? '') > MAX_ENTRY_LENGTH,
+      )
+    )
+      errors[field] = 'tooLong';
+  }
+  // A Persian with no sentence to go with it (it would be dropped silently otherwise).
+  if (
+    draft.sentences.some((entry) => entry.text.trim() === '' && cleanTranslation(entry.translation))
+  ) {
+    errors.sentences = 'orphanTranslation';
   }
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };

@@ -497,6 +497,54 @@ describe('StudyFlow', () => {
     expect((await screen.findByRole('button', { name: /tap to flip/ })).textContent).toBe(word);
   });
 
+  it("a sentence's Persian is hidden until tapped; tapping never flips back or answers (P2)", async () => {
+    await addCards('brave', 'calm');
+    for (const card of await db.cards.toArray()) {
+      const entries = await db.entries.where('cardId').equals(card.id).toArray();
+      const sentence = entries.find((e) => e.kind === 'sentence')!;
+      await db.entries.update(sentence.id, { translation: `فارسی ${card.word}` });
+    }
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
+    const first = await frontWord();
+    await userEvent.click(screen.getByRole('button', { name: /tap to flip/ }));
+    const back = screen.getByLabelText(`Answer for ${first}`);
+    const sentence = within(back).getByRole('button', { name: /Persian translation hidden/ });
+    expect(sentence).toHaveAttribute('aria-expanded', 'false');
+    expect(within(back).getByText('fa')).toBeInTheDocument();
+    expect(within(back).queryByText(`فارسی ${first}`)).not.toBeInTheDocument();
+
+    await userEvent.click(sentence);
+    expect(sentence).toHaveAttribute('aria-expanded', 'true');
+    expect(within(back).getByText(`فارسی ${first}`)).toHaveAttribute('lang', 'fa');
+    // Still the same card's back, nothing answered.
+    expect(screen.getByLabelText(`Answer for ${first}`)).toBeInTheDocument();
+    expect(await boxOf(first!)).toBe(1);
+    await userEvent.click(sentence);
+    expect(within(back).queryByText(`فارسی ${first}`)).not.toBeInTheDocument();
+
+    // Open it again, answer: the next card starts hidden.
+    await userEvent.click(sentence);
+    await userEvent.click(screen.getByRole('button', { name: 'Knew it!' }));
+    const second = await frontWord();
+    await userEvent.click(screen.getByRole('button', { name: /tap to flip/ }));
+    expect(
+      within(screen.getByLabelText(`Answer for ${second}`)).queryByText(`فارسی ${second}`),
+    ).not.toBeInTheDocument();
+  });
+
+  it('a sentence without Persian has no pill and is not a button', async () => {
+    await addCards('brave');
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
+    await userEvent.click(await screen.findByRole('button', { name: /tap to flip/ }));
+    const back = screen.getByLabelText('Answer for brave');
+    expect(within(back).queryByText('fa')).not.toBeInTheDocument();
+    expect(within(back).queryByRole('button', { name: /sentence/i })).not.toBeInTheDocument();
+  });
+
   it('edits the card being reviewed with the pencil, and shows the change at once', async () => {
     await addCards('brave');
     now = DAY_2;

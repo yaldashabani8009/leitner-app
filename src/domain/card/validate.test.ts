@@ -119,3 +119,30 @@ describe('sentence translations (v3 step 4)', () => {
     ]);
   });
 });
+
+describe('a Persian without its sentence (v3 step 4)', () => {
+  const base = { word: 'brave', synonyms: [{ text: 'bold' }], meanings: [{ text: 'شجاع' }] };
+
+  it('is an error under the sentences', () => {
+    expect(
+      validateCard({
+        ...base,
+        sentences: [{ text: 'She was brave.' }, { text: '  ', translation: 'او شجاع بود.' }],
+      }),
+    ).toEqual({ ok: false, errors: { sentences: 'orphanTranslation' } });
+  });
+
+  it('an empty pair is just dropped', () => {
+    const result = validateCard({
+      ...base,
+      sentences: [{ text: 'She was brave.' }, { text: '', translation: '  ' }],
+    });
+    expect(result.ok && result.card.sentences).toEqual([{ text: 'She was brave.' }]);
+  });
+
+  it('a too-long Persian is too long', () => {
+    expect(
+      validateCard({ ...base, sentences: [{ text: 'Hi.', translation: 'ی'.repeat(1001) }] }),
+    ).toEqual({ ok: false, errors: { sentences: 'tooLong' } });
+  });
+});
