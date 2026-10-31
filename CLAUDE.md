@@ -57,7 +57,7 @@ Screenshots for Yali: Playwright at iPhone size (393×852, deviceScaleFactor 3, 
 - Every local write goes through the repository layer (`src/data/repository.ts`), which also writes to the sync outbox in the same transaction (ADR-003).
 - Each account has its own on-device database, `leitner-<userId>` (ADR-012).
 - IDs are `crypto.randomUUID()` created on the device. Timestamps are UTC ISO strings.
-- Never show box number, counter or due date in the UI.
+- Never show box number, counter or due date in the UI. The one exception (v3, 2026-10-31): the progress dots on the all-words page (5 dots filled up to the card's box, ★ when mastered; spoken "Box 3 of 5" / "Mastered").
 - Persian text: `lang="fa"` (RTL + Vazirmatn via global CSS).
 - Never commit secrets. Env vars `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` go in `.env.local`.
 

@@ -299,16 +299,35 @@ describe('StudyFlow', () => {
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
     await userEvent.click(await screen.findByRole('button', { name: '2 cards in your box' }));
     expect(await screen.findByRole('heading', { name: /In your box/ })).toBeInTheDocument();
-    const list = await screen.findByRole('list');
-    // Newest first.
-    expect(
-      within(list)
-        .getAllByRole('listitem')
-        .map((li) => li.textContent),
-    ).toEqual(['calm', 'brave']);
+    // By day, newest first.
+    const words = await screen.findAllByRole('button', { name: /Box 1 of 5/ });
+    expect(words.map((b) => b.textContent?.split(/[^a-z]/)[0])).toEqual(['calm', 'brave']);
     await userEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(await screen.findByRole('button', { name: '2 cards in your box' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /In your box/ })).not.toBeInTheDocument();
+  });
+
+  it('all words: tap a row for the card view with Edit; delete with Undo; practise a day', async () => {
+    await addCards('brave', 'calm');
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(await screen.findByRole('button', { name: '2 cards in your box' }));
+    await userEvent.click(await screen.findByRole('button', { name: /^brave/ }));
+    expect(await screen.findByLabelText('Your card: brave')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit word' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+
+    const row = await screen.findByRole('button', { name: /^calm/ });
+    row.focus();
+    await userEvent.keyboard('{Delete}');
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('calm deleted'));
+    expect(await screen.findByText('1 card')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    expect(await screen.findByText('2 cards')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Practice words added today' }));
+    expect(await screen.findByText('Practice · your boxes stay the same')).toBeInTheDocument();
+    expect(screen.getByText('2 left')).toBeInTheDocument();
   });
 
   it('the all-words page of an empty box says so', async () => {
