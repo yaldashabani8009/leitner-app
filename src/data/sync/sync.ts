@@ -93,7 +93,7 @@ export function createSync(db: LeitnerDb, remote: SyncRemote, deps: SyncDeps) {
    * the lists are combined without repeats, and the review history moves over.
    */
   async function mergeIntoCloudCard(local: CardRow): Promise<void> {
-    const cloud = await remote.findCardByWord(local.word);
+    const cloud = await remote.findCardByWord(local.word, local.deck);
     if (!cloud) throw new Error(`Duplicate word "${local.word}" but no cloud card found.`);
     const cloudEntries = (await remote.entriesOfCard(cloud.id)).map(entryFromRemote);
     const now = deps.now();

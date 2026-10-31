@@ -2,7 +2,7 @@
  * An in-memory Supabase for sync tests. It copies the real database's rules:
  * - server_updated_at is the server's own clock (6 decimals, like Postgres);
  * - an older update never replaces a newer one (trigger a_reject_older_write);
- * - one live card per word, ignoring capitals (cards_user_word_unique) → DuplicateWordError;
+ * - one live card per word per deck, ignoring capitals (cards_user_deck_word_unique) → DuplicateWordError;
  * - entries and logs need their card first (RLS);
  * - review logs are append-only;
  * - streak days are append-only and one per day (streak_days_user_day).
@@ -62,6 +62,7 @@ export function createFakeCloud(): FakeCloud {
         const clash = live.find(
           (c) =>
             c.id !== row.id &&
+            c.deck === row.deck &&
             c.word.toLowerCase() === row.word.toLowerCase() &&
             row.deleted_at === null,
         );
@@ -107,10 +108,11 @@ export function createFakeCloud(): FakeCloud {
       return structuredClone(rows.slice(0, limit));
     },
 
-    async findCardByWord(word) {
+    async findCardByWord(word, deck) {
       await enter('findCardByWord');
       const card = [...cloud.tables.cards.values()].find(
-        (c) => c.deleted_at === null && c.word.toLowerCase() === word.toLowerCase(),
+        (c) =>
+          c.deleted_at === null && c.deck === deck && c.word.toLowerCase() === word.toLowerCase(),
       );
       return card ? structuredClone(card) : null;
     },

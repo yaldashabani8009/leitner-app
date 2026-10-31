@@ -179,6 +179,7 @@ describe('pull', () => {
       box_before: 1,
       box_after: 2,
       is_practice: false,
+      typed_answer: null,
       created_at: '2026-03-10T08:00:00.000Z',
     }));
     await cloud.insertLogs(logs);

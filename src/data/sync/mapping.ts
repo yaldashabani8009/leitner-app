@@ -6,6 +6,7 @@
 
 import { wordKey } from '../../domain/card/validate';
 import type { Box } from '../../domain/leitner/config';
+import { deckOrVocab } from '../../domain/decks/decks';
 import type { Database } from '../database.types';
 import type { CardRow, EntryRow, ReviewLogRow, StreakDayRow } from '../db';
 
@@ -24,6 +25,8 @@ export function cardToRemote(card: CardRow): CardUpload {
   return {
     id: card.id,
     word: card.word,
+    deck: card.deck,
+    added_on: card.addedOn,
     box: card.box,
     due_date: card.dueDate,
     mastered_at: card.masteredAt,
@@ -37,7 +40,10 @@ export function cardFromRemote(row: RemoteCard): CardRow {
   return {
     id: row.id,
     word: row.word,
+    deck: deckOrVocab(row.deck),
     wordKey: wordKey(row.word),
+    // Rows from before v3 may lack it: fall back to the creation day.
+    addedOn: row.added_on ?? row.created_at.slice(0, 10),
     box: row.box as Box,
     dueDate: row.due_date,
     masteredAt: row.mastered_at,
@@ -80,6 +86,7 @@ export function logToRemote(log: ReviewLogRow): LogUpload {
     box_before: log.boxBefore,
     box_after: log.boxAfter,
     is_practice: log.isPractice,
+    typed_answer: log.typedAnswer ?? null,
     created_at: log.createdAt,
   };
 }
@@ -93,6 +100,7 @@ export function logFromRemote(row: RemoteLog): ReviewLogRow {
     boxBefore: row.box_before as Box,
     boxAfter: row.box_after as Box | null,
     isPractice: row.is_practice,
+    typedAnswer: row.typed_answer ?? null,
     createdAt: row.created_at,
   };
 }

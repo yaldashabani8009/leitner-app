@@ -16,7 +16,9 @@ describe('device ↔ cloud rows', () => {
     const card: CardRow = {
       id: 'c1',
       word: 'Ice Cream',
+      deck: 'vocab',
       wordKey: 'ice cream',
+      addedOn: '2026-03-01',
       box: 3,
       dueDate: '2026-03-14',
       masteredAt: null,
@@ -52,6 +54,7 @@ describe('device ↔ cloud rows', () => {
       boxBefore: 5,
       boxAfter: null,
       isPractice: false,
+      typedAnswer: null,
       createdAt: '2026-03-10T08:00:00.000Z',
     };
     expect(logFromRemote({ ...logToRemote(log), ...cloudFields })).toEqual(log);

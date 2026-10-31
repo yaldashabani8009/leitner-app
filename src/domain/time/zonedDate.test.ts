@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isDue, newCard } from '../leitner/engine';
 import {
   dateInZone,
+  dateOfTimestampInZone,
   FALLBACK_TIME_ZONE,
   hourInZone,
   isValidTimeZone,
@@ -187,5 +188,28 @@ describe('hourInZone', () => {
 
   it('throws on a bad timestamp like dateInZone', () => {
     expect(() => hourInZone('yesterday', 'UTC')).toThrow(RangeError);
+  });
+});
+
+describe('dateOfTimestampInZone', () => {
+  it('reads device timestamps', () => {
+    expect(dateOfTimestampInZone('2026-03-10T23:30:00.000Z', 'Asia/Tehran')).toBe('2026-03-11');
+    expect(dateOfTimestampInZone('2026-03-10T23:30:00.000Z', 'America/New_York')).toBe(
+      '2026-03-10',
+    );
+  });
+
+  it('reads Postgres timestamps, with a space, 6 decimals and an offset', () => {
+    expect(dateOfTimestampInZone('2026-03-10 23:30:00.123456+00:00', 'Asia/Tehran')).toBe(
+      '2026-03-11',
+    );
+    expect(dateOfTimestampInZone('2026-03-10 23:30:00+0000', 'UTC')).toBe('2026-03-10');
+    expect(dateOfTimestampInZone('2026-03-10T23:30+01', 'UTC')).toBe('2026-03-10');
+    expect(dateOfTimestampInZone('2026-03-10T23:30:00+05:30', 'UTC')).toBe('2026-03-10');
+  });
+
+  it('falls back to the first ten characters for text it cannot read', () => {
+    expect(dateOfTimestampInZone('2026-03-10 nonsense', 'UTC')).toBe('2026-03-10');
+    expect(dateOfTimestampInZone('2026-13-45T10:00:00Z', 'UTC')).toBe('2026-13-45');
   });
 });

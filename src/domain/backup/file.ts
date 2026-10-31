@@ -5,16 +5,20 @@
  * anything is saved.
  */
 
-import type { Box } from '../leitner/config';
+import type { Box, DeckId } from '../leitner/config';
+import { DECK_IDS } from '../leitner/config';
 import { assertCalendarDate, type CalendarDate } from '../time/calendarDate';
-import { dateInZone } from '../time/zonedDate';
+import { dateInZone, dateOfTimestampInZone } from '../time/zonedDate';
 
 export const BACKUP_APP = 'leitner-backup';
-export const BACKUP_VERSION = 1;
+/** Version 2 (v3 decks) adds card.deck, card.addedOn and log.typedAnswer. Version 1 files still restore. */
+export const BACKUP_VERSION = 2;
 
 export interface BackupCard {
   id: string;
   word: string;
+  deck: DeckId;
+  addedOn: CalendarDate;
   box: Box;
   dueDate: CalendarDate;
   masteredAt: string | null;
@@ -41,6 +45,7 @@ export interface BackupLog {
   boxBefore: Box;
   boxAfter: Box | null;
   isPractice: boolean;
+  typedAnswer: string | null;
   createdAt: string;
 }
 
@@ -113,6 +118,8 @@ const oneOf =
 const CARD: Schema = {
   id,
   word: id,
+  deck: oneOf(...DECK_IDS),
+  addedOn: calendarDate,
   box,
   dueDate: calendarDate,
   masteredAt: nullable(timestamp),
@@ -137,6 +144,7 @@ const LOG: Schema = {
   boxBefore: box,
   boxAfter: nullable(box),
   isPractice: flag,
+  typedAnswer: nullable(text),
   createdAt: timestamp,
 };
 const STREAK_DAY: Schema = { day: calendarDate, id, createdAt: timestamp };
@@ -165,6 +173,24 @@ function pickAll(raw: unknown, schema: Schema): Record<string, unknown>[] | null
 
 // ---------- Reading and naming ----------
 
+/** Version 1 cards → version 2 shape. Rows that aren't objects are left for the checks to refuse. */
+function upgradeCardsV1(raw: unknown, zone: string): unknown {
+  if (!Array.isArray(raw)) return raw;
+  return raw.map((card) => {
+    if (!isObject(card)) return card;
+    const addedOn =
+      typeof card.createdAt === 'string' && timestamp(card.createdAt)
+        ? dateOfTimestampInZone(card.createdAt, zone)
+        : undefined; // refused as damaged below
+    return { ...card, deck: 'vocab', addedOn };
+  });
+}
+
+function upgradeLogsV1(raw: unknown): unknown {
+  if (!Array.isArray(raw)) return raw;
+  return raw.map((log) => (isObject(log) ? { ...log, typedAnswer: null } : log));
+}
+
 /** Reads a backup file's text. Unknown extra fields are dropped. */
 export function readBackup(fileText: string): ReadBackup {
   let raw: unknown;
@@ -178,14 +204,22 @@ export function readBackup(fileText: string): ReadBackup {
     return { ok: false, problem: 'newerVersion' };
   }
 
-  const cards = pickAll(raw.cards, CARD) as BackupCard[] | null;
+  const isV1 = raw.version === 1;
+  // Version 1 has no decks: every card is vocab, added on the day it was created (profile time zone).
+  const zone =
+    isObject(raw.profile) && typeof raw.profile.timeZone === 'string' && raw.profile.timeZone
+      ? raw.profile.timeZone
+      : 'UTC';
+  const cards = pickAll(isV1 ? upgradeCardsV1(raw.cards, zone) : raw.cards, CARD) as
+    BackupCard[] | null;
   const entries = pickAll(raw.entries, ENTRY) as BackupEntry[] | null;
-  const reviewLogs = pickAll(raw.reviewLogs, LOG) as BackupLog[] | null;
+  const reviewLogs = pickAll(isV1 ? upgradeLogsV1(raw.reviewLogs) : raw.reviewLogs, LOG) as
+    BackupLog[] | null;
   const streakDays = pickAll(raw.streakDays, STREAK_DAY) as BackupStreakDay[] | null;
   const profile =
     raw.profile === null ? null : (pick(raw.profile, PROFILE) as BackupProfile | null);
   if (
-    raw.version !== BACKUP_VERSION ||
+    (raw.version !== BACKUP_VERSION && !isV1) ||
     !timestamp(raw.exportedAt) ||
     !id(raw.userId) ||
     !cards ||

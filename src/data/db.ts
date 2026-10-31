@@ -5,15 +5,20 @@
  */
 
 import { Dexie, type EntityTable } from 'dexie';
-import type { Box } from '../domain/leitner/config';
+import type { Box, DeckId } from '../domain/leitner/config';
+import { dateOfTimestampInZone } from '../domain/time/zonedDate';
 
 export type EntryKind = 'synonym' | 'meaning' | 'sentence';
 
 export interface CardRow {
   id: string;
   word: string;
-  /** Lower-case word for the duplicate check (see domain/card wordKey). Local only. */
+  /** Which deck the card is in (ADR-019). One card per word per deck. */
+  deck: DeckId;
+  /** Lower-case word for the duplicate check (see domain/card wordKey). Local only; used with `deck`. */
   wordKey: string;
+  /** Day the card was added or re-added ("Save & start over"), in the profile time zone. Drives extra practice. */
+  addedOn: string;
   box: Box;
   /** Calendar date in the profile time zone, YYYY-MM-DD. */
   dueDate: string;
@@ -43,6 +48,8 @@ export interface ReviewLogRow {
   /** null = mastered by this answer. */
   boxAfter: Box | null;
   isPractice: boolean;
+  /** What was typed on a spelling card (step 5). Null/missing until then. */
+  typedAnswer?: string | null;
   createdAt: string;
 }
 
@@ -122,6 +129,21 @@ export class LeitnerDb extends Dexie {
       reviewLogs: 'id, cardId, reviewedAt, boxBefore',
       streakDays: 'day',
     });
+    // v4 (v3 decks, ADR-019): every old card becomes vocab; addedOn is its creation day in the
+    // profile time zone. [deck+wordKey] is the "one card per word per deck" lookup.
+    this.version(4)
+      .stores({ cards: 'id, wordKey, dueDate, updatedAt, deck, addedOn, [deck+wordKey]' })
+      .upgrade(async (tx) => {
+        const profile = await tx.table('profile').toCollection().first();
+        const zone = (profile?.timeZone as string | undefined) ?? 'UTC';
+        await tx
+          .table('cards')
+          .toCollection()
+          .modify((card: Partial<CardRow> & { createdAt: string }) => {
+            card.deck = 'vocab';
+            card.addedOn = dateOfTimestampInZone(card.createdAt, zone);
+          });
+      });
   }
 }
 
