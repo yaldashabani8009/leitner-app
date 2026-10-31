@@ -396,3 +396,60 @@ describe('saveAndStartOver (canvas N5)', () => {
     expect((await db.cards.get(added.cardId))?.box).toBe(4);
   });
 });
+
+describe('spelling words (v3 brief 1.2)', () => {
+  it('saves one word-only card per word, skips ones already in Spelling, never touches Vocab', async () => {
+    const db = new LeitnerDb(`spell-${crypto.randomUUID()}`);
+    dbs.push(db);
+    const now = '2026-03-10T08:00:00.000Z';
+    const repo = createRepository(db, { now: () => now, newId: () => crypto.randomUUID() });
+    await repo.saveProfile({ userId: 'u1', displayName: 'Yali', timeZone: 'UTC', updatedAt: now });
+    await repo.addCard(draft('receive')); // vocab
+    expect(await repo.addSpellingWords(['necessary', 'Wednesday'])).toEqual({ saved: 2 });
+    expect(
+      await repo.addSpellingWords([
+        'necessary',
+        'receive',
+        ' ice   cream ',
+        'ICE CREAM',
+        '',
+        'x'.repeat(201),
+      ]),
+    ).toEqual({ saved: 2 });
+
+    const spelling = await db.cards.where('deck').equals('spelling').toArray();
+    expect(spelling.map((c) => c.word).sort()).toEqual([
+      'Wednesday',
+      'ice cream',
+      'necessary',
+      'receive',
+    ]);
+    expect(spelling.every((c) => c.box === 1 && c.addedOn === '2026-03-10')).toBe(true);
+    expect(
+      await db.entries
+        .where('cardId')
+        .anyOf(spelling.map((c) => c.id))
+        .count(),
+    ).toBe(0);
+    expect(await db.cards.where('deck').equals('vocab').count()).toBe(1);
+    expect(await repo.spellingKeys()).toEqual(
+      new Set(['necessary', 'wednesday', 'receive', 'ice cream']),
+    );
+    expect((await repo.addSpellingWords([])).saved).toBe(0);
+  });
+
+  it('a spelling card edits with just the word', async () => {
+    const db = new LeitnerDb(`spell-${crypto.randomUUID()}`);
+    dbs.push(db);
+    const repo = createRepository(db, {
+      now: () => '2026-03-10T08:00:00.000Z',
+      newId: () => crypto.randomUUID(),
+    });
+    await repo.addSpellingWords(['recieve']);
+    const [card] = await db.cards.toArray();
+    expect(
+      await repo.editCard(card.id, { word: 'receive', synonyms: [], meanings: [], sentences: [] }),
+    ).toEqual({ status: 'saved' });
+    expect((await db.cards.get(card.id))?.word).toBe('receive');
+  });
+});

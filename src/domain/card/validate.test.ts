@@ -146,3 +146,17 @@ describe('a Persian without its sentence (v3 step 4)', () => {
     ).toEqual({ ok: false, errors: { sentences: 'tooLong' } });
   });
 });
+
+describe('required lists per deck (v3)', () => {
+  const bare = { word: 'receive', synonyms: [], meanings: [], sentences: [] };
+  it('vocab needs all three lists; spelling and phrases need none', () => {
+    expect(validateCard(bare).ok).toBe(false);
+    expect(validateCard(bare, 'vocab').ok).toBe(false);
+    expect(validateCard(bare, 'spelling')).toEqual({ ok: true, card: bare });
+    expect(validateCard(bare, 'phrases')).toEqual({ ok: true, card: bare });
+    expect(validateCard({ ...bare, word: ' ' }, 'spelling')).toEqual({
+      ok: false,
+      errors: { word: 'required' },
+    });
+  });
+});

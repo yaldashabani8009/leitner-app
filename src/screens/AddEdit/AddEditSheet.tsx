@@ -14,11 +14,18 @@ import { DeckChip } from '../../ui/DeckChip';
 import { Sheet } from '../../ui/Sheet';
 import { Toast } from '../../ui/Toast';
 import styles from './AddEditSheet.module.css';
+import { SpellingAddSheet } from './SpellingAddSheet';
 import { WordForm } from './WordForm';
 
 type AddEditRepo = Pick<
   Repository,
-  'addCard' | 'editCard' | 'getCard' | 'findCardIdByWord' | 'saveAndStartOver'
+  | 'addCard'
+  | 'editCard'
+  | 'getCard'
+  | 'findCardIdByWord'
+  | 'saveAndStartOver'
+  | 'addSpellingWords'
+  | 'spellingKeys'
 >;
 
 export type Editor = { mode: 'add'; deck: Deck } | { mode: 'edit'; cardId: string };
@@ -88,6 +95,10 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
   }, [toast]);
 
   if (!editor) return null;
+  // Spelling words are added many at a time, with a check step (canvas P3–P4).
+  if (editor.mode === 'add' && editor.deck.id === 'spelling') {
+    return <SpellingAddSheet repo={repo} deck={editor.deck} onClose={onClose} />;
+  }
   // Wait for the card before showing the edit form, so it starts filled in.
   if (editor.mode === 'edit' && (!editing || editing.card.id !== editor.cardId)) return null;
 
@@ -197,6 +208,7 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
         id={FORM_ID}
         mode={editor.mode}
         initial={isEdit ? draftOf(editing!) : form.initial}
+        wordOnly={isEdit && editing!.card.deck === 'spelling'}
         errors={errors}
         onClearError={clearError}
         onSubmit={(draft) => void save(draft)}

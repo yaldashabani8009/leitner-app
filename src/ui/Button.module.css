@@ -1,6 +1,7 @@
 /* Shared by primary, aqua and secondary: a full-width chunky pill that squishes when pressed. */
 .primary,
 .aqua,
+.aquaDark,
 .secondary {
   width: 100%;
   min-height: 56px;
@@ -31,6 +32,13 @@
   box-shadow: var(--shadow-hard);
 }
 
+/* The Spelling deck's buttons (canvas P3–P4). */
+.aquaDark {
+  background: var(--color-aqua-dark);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-hard);
+}
+
 /* Cream pill with an ink outline: Not yet (neutral, never red). */
 .secondary {
   background: var(--color-bg);
@@ -40,6 +48,7 @@
 
 .primary:active,
 .aqua:active,
+.aquaDark:active,
 .secondary:active {
   transform: translateY(var(--press-depth));
   box-shadow: none;
@@ -49,6 +58,7 @@
 @media (hover: hover) and (pointer: fine) {
   .primary:hover:not(:active),
   .aqua:hover:not(:active),
+  .aquaDark:hover:not(:active),
   .secondary:hover:not(:active) {
     transform: translateY(calc(var(--hover-lift) * -1));
     box-shadow: var(--shadow-hard-lifted);
@@ -61,6 +71,7 @@
 
 .primary[aria-busy='true'],
 .aqua[aria-busy='true'],
+.aquaDark[aria-busy='true'],
 .secondary[aria-busy='true'] {
   cursor: progress;
 }
@@ -83,6 +94,7 @@
 
 .primary:focus-visible,
 .aqua:focus-visible,
+.aquaDark:focus-visible,
 .secondary:focus-visible,
 .text:focus-visible {
   outline: 3px solid var(--color-focus-ring);

@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import { DECKS } from '../domain/decks/decks';
 import { TodayScreen } from '../screens/Today/TodayScreen';
+import { SpellingAddSheet } from '../screens/AddEdit/SpellingAddSheet';
+import { deckById } from '../domain/decks/decks';
 import { BottomPanel } from '../ui/BottomPanel';
 import { Button } from '../ui/Button';
 import { Card, CardStack } from '../ui/Card';
@@ -19,6 +21,7 @@ import styles from './KitPage.module.css';
  * Add &open=bottom or &open=dialog to start with a sheet open (for screenshots), and
  * &decks=all to see the + roll-out with all three decks (canvas N2; only vocab is enabled).
  * &screen=today shows the Today screen with all three decks, as on canvas N1.
+ * &screen=spelling-add shows the Spelling add sheet (P3, P4); "necessary" is already there.
  * main.tsx only loads this when import.meta.env.DEV, so it never ships.
  */
 export function KitPage() {
@@ -28,6 +31,19 @@ export function KitPage() {
   );
   const close = () => setSheet(null);
   const allDecks = new URLSearchParams(location.search).get('decks') === 'all';
+
+  if (new URLSearchParams(location.search).get('screen') === 'spelling-add') {
+    return (
+      <SpellingAddSheet
+        repo={{
+          spellingKeys: async () => new Set(['necessary']),
+          addSpellingWords: async (words) => ({ saved: words.length }),
+        }}
+        deck={deckById('spelling')}
+        onClose={() => {}}
+      />
+    );
+  }
 
   if (new URLSearchParams(location.search).get('screen') === 'today') {
     const all = DECKS.map((deck) => ({ ...deck, enabled: true }));

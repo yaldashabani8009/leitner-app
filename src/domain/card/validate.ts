@@ -3,6 +3,8 @@
  * Save is never disabled; each problem is reported per field so the UI can show it under that field.
  */
 
+import type { DeckId } from '../leitner/config';
+
 /** Same limits as the database (supabase/migrations: char_length checks). */
 export const MAX_WORD_LENGTH = 200;
 export const MAX_ENTRY_LENGTH = 1000;
@@ -63,10 +65,21 @@ function cleanList(list: readonly EntryInput[]): EntryInput[] {
 }
 
 /**
- * Trims everything, drops empty list items, and checks each field.
- * Every field needs at least one item; nothing may be longer than the database allows.
+ * Which lists a deck's cards must have at least one item in (v3). Vocab: all three.
+ * Spelling: none (a spelling card is just the word). Phrases: none (meaning and examples are
+ * optional, step 6).
  */
-export function validateCard(draft: CardDraft): Validation {
+export const REQUIRED_LISTS: Readonly<Record<DeckId, readonly ListField[]>> = {
+  vocab: LIST_FIELDS,
+  spelling: [],
+  phrases: [],
+};
+
+/**
+ * Trims everything, drops empty list items, and checks each field.
+ * The deck's required lists need at least one item; nothing may be longer than the database allows.
+ */
+export function validateCard(draft: CardDraft, deck: DeckId = 'vocab'): Validation {
   const errors: FieldErrors = {};
   const word = normalizeWord(draft.word);
   if (word === '') errors.word = 'required';
@@ -76,7 +89,7 @@ export function validateCard(draft: CardDraft): Validation {
   for (const field of LIST_FIELDS) {
     const list = cleanList(draft[field]);
     lists[field] = list;
-    if (list.length === 0) errors[field] = 'required';
+    if (list.length === 0 && REQUIRED_LISTS[deck].includes(field)) errors[field] = 'required';
     else if (
       list.some(
         (entry) =>

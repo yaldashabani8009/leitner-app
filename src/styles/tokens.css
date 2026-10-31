@@ -56,6 +56,7 @@
   --radius-delete: 16px; /* the red Delete revealed by a swipe (canvas N9) */
   --radius-group: 28px; /* settings card holding rows (canvas N13) */
   --radius-reveal: 16px; /* a tappable sentence on the card back (P2) */
+  --radius-panel-input: 26px; /* the big spelling words box (canvas P3) */
   --radius-stamp: 18px; /* KNEW IT! / NOT YET stamps */
   --radius-highlight: 6px; /* the word marked inside a sentence */
   --radius-pill: 999px;

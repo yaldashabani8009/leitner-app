@@ -6,7 +6,7 @@
   padding: 4px 12px 4px 8px;
   border: 2px solid var(--color-ink);
   border-radius: var(--radius-pill);
-  background: var(--color-cream);
+  background: var(--tile);
   color: var(--color-ink);
   font-size: 14px;
   font-weight: var(--weight-black);
