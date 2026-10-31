@@ -14,13 +14,15 @@ interface CardViewScreenProps {
   onEdit: () => void;
   onDone: () => void;
   top?: ReactNode;
+  /** A line above Done; none from the all-words page. */
+  note?: string;
 }
 
 /**
- * One card to read, after "Open my card" in the duplicate dialog (decided 2026-10-29):
- * the card back as in review, with the pencil, and "Done" to go back to where you were.
+ * One card to read, opened from the all-words page (v3 brief 1.9): the card back as in review,
+ * with the pencil (Edit), and "Done" to go back to the list.
  */
-export function CardViewScreen({ card, onEdit, onDone, top }: CardViewScreenProps) {
+export function CardViewScreen({ card, onEdit, onDone, top, note }: CardViewScreenProps) {
   useReviewKeys({ onEdit });
   return (
     <main className={styles.screen}>
@@ -38,7 +40,7 @@ export function CardViewScreen({ card, onEdit, onDone, top }: CardViewScreenProp
         className={styles.panel}
         mascot={<Mascot pose="idle" size="small" decorative />}
       >
-        <p className={styles.reassure}>It's back at the start. You'll see it again tomorrow.</p>
+        {note && <p className={styles.reassure}>{note}</p>}
         <Button variant="secondary" onClick={onDone}>
           Done
         </Button>

@@ -20,6 +20,7 @@ import { answer, isDue, newCard, resetToBox1 } from '../domain/leitner/engine';
 import { currentStreak, wordsLearned } from '../domain/progress/progress';
 import type { DeckId } from '../domain/leitner/config';
 import { pickSessionCards, reviewsDoneToday, waitingInDeck } from '../domain/session/pick';
+import type { WordRow } from '../domain/allWords/allWords';
 import { mixDecks, type Random } from '../domain/session/mix';
 import { resumeSession } from '../domain/session/resume';
 import type { Session } from '../domain/session/session';
@@ -370,12 +371,59 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       return db.profile.toCollection().first();
     },
 
-    /** Live cards in every deck, newest first (the all-words page; 11.8 adds search and sorts). */
-    async listCards(): Promise<Pick<CardRow, 'id' | 'word' | 'deck' | 'createdAt'>[]> {
-      const cards = await db.cards.filter((card) => card.deletedAt === null).toArray();
-      return cards
-        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0))
-        .map(({ id, word, deck, createdAt }) => ({ id, word, deck, createdAt }));
+    /**
+     * Every live card for the all-words page (v3 brief 1.9), with its Persian meanings and its
+     * "Not yet" count from real reviews. Reads only the device, so it works offline.
+     */
+    async allWordRows(): Promise<WordRow[]> {
+      const [cards, meanings, misses] = await Promise.all([
+        db.cards.filter((card) => card.deletedAt === null).toArray(),
+        db.entries
+          .filter((entry) => entry.kind === 'meaning' && entry.deletedAt === null)
+          .toArray(),
+        db.reviewLogs.filter((log) => !log.correct && !log.isPractice).toArray(),
+      ]);
+      const meaningsOf = new Map<string, { text: string; position: number }[]>();
+      for (const entry of meanings) {
+        meaningsOf.set(entry.cardId, [...(meaningsOf.get(entry.cardId) ?? []), entry]);
+      }
+      const missesOf = new Map<string, number>();
+      for (const log of misses) missesOf.set(log.cardId, (missesOf.get(log.cardId) ?? 0) + 1);
+      return cards.map((card) => ({
+        id: card.id,
+        word: card.word,
+        deck: card.deck,
+        box: card.box,
+        mastered: card.masteredAt !== null,
+        addedOn: card.addedOn,
+        createdAt: card.createdAt,
+        meanings: (meaningsOf.get(card.id) ?? [])
+          .sort((a, b) => a.position - b.position)
+          .map((entry) => entry.text),
+        misses: missesOf.get(card.id) ?? 0,
+      }));
+    },
+
+    /** Soft-delete a card (swipe left → Delete, N9); the deletion syncs. */
+    deleteCard(cardId: string): Promise<void> {
+      return db.transaction('rw', [db.cards, db.outbox], async () => {
+        const now = deps.now();
+        const card = await db.cards.get(cardId);
+        if (!card || card.deletedAt !== null) return;
+        await db.cards.put({ ...card, deletedAt: now, updatedAt: now });
+        await queue('cards', cardId, now);
+      });
+    },
+
+    /** Undo a delete (the toast's Undo, N10): the card comes back exactly as it was. */
+    restoreCard(cardId: string): Promise<void> {
+      return db.transaction('rw', [db.cards, db.outbox], async () => {
+        const now = deps.now();
+        const card = await db.cards.get(cardId);
+        if (!card || card.deletedAt === null) return;
+        await db.cards.put({ ...card, deletedAt: null, updatedAt: now });
+        await queue('cards', cardId, now);
+      });
     },
 
     /** How many live cards are in the box, in every deck (the top-bar box badge). */
@@ -748,6 +796,11 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       return cards
         .filter((card) => card.deletedAt === null && decks.includes(card.deck))
         .map((card) => ({ id: card.id, deck: card.deck }));
+    },
+
+    /** Today, in the profile time zone (YYYY-MM-DD). */
+    async todayDate(): Promise<string> {
+      return today(deps.now());
     },
 
     /** Cards left in today's "Mix them all" left half way; null when there is none. */

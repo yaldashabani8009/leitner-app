@@ -273,3 +273,52 @@ describe('cardsAddedOn (extra practice, v3 brief 1.7)', () => {
     expect((await db.reviewLogs.toArray()).every((log) => log.isPractice)).toBe(true);
   });
 });
+
+describe('all-words page data (v3 brief 1.9)', () => {
+  it('rows carry deck, box, mastered, Persian meanings in order, and real misses only', async () => {
+    const [brave] = await add('vocab', 'brave');
+    await add('spelling', 'receive');
+    await db.entries.add({
+      id: 'm2',
+      cardId: brave,
+      kind: 'meaning',
+      text: 'دلیر',
+      position: 1,
+      updatedAt: now,
+      deletedAt: null,
+    });
+    now = DAY_2;
+    await repo.recordAnswer(brave, false, 'scheduled');
+    await repo.recordAnswer(brave, false, 'practice'); // practice never counts
+    await db.cards.update(brave, { masteredAt: now });
+
+    const rows = await repo.allWordRows();
+    const row = rows.find((r) => r.id === brave)!;
+    expect(row).toMatchObject({
+      word: 'brave',
+      deck: 'vocab',
+      box: 1,
+      mastered: true,
+      addedOn: '2026-03-10',
+      meanings: ['ی', 'دلیر'],
+      misses: 1,
+    });
+    expect(rows).toHaveLength(2);
+  });
+
+  it('delete hides a card at once and syncs; Undo brings it back', async () => {
+    const [brave] = await add('vocab', 'brave');
+    await db.outbox.clear();
+    await repo.deleteCard(brave);
+    expect(await repo.allWordRows()).toEqual([]);
+    expect(await repo.countCards()).toBe(0);
+    expect(await db.outbox.get(`cards:${brave}`)).toBeDefined();
+    await repo.deleteCard(brave); // twice changes nothing
+    await repo.restoreCard(brave);
+    expect((await repo.allWordRows()).map((r) => r.id)).toEqual([brave]);
+    await repo.restoreCard(brave); // nothing to undo
+    await repo.deleteCard('missing');
+    await repo.restoreCard('missing');
+    expect(await repo.countCards()).toBe(1);
+  });
+});

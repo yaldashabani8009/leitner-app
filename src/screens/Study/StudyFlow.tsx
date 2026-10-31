@@ -15,6 +15,8 @@ import { BackupPrompts } from '../Backup/BackupPrompts';
 import { ReminderOffer } from '../Reminders/ReminderOffer';
 import { BlankScreen, LoadingScreen } from '../Loading/LoadingScreen';
 import { AllWordsScreen } from '../AllWords/AllWordsScreen';
+import { UndoToast } from '../AllWords/UndoToast';
+import { CardViewScreen } from '../Review/CardViewScreen';
 import { AllDone, SessionComplete } from '../Rest/RestScreens';
 import { enabledDecks, type Deck } from '../../domain/decks/decks';
 import type { DeckId } from '../../domain/leitner/config';
@@ -36,6 +38,9 @@ interface Extra {
 /** The open session: one deck's, or "Mix them all" with each card's deck. */
 type Run = { kind: 'deck'; deck: Deck } | { kind: 'mix'; deckOf: Record<string, DeckId> };
 
+/** Canvas N10: the "deleted" toast with Undo stays about 5 s. */
+export const UNDO_MS = 5000;
+
 /** PRD user flow 2: the loading screen shows on a cold start. 2.5 s (Yali, 2026-10-29): 1 s flashed by. */
 export const MIN_LOADING_MS = 2500;
 /** How long the mascot reacts to an answer before going back to idle: the hop (1s) and nod (1.3s) finish first. */
@@ -46,7 +51,9 @@ type StudyRepo = Pick<
   | 'getProfile'
   | 'getCard'
   | 'countCards'
-  | 'listCards'
+  | 'allWordRows'
+  | 'deleteCard'
+  | 'restoreCard'
   | 'deckStatuses'
   | 'openDeckSession'
   | 'closeDeckSession'
@@ -54,6 +61,7 @@ type StudyRepo = Pick<
   | 'closeMixSession'
   | 'mixPausedLeft'
   | 'cardsAddedOn'
+  | 'todayDate'
   | 'recordAnswer'
   | 'addCard'
   | 'editCard'
@@ -123,10 +131,24 @@ export function StudyFlow({
   const [extra, setExtra] = useState<Extra | null>(null);
   /** The all-words page, opened from the box badge; it sits over whatever screen was showing. */
   const [allWordsOpen, setAllWordsOpen] = useState(false);
-  const allCards = useLiveQuery(
-    async () => (allWordsOpen ? repo.listCards() : undefined),
+  const todayDate = useLiveQuery(() => repo.todayDate(), [repo]);
+  const allRows = useLiveQuery(
+    async () => (allWordsOpen ? repo.allWordRows() : undefined),
     [repo, allWordsOpen],
   );
+  /** A card opened from the all-words page. */
+  const [viewingId, setViewingId] = useState<string | null>(null);
+  const viewing = useLiveQuery(
+    async () => (viewingId ? ((await repo.getCard(viewingId)) ?? null) : null),
+    [repo, viewingId],
+  );
+  /** The last delete, for the Undo toast (about 5 s, canvas N10). */
+  const [deleted, setDeleted] = useState<{ id: string; word: string; at: number } | null>(null);
+  useEffect(() => {
+    if (!deleted) return;
+    const timer = setTimeout(() => setDeleted(null), UNDO_MS);
+    return () => clearTimeout(timer);
+  }, [deleted]);
   const [reaction, setReaction] = useState<'happy' | 'cheer' | null>(null);
   const saving = useRef(false);
   /** The last answer came while something on the card had focus (keyboard, screen reader). */
@@ -236,12 +258,48 @@ export function StudyFlow({
     </>
   );
 
+  if (allWordsOpen && viewingId && viewing && viewing.card.id === viewingId) {
+    return withSheet(
+      <CardViewScreen
+        card={viewing}
+        onEdit={() => setEditor({ mode: 'edit', cardId: viewingId })}
+        onDone={() => setViewingId(null)}
+      />,
+    );
+  }
+
   if (allWordsOpen) {
     return withSheet(
       <AllWordsScreen
-        cards={allCards}
-        onBack={() => setAllWordsOpen(false)}
+        rows={allRows}
+        decks={decks}
+        today={todayDate ?? ''}
+        onBack={() => {
+          setAllWordsOpen(false);
+          setDeleted(null);
+        }}
         onAdd={(deck) => setEditor({ mode: 'add', deck })}
+        onOpenCard={setViewingId}
+        onDelete={(row) => {
+          void repo.deleteCard(row.id);
+          setDeleted({ id: row.id, word: row.word, at: Date.now() });
+        }}
+        onPracticeDay={(day, deckIds) =>
+          void repo.cardsAddedOn(deckIds, day).then((cards) => {
+            setAllWordsOpen(false);
+            startExtra(cards);
+          })
+        }
+        toast={
+          <UndoToast
+            word={deleted?.word ?? null}
+            onUndo={() => {
+              if (!deleted) return;
+              void repo.restoreCard(deleted.id);
+              setDeleted(null);
+            }}
+          />
+        }
       />,
     );
   }
