@@ -53,6 +53,8 @@ function cloud(publicKey: string | null = 'BAQIDBA'): ReminderService & {
     sendTest: async () => {
       service.tests += 1;
     },
+    settings: async () => null,
+    saveSettings: async () => {},
   };
   return service;
 }

@@ -6,8 +6,46 @@ var DECK_LIMITS = {
 };
 var SESSION_SIZE = DECK_LIMITS.vocab.sessionSize;
 var DAILY_REVIEW_CAP = DECK_LIMITS.vocab.dailyLimit;
-var DAILY_REMINDER_HOUR = 19;
-var DAILY_REMINDER_LAST_HOUR = 23;
+var REMINDER_LATE_LIMIT_HOURS = 4;
+
+// src/domain/decks/decks.ts
+var DECKS = [
+  {
+    id: "vocab",
+    label: "Vocab",
+    icon: "book",
+    edgeColor: "--color-deck-vocab-edge",
+    tileColor: "--color-deck-vocab-tile",
+    limits: DECK_LIMITS.vocab,
+    enabled: true
+  },
+  {
+    id: "spelling",
+    label: "Spelling",
+    icon: "speaker",
+    edgeColor: "--color-deck-spelling-edge",
+    tileColor: "--color-deck-spelling-tile",
+    limits: DECK_LIMITS.spelling,
+    enabled: false
+  },
+  {
+    id: "phrases",
+    label: "Phrases",
+    icon: "sparkles",
+    edgeColor: "--color-deck-phrases-edge",
+    tileColor: "--color-deck-phrases-tile",
+    limits: DECK_LIMITS.phrases,
+    enabled: false
+  }
+];
+function deckById(id, decks = DECKS) {
+  const deck = decks.find((candidate) => candidate.id === id);
+  if (deck === void 0) throw new Error(`Unknown deck: ${id}`);
+  return deck;
+}
+function enabledDecks(decks = DECKS) {
+  return decks.filter((deck) => deck.enabled);
+}
 
 // src/domain/time/calendarDate.ts
 var PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -35,7 +73,6 @@ function addDays(date, days) {
 var FALLBACK_TIME_ZONE = "UTC";
 var UTC_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?Z$/;
 var formatters = /* @__PURE__ */ new Map();
-var hourFormatters = /* @__PURE__ */ new Map();
 function formatterFor(timeZone) {
   let formatter = formatters.get(timeZone);
   if (!formatter) {
@@ -72,45 +109,38 @@ function dateInZone(instant, timeZone) {
   const part = Object.fromEntries(parts.map((p) => [p.type, p.value]));
   return `${part.year}-${part.month}-${part.day}`;
 }
-function hourInZone(instant, timeZone) {
-  dateInZone(instant, timeZone);
-  let formatter = hourFormatters.get(timeZone);
-  if (!formatter) {
-    formatter = new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      hour: "2-digit",
-      hourCycle: "h23",
-      numberingSystem: "latn"
-    });
-    hourFormatters.set(timeZone, formatter);
-  }
-  return Number(formatter.format(new Date(Date.parse(instant))));
+
+// src/domain/session/pick.ts
+function waitingInDeck(dueCount, reviewsToday, deck) {
+  return Math.min(dueCount, Math.max(0, DECK_LIMITS[deck].dailyLimit - reviewsToday));
 }
 
 // src/domain/reminder/reminder.ts
-function isReminderTime({ now, timeZone, lastRemindedOn }) {
-  const hour = hourInZone(now, timeZone);
-  return hour >= DAILY_REMINDER_HOUR && hour < DAILY_REMINDER_LAST_HOUR && lastRemindedOn !== dateInZone(now, timeZone);
+function waitingAcrossDecks(decks) {
+  return decks.reduce((sum, day) => sum + waitingInDeck(day.due, day.reviewsToday, day.deck), 0);
 }
-function waitingToday(dueCount, reviewsToday) {
-  return Math.min(dueCount, Math.max(0, DAILY_REVIEW_CAP - reviewsToday));
-}
-function reminderMessage(facts) {
+function reminderMessage(facts, registry) {
   if (facts.earnedToday) return null;
-  const waiting = waitingToday(facts.dueCount, facts.reviewsToday);
+  const waiting = waitingAcrossDecks(facts.decks);
   if (waiting > 0) {
-    return {
-      title: "Time for your words",
-      body: waiting === 1 ? "1 word is waiting for you." : `${waiting} words are waiting for you.`,
-      badge: waiting
-    };
+    let body = waiting === 1 ? "1 card waiting" : `${waiting} cards waiting`;
+    if (facts.decks.length > 1) {
+      const most = [...facts.decks].sort(
+        (a, b) => waitingInDeck(b.due, b.reviewsToday, b.deck) - waitingInDeck(a.due, a.reviewsToday, a.deck)
+      )[0];
+      body += ` \xB7 mostly ${deckById(most.deck, registry).label.toLowerCase()}`;
+    }
+    return { title: "Time for your words", body, badge: waiting };
   }
-  if (facts.dueCount > 0) return null;
+  if (facts.decks.some((day) => day.due > 0)) return null;
   return {
     title: "Keep your streak going",
     body: facts.streak > 0 ? `Add a word to keep your ${facts.streak}-day streak.` : "Add a new word today and start a streak.",
     badge: 0
   };
+}
+function isStillTimely(scheduledAt, now) {
+  return Date.parse(now) - Date.parse(scheduledAt) <= REMINDER_LATE_LIMIT_HOURS * 60 * 60 * 1e3;
 }
 
 // supabase/functions/_shared/reminders.ts
@@ -162,21 +192,29 @@ async function push(sub, message) {
   }
 }
 async function factsFor(userId, timeZone, today) {
-  const [{ due }] = await sql`
-    select count(*)::int as due from public.cards
+  const decks = enabledDecks().map((deck) => deck.id);
+  const due = await sql`
+    select deck, count(*)::int as n from public.cards
     where user_id = ${userId} and deleted_at is null and mastered_at is null
-      and due_date <= ${today}::date`;
-  const [{ reviews }] = await sql`
-    select count(*)::int as reviews from public.review_logs
-    where user_id = ${userId} and not is_practice
-      and (reviewed_at at time zone ${timeZone})::date = ${today}::date`;
+      and due_date <= ${today}::date
+    group by deck`;
+  const reviews = await sql`
+    select c.deck, count(*)::int as n from public.review_logs l
+    join public.cards c on c.id = l.card_id
+    where l.user_id = ${userId} and not l.is_practice
+      and (l.reviewed_at at time zone ${timeZone})::date = ${today}::date
+    group by c.deck`;
   const rows = await sql`
     select day::text as day from public.streak_days
     where user_id = ${userId} and day >= ${today}::date - 400`;
   const days = rows.map((row) => row.day);
+  const count = (list, deck) => list.find((row) => row.deck === deck)?.n ?? 0;
   return {
-    dueCount: due,
-    reviewsToday: reviews,
+    decks: decks.map((deck) => ({
+      deck,
+      due: count(due, deck),
+      reviewsToday: count(reviews, deck)
+    })),
     earnedToday: days.includes(today),
     // Up to yesterday: today isn't earned yet whenever a reminder is sent.
     streak: currentStreak(
@@ -197,23 +235,34 @@ Deno.serve(async (req) => {
   const now = (/* @__PURE__ */ new Date()).toISOString();
   const subs = await sql`
     select s.id, s.user_id, s.endpoint, s.p256dh, s.auth,
-           s.last_reminded_on::text as last_reminded_on, p.time_zone
-    from public.push_subscriptions s left join public.profiles p on p.user_id = s.user_id`;
-  const result = { sent: 0, nothingToDo: 0, gone: 0, failed: 0 };
+           (extract(epoch from s.next_reminder_at) * 1000)::bigint::text as next_ms,
+           p.time_zone, p.reminder_time::text as reminder_time, p.reminders_on
+    from public.push_subscriptions s join public.profiles p on p.user_id = s.user_id
+    where s.next_reminder_at <= now()`;
+  const result = { sent: 0, nothingToDo: 0, late: 0, gone: 0, failed: 0 };
   for (const sub of subs) {
     const timeZone = resolveTimeZone(sub.time_zone);
-    if (!isReminderTime({ now, timeZone, lastRemindedOn: sub.last_reminded_on })) continue;
     const today = dateInZone(now, timeZone);
     try {
-      const message = reminderMessage(await factsFor(sub.user_id, timeZone, today));
-      if (message && await push(sub, message) === "gone") {
-        await sql`delete from public.push_subscriptions where id = ${sub.id}`;
-        result.gone += 1;
-        continue;
+      if (!sub.reminders_on) {
+      } else if (!isStillTimely(new Date(Number(sub.next_ms)).toISOString(), now)) {
+        result.late += 1;
+      } else {
+        const message = reminderMessage(await factsFor(sub.user_id, timeZone, today));
+        if (message && await push(sub, message) === "gone") {
+          await sql`delete from public.push_subscriptions where id = ${sub.id}`;
+          result.gone += 1;
+          continue;
+        }
+        if (message) result.sent += 1;
+        else result.nothingToDo += 1;
       }
-      if (message) result.sent += 1;
-      else result.nothingToDo += 1;
-      await sql`update public.push_subscriptions set last_reminded_on = ${today}::date where id = ${sub.id}`;
+      await sql`
+        update public.push_subscriptions
+           set last_reminded_on = ${today}::date,
+               next_reminder_at = public.next_reminder_at(
+                 ${timeZone}, ${sub.reminder_time}::time, ${sub.reminders_on}, now())
+         where id = ${sub.id}`;
     } catch (error) {
       result.failed += 1;
       console.error("reminder failed", sub.id, error);

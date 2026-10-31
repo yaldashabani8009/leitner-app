@@ -12,6 +12,7 @@ const auth: AuthService = {
   signUp: async () => ({ ok: true }),
   sendPasswordReset: async () => ({ ok: true }),
   setNewPassword: async () => ({ ok: true }),
+  signOut: async () => {},
 };
 
 function services(
@@ -148,5 +149,21 @@ describe('App sign-in changes', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Back to sign in' }));
     expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Create an account' })).not.toBeInTheDocument();
+  });
+
+  it('Settings → Sign out goes back to Sign in (canvas N13)', async () => {
+    const userId = `u-${crypto.randomUUID()}`;
+    const { value, emit } = services({ userId, offline: false });
+    value.auth = { ...value.auth, signOut: vi.fn(async () => emit(null)) };
+    render(<App services={value} />);
+    await screen.findByRole('heading', { name: /^Hi/ }, { timeout: 4000 });
+    await act(async () => {
+      (await screen.findByRole('button', { name: 'Settings' })).click();
+    });
+    await act(async () => {
+      (await screen.findByRole('button', { name: 'Sign out' })).click();
+    });
+    expect(value.auth.signOut).toHaveBeenCalled();
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
   });
 });

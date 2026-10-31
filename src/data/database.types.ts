@@ -243,7 +243,12 @@ export type Database = {
       };
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      next_reminder_at: {
+        Args: { after?: string; at_time: string; reminders_on: boolean; tz: string };
+        Returns: string;
+      };
+    };
     Enums: {
       entry_kind: 'synonym' | 'meaning' | 'sentence';
     };

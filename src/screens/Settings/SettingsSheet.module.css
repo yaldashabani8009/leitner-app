@@ -1,0 +1,142 @@
+/* Canvas N13: one white card holding the two reminder rows. */
+.group {
+  display: flex;
+  flex-direction: column;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-group);
+  background: var(--color-white);
+  box-shadow: var(--shadow-hard);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 16px 18px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 2px;
+}
+
+.label {
+  font-size: 17px;
+  font-weight: var(--weight-black);
+}
+
+.grow {
+  flex-grow: 1;
+}
+
+.hint {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.divider {
+  height: 2px;
+  margin: 0 18px;
+  background: var(--color-cream);
+}
+
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 58px;
+  height: 34px;
+  padding: 0;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-cream);
+  cursor: pointer;
+}
+
+.switch[aria-checked='true'] {
+  background: var(--color-aqua);
+}
+
+.knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  box-sizing: border-box;
+  width: 23px;
+  height: 23px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  transition: left var(--duration-fast) ease-out;
+}
+
+.switch[aria-checked='true'] .knob {
+  left: 26px;
+}
+
+.time {
+  padding: 8px 14px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: var(--weight-black);
+}
+
+.time:disabled,
+.switch:disabled {
+  opacity: 0.5;
+}
+
+.signedIn {
+  margin: 6px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.problem {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.signOut {
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 16px 0;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  box-shadow: var(--shadow-hard);
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: var(--weight-black);
+  cursor: pointer;
+}
+
+.signOut:active {
+  transform: translateY(var(--press-depth));
+  box-shadow: none;
+}
+
+.switch:focus-visible,
+.time:focus-visible,
+.signOut:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knob {
+    transition: none;
+  }
+}

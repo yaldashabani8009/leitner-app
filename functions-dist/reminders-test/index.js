@@ -7,6 +7,45 @@ var DECK_LIMITS = {
 var SESSION_SIZE = DECK_LIMITS.vocab.sessionSize;
 var DAILY_REVIEW_CAP = DECK_LIMITS.vocab.dailyLimit;
 
+// src/domain/decks/decks.ts
+var DECKS = [
+  {
+    id: "vocab",
+    label: "Vocab",
+    icon: "book",
+    edgeColor: "--color-deck-vocab-edge",
+    tileColor: "--color-deck-vocab-tile",
+    limits: DECK_LIMITS.vocab,
+    enabled: true
+  },
+  {
+    id: "spelling",
+    label: "Spelling",
+    icon: "speaker",
+    edgeColor: "--color-deck-spelling-edge",
+    tileColor: "--color-deck-spelling-tile",
+    limits: DECK_LIMITS.spelling,
+    enabled: false
+  },
+  {
+    id: "phrases",
+    label: "Phrases",
+    icon: "sparkles",
+    edgeColor: "--color-deck-phrases-edge",
+    tileColor: "--color-deck-phrases-tile",
+    limits: DECK_LIMITS.phrases,
+    enabled: false
+  }
+];
+function deckById(id, decks = DECKS) {
+  const deck = decks.find((candidate) => candidate.id === id);
+  if (deck === void 0) throw new Error(`Unknown deck: ${id}`);
+  return deck;
+}
+function enabledDecks(decks = DECKS) {
+  return decks.filter((deck) => deck.enabled);
+}
+
 // src/domain/time/calendarDate.ts
 var PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 var MS_PER_DAY = 24 * 60 * 60 * 1e3;
@@ -70,21 +109,29 @@ function dateInZone(instant, timeZone) {
   return `${part.year}-${part.month}-${part.day}`;
 }
 
-// src/domain/reminder/reminder.ts
-function waitingToday(dueCount, reviewsToday) {
-  return Math.min(dueCount, Math.max(0, DAILY_REVIEW_CAP - reviewsToday));
+// src/domain/session/pick.ts
+function waitingInDeck(dueCount, reviewsToday, deck) {
+  return Math.min(dueCount, Math.max(0, DECK_LIMITS[deck].dailyLimit - reviewsToday));
 }
-function reminderMessage(facts) {
+
+// src/domain/reminder/reminder.ts
+function waitingAcrossDecks(decks) {
+  return decks.reduce((sum, day) => sum + waitingInDeck(day.due, day.reviewsToday, day.deck), 0);
+}
+function reminderMessage(facts, registry) {
   if (facts.earnedToday) return null;
-  const waiting = waitingToday(facts.dueCount, facts.reviewsToday);
+  const waiting = waitingAcrossDecks(facts.decks);
   if (waiting > 0) {
-    return {
-      title: "Time for your words",
-      body: waiting === 1 ? "1 word is waiting for you." : `${waiting} words are waiting for you.`,
-      badge: waiting
-    };
+    let body = waiting === 1 ? "1 card waiting" : `${waiting} cards waiting`;
+    if (facts.decks.length > 1) {
+      const most = [...facts.decks].sort(
+        (a, b) => waitingInDeck(b.due, b.reviewsToday, b.deck) - waitingInDeck(a.due, a.reviewsToday, a.deck)
+      )[0];
+      body += ` \xB7 mostly ${deckById(most.deck, registry).label.toLowerCase()}`;
+    }
+    return { title: "Time for your words", body, badge: waiting };
   }
-  if (facts.dueCount > 0) return null;
+  if (facts.decks.some((day) => day.due > 0)) return null;
   return {
     title: "Keep your streak going",
     body: facts.streak > 0 ? `Add a word to keep your ${facts.streak}-day streak.` : "Add a new word today and start a streak.",
@@ -93,7 +140,7 @@ function reminderMessage(facts) {
 }
 var TEST_MESSAGE = {
   title: "Reminders are on",
-  body: "I'll let you know at 19:00 when words are waiting, or when your streak needs a new word."
+  body: "I'll let you know at your reminder time when cards are waiting, or when your streak needs a new word."
 };
 
 // supabase/functions/_shared/reminders.ts
@@ -145,21 +192,29 @@ async function push(sub, message) {
   }
 }
 async function factsFor(userId, timeZone, today) {
-  const [{ due }] = await sql`
-    select count(*)::int as due from public.cards
+  const decks = enabledDecks().map((deck) => deck.id);
+  const due = await sql`
+    select deck, count(*)::int as n from public.cards
     where user_id = ${userId} and deleted_at is null and mastered_at is null
-      and due_date <= ${today}::date`;
-  const [{ reviews }] = await sql`
-    select count(*)::int as reviews from public.review_logs
-    where user_id = ${userId} and not is_practice
-      and (reviewed_at at time zone ${timeZone})::date = ${today}::date`;
+      and due_date <= ${today}::date
+    group by deck`;
+  const reviews = await sql`
+    select c.deck, count(*)::int as n from public.review_logs l
+    join public.cards c on c.id = l.card_id
+    where l.user_id = ${userId} and not l.is_practice
+      and (l.reviewed_at at time zone ${timeZone})::date = ${today}::date
+    group by c.deck`;
   const rows = await sql`
     select day::text as day from public.streak_days
     where user_id = ${userId} and day >= ${today}::date - 400`;
   const days = rows.map((row) => row.day);
+  const count = (list, deck) => list.find((row) => row.deck === deck)?.n ?? 0;
   return {
-    dueCount: due,
-    reviewsToday: reviews,
+    decks: decks.map((deck) => ({
+      deck,
+      due: count(due, deck),
+      reviewsToday: count(reviews, deck)
+    })),
     earnedToday: days.includes(today),
     // Up to yesterday: today isn't earned yet whenever a reminder is sent.
     streak: currentStreak(

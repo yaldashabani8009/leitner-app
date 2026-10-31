@@ -21,7 +21,8 @@ import { AllDone, SessionComplete } from '../Rest/RestScreens';
 import { enabledDecks, type Deck } from '../../domain/decks/decks';
 import type { DeckId } from '../../domain/leitner/config';
 import { IconButton } from '../../ui/IconButton';
-import { HomeIcon } from '../../ui/icons';
+import { HomeIcon, SettingsIcon } from '../../ui/icons';
+import { SettingsSheet } from '../Settings/SettingsSheet';
 import { TodayScreen } from '../Today/TodayScreen';
 import { PracticeDone } from '../Practice/PracticeDone';
 import { missedInRound, practiceOrder, type PracticeCard } from '../../domain/session/extra';
@@ -85,6 +86,8 @@ interface StudyFlowProps {
   reminders?: ReminderService;
   /** Tests pass 0. */
   minLoadingMs?: number;
+  /** Sign out (Settings, canvas N13). Without it there is no settings button. */
+  onSignOut?: () => void;
 }
 
 /**
@@ -98,6 +101,7 @@ export function StudyFlow({
   userId,
   reminders,
   minLoadingMs = MIN_LOADING_MS,
+  onSignOut,
 }: StudyFlowProps) {
   const decks = enabledDecks();
   const deckIds = decks.map((deck) => deck.id).join(',');
@@ -154,6 +158,7 @@ export function StudyFlow({
   /** The last answer came while something on the card had focus (keyboard, screen reader). */
   const [focusNextCard, setFocusNextCard] = useState(false);
   const [editor, setEditor] = useState<Editor | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     if (!reaction) return;
@@ -255,6 +260,20 @@ export function StudyFlow({
       {sheet}
       {userId && <BackupPrompts repo={repo} userId={userId} paused={editor !== null} />}
       <ReminderOffer repo={repo} reminders={reminders} active={doneForNow && editor === null} />
+      {onSignOut && userId && (
+        <SettingsSheet
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          userId={userId}
+          name={profile?.displayName ?? null}
+          reminders={reminders}
+          onDeviceOn={() => void repo.closeReminderOffer('done')}
+          onSignOut={() => {
+            setSettingsOpen(false);
+            onSignOut();
+          }}
+        />
+      )}
     </>
   );
 
@@ -311,7 +330,16 @@ export function StudyFlow({
         decks={decks}
         statuses={statuses}
         mixPausedLeft={mixPausedLeft ?? null}
-        top={topBar()}
+        top={topBar(
+          onSignOut && userId ? (
+            <IconButton
+              label="Settings"
+              variant="white"
+              icon={<SettingsIcon size={20} style={{ strokeWidth: 2.5 }} />}
+              onClick={() => setSettingsOpen(true)}
+            />
+          ) : undefined,
+        )}
         onMix={() => void mix()}
         onStudy={(deck) => void openDeck(deck)}
         onAdd={(deck) => setEditor({ mode: 'add', deck })}

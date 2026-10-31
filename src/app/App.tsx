@@ -86,6 +86,7 @@ export function App({ services }: { services: AppServices }) {
           remote={services.remote}
           reminders={services.reminders}
           minLoadingMs={services.minLoadingMs}
+          onSignOut={() => void services.auth.signOut()}
         />
       );
     case 'setNewPassword':
@@ -114,10 +115,11 @@ interface SignedInProps {
   remote: SyncRemote;
   reminders?: ReminderService;
   minLoadingMs?: number;
+  onSignOut: () => void;
 }
 
 /** Opens this account's own on-device database (ADR-012), keeps it in sync and refreshes the profile copy. */
-function SignedIn({ userId, profiles, remote, reminders, minLoadingMs }: SignedInProps) {
+function SignedIn({ userId, profiles, remote, reminders, minLoadingMs, onSignOut }: SignedInProps) {
   const db = useMemo(() => openDatabase(userId), [userId]);
   const repo = useMemo(() => createRepository(db), [db]);
   useSync(db, remote);
@@ -128,6 +130,12 @@ function SignedIn({ userId, profiles, remote, reminders, minLoadingMs }: SignedI
   }, [profiles, repo, userId]);
 
   return (
-    <StudyFlow repo={repo} userId={userId} reminders={reminders} minLoadingMs={minLoadingMs} />
+    <StudyFlow
+      repo={repo}
+      userId={userId}
+      reminders={reminders}
+      minLoadingMs={minLoadingMs}
+      onSignOut={onSignOut}
+    />
   );
 }

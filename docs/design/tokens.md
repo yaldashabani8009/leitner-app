@@ -48,6 +48,7 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 | `--radius-deck-face`      | 22 22 18 18px, a deck card's white face      |
 | `--radius-tile`           | 13px, deck icon tiles                        |
 | `--radius-delete`         | 16px, swipe-to-delete button (N9)            |
+| `--radius-group`          | 28px, settings card (N13)                    |
 | `--radius-stamp`          | 18px, KNEW IT! / NOT YET stamps              |
 | `--radius-highlight`      | 6px, word marked in a sentence               |
 | `--radius-pill`           | 999px                                        |
