@@ -70,7 +70,8 @@ interface SentenceWithPersianProps {
 /**
  * A sentence with its Persian hidden at first (v3 step 4, canvas P2): a soft "fa" pill says one
  * exists; tapping the sentence shows it underneath on a pale background, tapping again hides it.
- * A real button (Tab, Enter, Space). It never flips the card, starts a swipe or answers it.
+ * A real button (Tab, Enter, Space). It never flips the card or answers it; a tap is not a swipe
+ * (the swipe ignores taps, filterTaps), so only a real drag moves the card.
  * Every card starts hidden again: the card back is drawn fresh for each card.
  */
 function SentenceWithPersian({ text, translation, word }: SentenceWithPersianProps) {
@@ -81,8 +82,6 @@ function SentenceWithPersian({ text, translation, word }: SentenceWithPersianPro
       className={`${styles.sentenceButton} ${open ? styles.revealed : ''}`}
       aria-expanded={open}
       aria-label={open ? undefined : `${text}. Persian translation hidden, tap to show`}
-      // Not the start of a swipe on the card back.
-      onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.stopPropagation();
         setOpen((shown) => !shown);

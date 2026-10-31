@@ -38,6 +38,13 @@ describe('search (v3 brief 1.9)', () => {
     expect(matchesSearch(meticulous, '  ')).toBe(true);
     expect(matchesSearch(row('x', { meanings: ['بی‌میل'] }), 'بیمیل')).toBe(true);
   });
+
+  it('also finds sentence translations, with the same Persian normalisation (v3 step 4)', () => {
+    const r = row('meticulous', { translations: ['او یادداشت‌های دقیقی برمی‌دارد.'] });
+    expect(matchesSearch(r, 'یادداشتهای')).toBe(true);
+    expect(matchesSearch(r, 'برميدارد')).toBe(true);
+    expect(matchesSearch(row('calm'), 'یادداشت')).toBe(false);
+  });
 });
 
 describe('sortRows', () => {

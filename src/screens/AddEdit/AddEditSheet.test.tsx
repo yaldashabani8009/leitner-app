@@ -61,7 +61,7 @@ async function fillNewWord(word: string) {
   await userEvent.type(field('The word'), word);
   await userEvent.type(field('Similar words'), 'calm');
   await userEvent.type(field('In Persian'), 'آرام');
-  await userEvent.type(field('In a sentence'), 'Stay calm.');
+  await userEvent.type(field('Sentence 1'), 'Stay calm.');
 }
 
 describe('Add word', () => {
@@ -85,7 +85,7 @@ describe('Add word', () => {
     expect(field('In Persian')).toHaveAccessibleDescription(
       expect.stringContaining('Add at least one Persian meaning.'),
     );
-    expect(field('In a sentence')).toHaveAccessibleDescription('Add at least one sentence.');
+    expect(field('Sentence 1')).toHaveAccessibleDescription('Add at least one sentence.');
     expect(save).toBeEnabled();
     expect(await repo.countCards()).toBe(0);
     expect(onClose).not.toHaveBeenCalled();
@@ -169,7 +169,7 @@ describe('Add word', () => {
     await userEvent.type(field('The word'), 'calm');
     await userEvent.type(field('Similar words'), 'peaceful, quiet,, serene ');
     await userEvent.type(field('In Persian'), 'آرام، ساکت,آسوده');
-    await userEvent.type(field('In a sentence'), 'Stay calm, please.');
+    await userEvent.type(field('Sentence 1'), 'Stay calm, please.');
     await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
 
     await toastSays('calm saved');
@@ -219,7 +219,7 @@ describe('A word already in this deck (canvas N5)', () => {
     expect(await screen.findByText('Already in your Vocab box')).toBeInTheDocument();
     expect(field('Similar words')).toHaveValue('bold, daring, fearless');
     expect(field('In Persian')).toHaveValue('شجاع');
-    expect(field('In a sentence')).toHaveValue('She was brave.');
+    expect(field('Sentence 1')).toHaveValue('She was brave.');
     expect(screen.getByRole('button', { name: 'Save & start over' })).toBeInTheDocument();
     expect(screen.getByText('It goes back to the start of your box.')).toBeInTheDocument();
     // Nothing changed yet, and no popup.
@@ -370,7 +370,7 @@ describe('Edit word', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Remove sentence 1' }));
     // The last one can't be removed.
     expect(screen.queryByRole('button', { name: /Remove sentence/ })).not.toBeInTheDocument();
-    expect(field('In a sentence')).toHaveValue('Brave again.');
+    expect(field('Sentence 1')).toHaveValue('Brave again.');
 
     await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -389,5 +389,54 @@ describe('Edit word', () => {
     expect(await screen.findByText('You already have this word.')).toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
     expect((await repo.getCard(id))?.card.word).toBe('brave');
+  });
+});
+
+describe('sentence translations (v3 step 4, canvas P1)', () => {
+  it('each sentence has an optional Persian field under it; both are saved', async () => {
+    open(ADD);
+    await screen.findByRole('dialog');
+    await fillNewWord('calm');
+    const persian = field('Persian for sentence 1 (optional)');
+    expect(persian).toHaveAttribute('lang', 'fa');
+    expect(persian).toHaveAttribute('placeholder', 'Persian (optional)');
+    await userEvent.type(persian, '  آرام بمان.  ');
+    await userEvent.click(screen.getByRole('button', { name: '+ sentence' }));
+    expect(field('Sentence 2')).toHaveFocus();
+    expect(field('Persian for sentence 2 (optional)')).toHaveValue('');
+    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
+    await toastSays('calm saved');
+    const [card] = await db.cards.toArray();
+    expect((await repo.getCard(card.id))?.sentences.map((e) => [e.text, e.translation])).toEqual([
+      ['Stay calm.', 'آرام بمان.'],
+    ]);
+  });
+
+  it('a Persian without its sentence: the error under the sentences, nothing saved', async () => {
+    open(ADD);
+    await screen.findByRole('dialog');
+    await fillNewWord('calm');
+    await userEvent.click(screen.getByRole('button', { name: '+ sentence' }));
+    await userEvent.type(field('Persian for sentence 2 (optional)'), 'فقط فارسی');
+    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
+    expect(await screen.findByText('Add the sentence, or clear the Persian.')).toBeInTheDocument();
+    expect(await repo.countCards()).toBe(0);
+  });
+
+  it('in Edit, ✕ removes a sentence and its Persian together; Persian can be changed', async () => {
+    const id = await existing();
+    const { onClose } = open({ mode: 'edit', cardId: id });
+    await screen.findByRole('dialog', { name: 'Edit word' });
+    await userEvent.type(field('Persian for sentence 1 (optional)'), 'او شجاع بود.');
+    await userEvent.click(screen.getByRole('button', { name: '+ sentence' }));
+    await userEvent.type(field('Sentence 2'), 'Brave again.');
+    await userEvent.type(field('Persian for sentence 2 (optional)'), 'دوباره');
+    await userEvent.click(screen.getByRole('button', { name: 'Remove sentence 2' }));
+    expect(screen.queryByLabelText('Persian for sentence 2 (optional)')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect((await repo.getCard(id))?.sentences.map((e) => [e.text, e.translation])).toEqual([
+      ['She was brave.', 'او شجاع بود.'],
+    ]);
   });
 });

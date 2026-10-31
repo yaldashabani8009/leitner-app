@@ -8,10 +8,9 @@ import {
   type FieldErrors,
 } from '../../domain/card/validate';
 import { mergeTypedIntoCard } from '../../domain/card/merge';
-import type { Deck } from '../../domain/decks/decks';
+import { deckById, type Deck } from '../../domain/decks/decks';
 import { Button } from '../../ui/Button';
 import { DeckChip } from '../../ui/DeckChip';
-import { Mascot } from '../../ui/Mascot/Mascot';
 import { Sheet } from '../../ui/Sheet';
 import { Toast } from '../../ui/Toast';
 import styles from './AddEditSheet.module.css';
@@ -187,8 +186,8 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
       open
       onClose={close}
       title={isEdit ? 'Edit word' : 'New word'}
-      titleAddon={isEdit ? undefined : <DeckChip deck={editor.deck} />}
-      mascot={isEdit ? <Mascot pose="write" size="small" decorative /> : undefined}
+      // Canvas N4 (add) and P1 (edit): the deck chip, no mascot.
+      titleAddon={<DeckChip deck={isEdit ? deckById(editing!.card.deck) : editor.deck} />}
       closeOnOverlay={isEdit}
       toast={<Toast messageId={toast?.id}>{toast?.message ?? null}</Toast>}
     >

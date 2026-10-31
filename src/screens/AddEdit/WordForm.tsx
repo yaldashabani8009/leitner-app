@@ -1,12 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { itemsFromText, joinList } from '../../domain/card/commaList';
-import {
-  type CardDraft,
-  type CardField,
-  type FieldErrors,
-  type ListField,
-} from '../../domain/card/validate';
-import { IconButton } from '../../ui/IconButton';
+import { type CardDraft, type CardField, type FieldErrors } from '../../domain/card/validate';
 import { CloseIcon } from '../../ui/icons';
 import { AddPill } from '../../ui/Pill';
 import { TextField } from '../../ui/TextField';
@@ -238,15 +232,6 @@ function FieldError({ id, text }: { id: string; text: string }) {
   );
 }
 
-interface ListGroupProps {
-  field: ListField;
-  items: Item[];
-  error?: string;
-  removable: boolean;
-  inputRef: (key: string, element: HTMLInputElement | HTMLTextAreaElement | null) => void;
-  onChange: (items: Item[]) => void;
-}
-
 interface SentenceGroupProps {
   items: Item[];
   error?: string;
@@ -284,15 +269,17 @@ function SentenceGroup({ items, error, removable, inputRef, onChange }: Sentence
               autoComplete="off"
               onText={(text) => change(item.key, { text })}
             />
-            <input
+            <Input
+              multiline
+              id={`${id}-${index}-fa`}
+              inputRef={() => {}}
               lang="fa"
-              dir="rtl"
               className={styles.persianField}
               value={item.translation ?? ''}
               placeholder="Persian (optional)"
               aria-label={`Persian for sentence ${index + 1} (optional)`}
               autoComplete="off"
-              onChange={(event) => change(item.key, { translation: event.target.value })}
+              onText={(translation) => change(item.key, { translation })}
             />
           </div>
           {removable && (
@@ -304,54 +291,6 @@ function SentenceGroup({ items, error, removable, inputRef, onChange }: Sentence
             >
               <CloseIcon size={16} />
             </button>
-          )}
-        </div>
-      ))}
-      {error && <FieldError id={errorId} text={error} />}
-    </div>
-  );
-}
-
-/** One list (similar words, Persian, sentences): a label, one input per item, the error below. */
-function ListGroup({ field, items, error, removable, inputRef, onChange }: ListGroupProps) {
-  const id = useId();
-  const errorId = `${id}-error`;
-  const words = LISTS[field];
-
-  return (
-    <div className={fieldStyles.field}>
-      <label htmlFor={`${id}-0`} className={fieldStyles.label}>
-        {words.label}
-      </label>
-      {items.map((item, index) => (
-        <div key={item.key} className={styles.itemRow}>
-          <Input
-            multiline={field === 'sentences'}
-            id={`${id}-${index}`}
-            inputRef={(element) => inputRef(item.key, element)}
-            className={[fieldStyles.input, index > 0 && !item.text && styles.extraEmpty]
-              .filter(Boolean)
-              .join(' ')}
-            value={item.text}
-            lang={words.lang}
-            aria-label={index > 0 ? `${words.one} ${index + 1}` : undefined}
-            placeholder={
-              index > 0 ? (words.lang ? words.placeholder : 'another one?') : words.placeholder
-            }
-            aria-invalid={error ? true : undefined}
-            aria-describedby={error ? errorId : undefined}
-            autoComplete="off"
-            onText={(text) =>
-              onChange(items.map((other) => (other.key === item.key ? { ...other, text } : other)))
-            }
-          />
-          {removable && (
-            <IconButton
-              label={`Remove ${words.one.toLowerCase()} ${index + 1}`}
-              variant="white"
-              icon={<CloseIcon />}
-              onClick={() => onChange(items.filter((other) => other.key !== item.key))}
-            />
           )}
         </div>
       ))}

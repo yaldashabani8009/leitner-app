@@ -302,7 +302,16 @@ describe('all-words page data (v3 brief 1.9)', () => {
       addedOn: '2026-03-10',
       meanings: ['ی', 'دلیر'],
       misses: 1,
+      translations: [],
     });
+    // A sentence translation is searchable.
+    const sentence = (await db.entries.where('cardId').equals(brave).toArray()).find(
+      (e) => e.kind === 'sentence',
+    )!;
+    await db.entries.update(sentence.id, { translation: 'او شجاع بود.' });
+    expect((await repo.allWordRows()).find((r) => r.id === brave)?.translations).toEqual([
+      'او شجاع بود.',
+    ]);
     expect(rows).toHaveLength(2);
   });
 
