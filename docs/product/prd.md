@@ -1,6 +1,6 @@
 # Leitner Vocabulary App: PRD & Algorithm Spec
 
-Owner: Yali · Last updated: 2026-10-28
+Owner: Yali · Last updated: 2026-10-31 (v3: decks, Today, Mix them all, extra practice, all words, settings)
 Living copy (original): Claude Doc "Leitner Vocabulary App — PRD & Algorithm Spec". **This file is the source of truth from now on.**
 
 ## Overview
@@ -28,9 +28,11 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 - Mascot and playful animation
 - Backup without a button (decided 2026-10-29, ADR-016): sync is the backup. Only after 14 days without the cloud does a modal offer "Save a copy of your words?" (a JSON file); when the box is empty and the cloud can't be reached, a modal offers to restore from that file.
 
-**Out of v1:** native store apps; sharing decks; showing box numbers, counters or due dates; reviewing mastered cards; deleting cards.
+**Out of v1:** native store apps; sharing decks; showing box numbers, counters or due dates (v3 exception: the progress dots on the all-words page); reviewing mastered cards.
 
-**Future ideas:** review mastered cards every 2 weeks or a quick exam; statistics; native wrapper; open to other users; **Sign out** (left out of v1 on purpose, decided 2026-10-28; there is no settings screen, so its place is still open).
+**Since v3 (2026-10-31):** decks, the Today screen, Mix them all, extra practice, the all-words page with delete + Undo, Settings with a reminder time and Sign out. See the sections below.
+
+**Future ideas:** review mastered cards every 2 weeks or a quick exam; statistics; native wrapper; open to other users; daily limits per deck in Settings; grammar as another deck (the deck registry is ready for it).
 
 ## Card structure
 
@@ -44,8 +46,8 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 - Editing never changes the box or due date.
 - Editing the word into a word another card already has is blocked, with an error under the word field (decided 2026-10-28).
 - Capitals and extra spaces don't make a different word ("Happy" = " happy ").
-- **Duplicate word:** warn, open the existing card instead, and move it back to box 1, due tomorrow. This applies to mastered cards too: they are un-mastered and reviewed again (decided 2026-10-28).
-  - The app asks first (decided 2026-10-29): "Open my card" moves the card back and shows it to read (card back with the pencil, and "Done"); "Cancel" changes nothing and keeps what you typed.
+- **Duplicate word (v3, canvas N5):** one card per word **per deck**; the same word in another deck is not a duplicate. Typing a word that is already in the deck shows a soft note "Already in your Vocab box" under the word field (when you leave it, or on Save); the form fills with the existing card and keeps what you typed. Save becomes **Save & start over**: the card is updated, goes back to box 1 (due tomorrow; mastered cards are un-mastered) and counts as added today. "Add another word" empties the form; ✕ changes nothing. No popup (the v2 "Open my card" dialog is retired).
+- **Adding stays open (canvas N4):** after Save the fields clear, the cursor goes back to the word field and a toast says "meticulous saved" (about 2 s). The sheet closes only with ✕, Esc or a drag down; a chip next to "New word" shows the deck.
 - Similar words and Persian meanings are typed in **one field each, separated by a comma** (`,` or the Persian `،`); empty pieces and repeats are dropped. Add or remove an item by typing (decided 2026-10-29, after Yali's iPhone test).
 - Sentences are never split (they contain commas): one field per sentence, "+ sentence" right under them, and in Edit a ✕ next to each sentence while there is more than one (decided 2026-10-29).
 - Validation: Save is never disabled; the error appears under the empty field.
@@ -66,53 +68,89 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 3. Right answer in box 5 → mastered.
 4. Wrong answer → box 1, due tomorrow (from any box).
 5. Missed days: nothing moves by itself; a due card stays due.
-6. Box number, counter and due date are never shown in the UI.
+6. Box number, counter and due date are never shown in the UI. The one exception (v3): the progress dots on the all-words page (5 dots filled up to the box, a star when mastered; spoken "Box 3 of 5" / "Mastered").
 7. Gaps live in one config value (`src/domain/leitner/config.ts`).
 
 ## Sessions
 
-1. Up to **20** due cards per session; opening again the same day gives the next 20.
-2. **Daily cap: 100** scheduled reviews (practice repeats don't count).
+1. Each deck has its own session size and daily limit (v3; `DECK_LIMITS` in config): vocab 20 / 100, spelling 30 / 250, phrases 10 / 30. Opening again the same day gives the next cards.
+2. The **daily limit** counts that deck's scheduled reviews (practice repeats don't count).
 3. At the cap → "All done for today"; leftovers roll over.
 4. Order: most overdue first, then lowest box. Cards with the same due date and box are shuffled, with the same order all day (decided 2026-10-28).
 5. Wrong answer → rescheduled (box 1, tomorrow) **and** repeated once at the end as practice.
 6. Practice answers change nothing.
-7. Leaving mid-session: unanswered cards stay due.
+7. Leaving mid-session: unanswered cards stay due. **Home** (top left in a session) leaves without asking; the deck then says "Paused · N left" and continues where it stopped. Only the session's card list is saved (per deck per day, on the device); where you were and the practice round are worked out from the review logs, so they survive switching decks or closing the app.
 
 ## Streak and progress (top bar)
 
-- Two floating pills (words learned, streak) + a round + button.
-- **Streak:** a day counts when any one is true (decided 2026-10-28):
-  1. 20 scheduled reviews were done that day, across any number of sessions (practice doesn't count);
-  2. fewer than 20 cards were due, and all of them were reviewed;
-  3. no cards were due at all, and a new word was added. The All done screen nudges you to add a word to keep the streak.
+- Two floating pills (the box badge, the streak) + a round + button; on Today a settings button sits top left, in a session a Home button.
+- **Box badge (v3):** every card in every deck (not deleted; mastered ones included), a box icon, spoken "312 cards in your box". Tapping it opens the all-words page. It replaces "words learned".
+- **Streak (shared across decks):** a day counts when any one is true (decided 2026-10-28; v3 counts all decks together):
+  1. 20 scheduled reviews were done that day in total, across sessions and decks (practice doesn't count);
+  2. every card due that day, in all decks, was reviewed;
+  3. no cards were due at all, and a new card was added.
   - The day is saved the moment it counts and never removed (ADR-015). Until today counts, the streak shows the run up to yesterday; a whole missed day resets it (decided 2026-10-29).
   - The streak pill on Loading and the bubble on Session complete are hidden while the streak is 0; the top-bar pill always shows.
-- **Words learned:** cards that have passed box 1 at least once, i.e. a scheduled "Knew it!" in box 1 (never goes down, even when the card goes back to box 1).
+- **Words learned** (still worked out in the code, no longer shown): cards that have passed box 1 at least once.
 - Session progress: chunky pill bar, no numbers.
 
-## Daily reminder (decided 2026-10-29, ADR-018)
+## Daily reminder (decided 2026-10-29, ADR-018; time per user since v3, ADR-020)
 
-- Once a day from **19:00** in the profile's time zone, only when there is something to do:
-  - words due → "Time for your words · 12 words are waiting for you."
+- Once a day at **the user's time** (Settings, 15-minute steps, default 19:00) in the profile's time zone, only when there is something to do:
+  - cards due (counted across all decks, each within its daily limit) → "Time for your words · 20 cards waiting · mostly spelling" (the deck is named only when more than one is enabled)
   - nothing due and today not yet counted → "Keep your streak going · Add a word to keep your 5-day streak." (or "Add a new word today and start a streak.")
   - today already counts, or the daily cap is reached → no notification.
-- The app icon shows the number of words still waiting today (installed app; on iPhone once notifications are allowed).
+- The app icon shows the number of cards still waiting today across all decks (installed app; on iPhone once notifications are allowed).
+- Switched on or off in Settings; turning it on from a phone that never allowed notifications asks for permission. A reminder more than 4 hours late (the server was paused) waits for tomorrow.
 - Offered once per device after a session ("I'm done for now" on Session complete): "Want a daily reminder?" Yes → the phone asks for permission → a test notification "Reminders are on". Not now → asked again in 7 days. Turned off in the phone's settings.
 - iPhone: only in the app added to the Home Screen (iOS 16.4+). Android: Chrome.
 
 ## User flow
 
 1. Open app. First launch on a device → Sign in (Sign up only once sign-ups are open).
-2. Loading (2.5 s, cold start; decided 2026-10-29): waving mascot + "{display_name}'s Leitner." (no name → "Leitner.") + streak pill.
-3. Cards due and under cap → review card. Otherwise → "All done for today" (sleeping mascot, Add a new word). An empty box says "Your box is empty" with "Add your first word to start learning." (decided 2026-10-29).
+2. Loading (2.5 s, cold start): waving mascot + "{display_name}'s Leitner." + streak pill. Until the saved profile is read, only the cream page shows, so there is one Loading screen, already with the name (v3); "Leitner." alone only when the account has no name.
+3. **Today** (v3, canvas N1): choose a deck card, or **Mix them all** (see below).
 4. Card front (word) → tap → back (similar words, in Persian, in a sentence, pencil to edit).
 5. Answer: swipe right = Knew it, left = Not yet, or tap buttons. No swiping on the front.
-6. After 20: practice round for misses → "Session complete" (celebrating mascot; streak counts). "Next N words" shows only when more are due and under the cap; with nothing else due, the only button is "Done for today" (decided 2026-10-29). "I'm done for now" while more are due → a calm resting screen ("Nice work! More words are waiting whenever you're ready." + "Keep going"); otherwise → All done (decided 2026-10-28).
-7. Add word: bottom sheet (top bar + or All done). Save checks required fields and duplicates. The sheet is only as tall as its fields and sits above the phone keyboard; fields grow with the text. Drag the handle down (or tap ✕) to close it.
+6. After the session: practice round for misses, then "Session complete" (celebrating mascot; streak counts). "Next N words" shows only when more are due in that deck (or any deck, in Mix them all); "I'm done for now" / "Done for today" go back to Today.
+7. Add word: the + rolls out one button per enabled deck (canvas N2; with one deck it opens that deck's sheet straight away). Same on Today, in sessions and on all words. The sheet stays open after Save (see Card structure). It sits above the phone keyboard; fields grow with the text.
 8. Edit: pencil on card back → same sheet, pre-filled, with the reminder "Editing won't change when you see this word next."
 
-Laptop (built in 7.13): Space flips, ← / → answer, E edits (card back only), Esc closes; centred 560px column on screens 700px and wider; add/edit is a centred modal. With a mouse or trackpad the card says "click or press space" instead of "tap to flip". Shortcuts never fire while typing, while a sheet or dialog is open, or with Ctrl / ⌘ / Alt held.
+Laptop (built in 7.13; v3 keys in 11.10): Space flips, ← / → answer, E edits (card back only), Esc closes, **N** opens the +, **H** goes Home, **/** focuses search on all words; centred 560px column on screens 700px and wider; add/edit is a centred modal. With a mouse or trackpad the card says "click or press space" instead of "tap to flip". Shortcuts never fire while typing, while a sheet or dialog is open, or with Ctrl / ⌘ / Alt held.
+
+## Decks (v3, ADR-019)
+
+- One `cards` table with a `deck`: `vocab | spelling | phrases`; old cards are vocab. Decks come from a registry (`src/domain/decks`), each with a label, icon, colours, limits and `enabled`. **Only Vocab is enabled** until the spelling (step 5) and phrases (step 6) cards are designed; every screen works with any number of enabled decks.
+- The Leitner engine (boxes, gaps, "Not yet" to box 1) is the same for every deck.
+- Each card stores `added_on`: the day it was added, or re-added with "Save & start over" (profile time zone).
+
+## Today (v3, canvas N1, N3)
+
+- Top bar: settings (top left), box badge, streak, +. "Hi Yali!" and "What shall we study today?". The DJ mascot (the only playful element: no confetti on Today) with **Mix them all** and "27 cards from all decks" (or "Paused · N left" while a mix is paused).
+- One card per enabled deck hangs from a wheel on the left (top −9°, middle 0°, bottom +9°); drag up or down to spin it. Each card has one status line: **Paused · 7 left** (play: continue), **20 waiting** (play: start), **All done for today** (✓: a small sheet with "Practice today's new words" when words were added today, and "Add …"), **Empty** (opens the deck's add sheet).
+
+## Mix them all (v3, canvas N6)
+
+- With cards due in any deck: the real sessions of every such deck in one stream, in random chunks of 3–9 cards from one deck, each chunk shuffled; no pause between chunks. The deck chip next to the progress bar shows which deck a card is from. Each deck's session size and daily limit apply; answers move boxes; the practice round comes at the end. Home and Mix them all again carry on where it stopped.
+- With nothing due anywhere: extra practice of today's new words from all decks.
+
+## Extra practice (v3, canvas N11, N12)
+
+- The cards added on a day, each once, shuffled again every time; mixed decks come in chunks of 3–9. Ways in: a finished deck ("Practice today's new words"); Mix them all with nothing due; a day heading's **Practice** on the all-words page.
+- Never moves a card, never counts toward daily limits or the streak (logged as practice).
+- Calm look: a white banner "Practice · your boxes stay the same" with the count, the tag "today's new words", one quiet line "Just for fun: answers here never move your cards", no coloured panel, no confetti.
+- End: "Practice done! You missed 4. Want one more go at just those?" with **Practice the 4 again** / **Done**, repeating with the smaller list until nothing is missed ("You knew every one.").
+
+## All words (v3, canvas N8–N10, L4)
+
+- Opens from the box badge: back, "In your box" with the total, +. Deck chips (All + each enabled deck, with counts) scroll sideways; on a laptop they wrap.
+- Search matches the word and its Persian meanings as you type (ي = ی, ك = ک, the half-space ignored). Sorts: **By day** (newest first, under TODAY / YESTERDAY / 14 SEP headings, each with Practice), **A–Z**, **Needs work** (most real "Not yet" answers first, ties by lowest box).
+- Rows: no boxes, a thin divider; the deck icon on the All view only; the word and its Persian; progress dots (the only place box progress shows). Tap: the card with Edit. Swipe left: red Delete; tap it to delete (soft delete, synced); a toast "reluctant deleted" with **Undo** for about 5 s.
+- Virtualised (smooth with thousands of words), reads only the device (works offline). Empty: the mascot and "Your box is empty".
+
+## Settings (v3, canvas N13)
+
+- From the button top left on Today: **Daily reminder** on/off, **Remind me at** (15-minute steps, default 19:00), "Signed in as Yali" and **Sign out** (this device only; works offline). No time-zone setting: it follows the profile.
 
 ## Time and offline
 
@@ -128,7 +166,7 @@ Laptop (built in 7.13): Space flips, ← / → answer, E edits (card back only),
 
 ## Data model
 
-See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (display_name, time_zone), `cards`, `card_entries`, `review_logs`, `streak_days` (ADR-015), `push_subscriptions` and `app_config` (ADR-018).
+See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (display_name, time_zone, reminder_time, reminders_on), `cards` (with `deck` and `added_on`, ADR-019), `card_entries`, `review_logs` (with `typed_answer` for spelling, unused until step 5), `streak_days` (ADR-015), `push_subscriptions` (with `next_reminder_at`, ADR-020) and `app_config` (ADR-018). On the device: Dexie version 4; backups are version 2 and version-1 files still restore.
 
 ## Open questions
 
