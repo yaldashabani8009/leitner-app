@@ -59,6 +59,7 @@
   --shadow-hard: 0 var(--press-depth) 0 var(--color-ink);
   --shadow-hard-on-ink: 0 var(--press-depth) 0 var(--color-black); /* ink buttons (Save word, Sign in) */
   --shadow-hard-sm: 0 3px 0 var(--color-ink); /* top-bar stat pills */
+  --shadow-hard-md: 0 var(--press-depth-sm) 0 var(--color-ink); /* toast, + roll-out deck buttons (N2, N4) */
   --shadow-hard-on-ink-sm: 0 var(--press-depth-sm) 0 var(--color-black); /* round + button */
 
   /* Hover on laptops (mouse / trackpad only, roadmap step 4): the button rises, its shadow grows. */

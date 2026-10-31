@@ -1,5 +1,7 @@
+import { enabledDecks, type Deck } from '../../domain/decks/decks';
+import { AddButton } from '../../ui/AddButton';
 import { IconButton } from '../../ui/IconButton';
-import { BackIcon, PlusIcon } from '../../ui/icons';
+import { BackIcon } from '../../ui/icons';
 import { Mascot } from '../../ui/Mascot/Mascot';
 import styles from './AllWordsScreen.module.css';
 
@@ -12,7 +14,7 @@ interface AllWordsScreenProps {
   /** Live cards in every deck, newest first. Undefined while loading. */
   cards: readonly AllWordsRow[] | undefined;
   onBack: () => void;
-  onAdd: () => void;
+  onAdd: (deck: Deck) => void;
 }
 
 /**
@@ -39,7 +41,7 @@ export function AllWordsScreen({ cards, onBack, onAdd }: AllWordsScreenProps) {
             </span>
           )}
         </div>
-        <IconButton label="Add word" icon={<PlusIcon size={26} />} onClick={onAdd} />
+        <AddButton decks={enabledDecks()} onPick={onAdd} />
       </header>
       {cards !== undefined && cards.length === 0 && (
         <div className={styles.empty}>

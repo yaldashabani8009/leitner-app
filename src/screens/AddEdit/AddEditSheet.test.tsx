@@ -5,9 +5,11 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LeitnerDb } from '../../data/db';
 import { createRepository, type Repository } from '../../data/repository';
+import { deckById } from '../../domain/decks/decks';
 import { AddEditSheet, type Editor } from './AddEditSheet';
 
 const DAY_1 = '2026-03-10T08:00:00.000Z'; // the 10th in Tehran
+const ADD: Editor = { mode: 'add', deck: deckById('vocab') };
 
 let db: LeitnerDb;
 let repo: Repository;
@@ -29,25 +31,31 @@ afterEach(async () => {
   await db.delete();
 });
 
-async function existing(word = 'brave') {
-  const result = await repo.addCard({
-    word,
-    synonyms: [{ text: 'bold' }, { text: 'daring' }],
-    meanings: [{ text: 'شجاع' }],
-    sentences: [{ text: 'She was brave.' }],
-  });
+async function existing(word = 'brave', deck: 'vocab' | 'spelling' = 'vocab') {
+  const result = await repo.addCard(
+    {
+      word,
+      synonyms: [{ text: 'bold' }, { text: 'daring' }],
+      meanings: [{ text: 'شجاع' }],
+      sentences: [{ text: 'She was brave.' }],
+    },
+    deck,
+  );
   if (result.status !== 'created') throw new Error('not created');
   return result.cardId;
 }
 
 function open(editor: Editor) {
   const onClose = vi.fn();
-  const onOpenCard = vi.fn();
-  render(<AddEditSheet repo={repo} editor={editor} onClose={onClose} onOpenCard={onOpenCard} />);
-  return { onClose, onOpenCard };
+  render(<AddEditSheet repo={repo} editor={editor} onClose={onClose} />);
+  return { onClose };
 }
 
 const field = (name: string) => screen.getByLabelText(name);
+
+/** The toast's live region is always there; wait for the message in it. */
+const toastSays = (text: string) =>
+  vi.waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(text));
 
 async function fillNewWord(word: string) {
   await userEvent.type(field('The word'), word);
@@ -58,14 +66,14 @@ async function fillNewWord(word: string) {
 
 describe('Add word', () => {
   it('opens without putting the cursor in a field, so the keyboard stays closed', async () => {
-    open({ mode: 'add' });
+    open(ADD);
     const sheet = await screen.findByRole('dialog', { name: 'New word' });
     expect(sheet).toHaveFocus();
     expect(field('The word')).not.toHaveFocus();
   });
 
   it('shows an error under each empty field, saves nothing, and Save stays enabled', async () => {
-    const { onClose } = open({ mode: 'add' });
+    const { onClose } = open(ADD);
     const save = await screen.findByRole('button', { name: 'Save word' });
     await userEvent.click(save);
 
@@ -84,26 +92,79 @@ describe('Add word', () => {
   });
 
   it("clears a field's error as soon as you type in it", async () => {
-    open({ mode: 'add' });
+    open(ADD);
     await userEvent.click(await screen.findByRole('button', { name: 'Save word' }));
     await userEvent.type(field('The word'), 'c');
     expect(screen.queryByText('Type the word.')).not.toBeInTheDocument();
     expect(screen.getByText('Add at least one similar word.')).toBeInTheDocument();
   });
 
-  it('saves a new card in box 1, due tomorrow, and closes', async () => {
-    const { onClose } = open({ mode: 'add' });
+  it('shows the deck it adds to next to the title (canvas N4)', async () => {
+    open({ mode: 'add', deck: deckById('spelling') });
+    const sheet = await screen.findByRole('dialog', { name: 'New word' });
+    expect(within(sheet).getByText('Spelling')).toBeInTheDocument();
+  });
+
+  it('saves a new card in box 1, due tomorrow, and stays open for the next word (canvas N4)', async () => {
+    const { onClose } = open(ADD);
     await screen.findByRole('dialog');
     await fillNewWord('calm');
     await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
 
-    await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
+    // A toast for screen readers too; the fields clear and the cursor is back in the word field.
+    await toastSays('calm saved');
+    expect(field('The word')).toHaveValue('');
+    expect(field('The word')).toHaveFocus();
+    expect(field('The word')).toHaveAttribute('placeholder', 'Type the next word');
+    expect(field('Similar words')).toHaveValue('');
+    expect(onClose).not.toHaveBeenCalled();
+    // No Done button, no counter: only ✕ closes.
+    expect(screen.queryByRole('button', { name: 'Done' })).not.toBeInTheDocument();
+
     const [card] = await db.cards.toArray();
-    expect(card).toMatchObject({ word: 'calm', box: 1, dueDate: '2026-03-11' });
+    expect(card).toMatchObject({ word: 'calm', deck: 'vocab', box: 1, dueDate: '2026-03-11' });
+  });
+
+  it('adds three words in a row', async () => {
+    open(ADD);
+    await screen.findByRole('dialog');
+    for (const word of ['calm', 'quiet', 'still']) {
+      await fillNewWord(word);
+      await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
+      expect(await screen.findByText(`${word}`, { selector: 'b' })).toBeInTheDocument();
+    }
+    expect((await db.cards.toArray()).map((c) => c.word).sort()).toEqual([
+      'calm',
+      'quiet',
+      'still',
+    ]);
+  });
+
+  it('the toast goes away after about 2 seconds', async () => {
+    open(ADD);
+    await screen.findByRole('dialog');
+    await fillNewWord('calm');
+    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
+    await toastSays('calm saved');
+    const shownAt = Date.now();
+    await vi.waitFor(() => expect(screen.getByRole('status')).toBeEmptyDOMElement(), {
+      timeout: 3000,
+    });
+    expect(Date.now() - shownAt).toBeGreaterThan(1500);
+  });
+
+  it('a tap outside does not close it; ✕ does', async () => {
+    const { onClose } = open(ADD);
+    await screen.findByRole('dialog');
+    const overlay = document.querySelector('[aria-hidden="true"]') as HTMLElement;
+    await userEvent.click(overlay);
+    expect(onClose).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onClose).toHaveBeenCalledOnce();
   });
 
   it('splits similar words and meanings on "," and "،" (Yali, 2026-10-29)', async () => {
-    const { onClose } = open({ mode: 'add' });
+    const { onClose } = open(ADD);
     await screen.findByRole('dialog');
     await userEvent.type(field('The word'), 'calm');
     await userEvent.type(field('Similar words'), 'peaceful, quiet,, serene ');
@@ -111,7 +172,8 @@ describe('Add word', () => {
     await userEvent.type(field('In a sentence'), 'Stay calm, please.');
     await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
 
-    await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
+    await toastSays('calm saved');
+    expect(onClose).not.toHaveBeenCalled();
     const [card] = await db.cards.toArray();
     const saved = await repo.getCard(card.id);
     expect(saved?.synonyms.map((e) => e.text)).toEqual(['peaceful', 'quiet', 'serene']);
@@ -121,7 +183,7 @@ describe('Add word', () => {
   });
 
   it('adds a sentence field right under the sentences, focuses it, and ignores it when left empty', async () => {
-    const { onClose } = open({ mode: 'add' });
+    const { onClose } = open(ADD);
     await screen.findByRole('dialog');
     await fillNewWord('calm');
     expect(screen.queryByRole('button', { name: '+ similar word' })).not.toBeInTheDocument();
@@ -131,55 +193,138 @@ describe('Add word', () => {
     expect(screen.queryByRole('button', { name: /Remove/ })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
-    await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
+    await toastSays('calm saved');
+    expect(onClose).not.toHaveBeenCalled();
     const [card] = await db.cards.toArray();
     expect((await repo.getCard(card.id))?.sentences.map((e) => e.text)).toEqual(['Stay calm.']);
   });
 
   it('writes Persian right to left', async () => {
-    open({ mode: 'add' });
+    open(ADD);
     await screen.findByRole('dialog');
     expect(field('In Persian')).toHaveAttribute('lang', 'fa');
   });
 });
 
-describe('Adding a word you already have', () => {
-  it('asks first; Cancel changes nothing and keeps what you typed', async () => {
+describe('A word already in this deck (canvas N5)', () => {
+  it('leaving the word field shows the note and fills the form, keeping what was typed', async () => {
     const id = await existing('Brave');
     await db.cards.update(id, { box: 4, dueDate: '2026-03-20' });
-    const { onOpenCard } = open({ mode: 'add' });
+    const { onClose } = open(ADD);
     await screen.findByRole('dialog');
+    await userEvent.type(field('Similar words'), 'fearless');
     await userEvent.type(field('The word'), '  brave ');
-    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
+    await userEvent.tab();
 
-    const dialog = await screen.findByRole('dialog', { name: 'Oh! You already have “brave”' });
-    expect(within(dialog).getByText(/move it back to the start/)).toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
-
-    expect(screen.queryByRole('dialog', { name: /already have/ })).not.toBeInTheDocument();
-    expect(field('The word')).toHaveValue('  brave ');
+    expect(await screen.findByText('Already in your Vocab box')).toBeInTheDocument();
+    expect(field('Similar words')).toHaveValue('bold, daring, fearless');
+    expect(field('In Persian')).toHaveValue('شجاع');
+    expect(field('In a sentence')).toHaveValue('She was brave.');
+    expect(screen.getByRole('button', { name: 'Save & start over' })).toBeInTheDocument();
+    expect(screen.getByText('It goes back to the start of your box.')).toBeInTheDocument();
+    // Nothing changed yet, and no popup.
     expect(await db.cards.get(id)).toMatchObject({ box: 4, dueDate: '2026-03-20' });
-    expect(onOpenCard).not.toHaveBeenCalled();
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('Save straight away finds it too, without saving anything', async () => {
+    await existing('brave');
+    open(ADD);
+    await screen.findByRole('dialog');
+    await userEvent.type(field('The word'), 'BRAVE{Enter}');
+    expect(await screen.findByText('Already in your Vocab box')).toBeInTheDocument();
     expect(await repo.countCards()).toBe(1);
   });
 
-  it('"Open my card" sends it back to box 1, due tomorrow, and opens it', async () => {
+  it('"Save & start over" updates the card, sends it back to box 1 and counts it as added today', async () => {
     const id = await existing('brave');
-    await db.cards.update(id, { box: 5, dueDate: '2026-04-01', masteredAt: now });
-    const { onOpenCard, onClose } = open({ mode: 'add' });
+    await db.cards.update(id, { box: 5, masteredAt: now, addedOn: '2026-03-01' });
+    now = '2026-03-12T08:00:00.000Z';
+    const { onClose } = open(ADD);
     await screen.findByRole('dialog');
-    await userEvent.type(field('The word'), 'BRAVE');
-    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Open my card' }));
+    await userEvent.type(field('The word'), 'brave');
+    await userEvent.tab();
+    await screen.findByText('Already in your Vocab box');
+    await userEvent.type(field('Similar words'), ', fearless');
+    await userEvent.click(screen.getByRole('button', { name: 'Save & start over' }));
 
-    await vi.waitFor(() => expect(onOpenCard).toHaveBeenCalledWith(id));
-    expect(onClose).toHaveBeenCalled();
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'brave updated · back to the start',
+    );
     expect(await db.cards.get(id)).toMatchObject({
       box: 1,
-      dueDate: '2026-03-11',
+      dueDate: '2026-03-13',
       masteredAt: null,
+      addedOn: '2026-03-12',
     });
+    expect((await repo.getCard(id))?.synonyms.map((e) => e.text)).toEqual([
+      'bold',
+      'daring',
+      'fearless',
+    ]);
+    // The sheet stays open, empty, for the next word.
+    expect(field('The word')).toHaveValue('');
+    expect(screen.queryByText('Already in your Vocab box')).not.toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
     expect(await repo.countCards()).toBe(1);
+  });
+
+  it('"Add another word" empties the form and changes nothing', async () => {
+    const id = await existing('brave');
+    await db.cards.update(id, { box: 3 });
+    open(ADD);
+    await screen.findByRole('dialog');
+    await userEvent.type(field('The word'), 'brave');
+    await userEvent.tab();
+    await userEvent.click(await screen.findByRole('button', { name: 'Add another word' }));
+    expect(field('The word')).toHaveValue('');
+    expect(field('Similar words')).toHaveValue('');
+    expect(screen.getByRole('button', { name: 'Save word' })).toBeInTheDocument();
+    expect(await db.cards.get(id)).toMatchObject({ box: 3 });
+  });
+
+  it('✕ changes nothing', async () => {
+    const id = await existing('brave');
+    await db.cards.update(id, { box: 3 });
+    const { onClose } = open(ADD);
+    await screen.findByRole('dialog');
+    await userEvent.type(field('The word'), 'brave');
+    await userEvent.tab();
+    await screen.findByText('Already in your Vocab box');
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onClose).toHaveBeenCalled();
+    expect(await db.cards.get(id)).toMatchObject({ box: 3 });
+  });
+
+  it('changing the word to a new one makes it a normal new word again', async () => {
+    await existing('brave');
+    open(ADD);
+    await screen.findByRole('dialog');
+    await userEvent.type(field('The word'), 'brave');
+    await userEvent.tab();
+    await screen.findByText('Already in your Vocab box');
+    await userEvent.clear(field('The word'));
+    await userEvent.type(field('The word'), 'bold');
+    await userEvent.tab();
+    await vi.waitFor(() =>
+      expect(screen.queryByText('Already in your Vocab box')).not.toBeInTheDocument(),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
+    await toastSays('bold saved');
+    expect(await repo.countCards()).toBe(2);
+  });
+
+  it('the same word in another deck is not a duplicate', async () => {
+    await existing('brave', 'spelling');
+    open(ADD);
+    await screen.findByRole('dialog');
+    await fillNewWord('brave');
+    await userEvent.tab();
+    expect(screen.queryByText(/Already in your/)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
+    await toastSays('brave saved');
+    expect(await repo.countCards()).toBe(2);
   });
 });
 

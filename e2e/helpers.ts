@@ -35,8 +35,18 @@ export const CALM: Word = {
   sentence: 'Stay calm and carry on.',
 };
 
-/** Fills the open "New word" sheet and saves it. */
-export async function saveWord(page: Page, word: Word): Promise<void> {
+export const QUIET: Word = {
+  word: 'quiet',
+  similar: 'silent, still',
+  persian: 'ساکت',
+  sentence: 'The library was quiet.',
+};
+
+/**
+ * Fills the open "New word" sheet and saves it. The sheet stays open for the next word
+ * (canvas N4): wait for the "saved" toast and the empty word field.
+ */
+export async function typeAndSave(page: Page, word: Word): Promise<void> {
   const sheet = page.getByRole('dialog', { name: 'New word' });
   await expect(sheet).toBeVisible();
   await sheet.getByLabel('The word').fill(word.word);
@@ -44,6 +54,15 @@ export async function saveWord(page: Page, word: Word): Promise<void> {
   await sheet.getByLabel('In Persian').fill(word.persian);
   await sheet.getByLabel('In a sentence').fill(word.sentence);
   await sheet.getByRole('button', { name: 'Save word' }).click();
+  await expect(page.getByRole('status').filter({ hasText: `${word.word} saved` })).toBeVisible();
+  await expect(sheet.getByLabel('The word')).toHaveValue('');
+}
+
+/** Saves one word, then closes the sheet with ✕. */
+export async function saveWord(page: Page, word: Word): Promise<void> {
+  await typeAndSave(page, word);
+  const sheet = page.getByRole('dialog', { name: 'New word' });
+  await sheet.getByRole('button', { name: 'Close' }).click();
   await expect(sheet).toBeHidden();
 }
 

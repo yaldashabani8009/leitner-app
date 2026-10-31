@@ -1,5 +1,16 @@
 import { expect, test } from '@playwright/test';
-import { BRAVE, CALM, DAY_1, DAY_2, cardFront, saveWord, signIn, spoken } from './helpers';
+import {
+  BRAVE,
+  CALM,
+  DAY_1,
+  DAY_2,
+  QUIET,
+  cardFront,
+  saveWord,
+  signIn,
+  spoken,
+  typeAndSave,
+} from './helpers';
 
 test('sign in, add words, then review them the next day', async ({ page }) => {
   await page.clock.setFixedTime(DAY_1);
@@ -54,18 +65,37 @@ test('a wrong password is explained, and nothing opens', async ({ page }) => {
   await expect(page.getByText("That email and password don't match. Try again?")).toBeVisible();
 });
 
-test('the same word twice opens the existing card instead of a copy', async ({ page }) => {
+test('add 3 words in a row: the sheet stays open between them (canvas N4)', async ({ page }) => {
   await page.clock.setFixedTime(DAY_1);
   await signIn(page);
   await page.getByRole('button', { name: 'Add a new word' }).click();
-  await saveWord(page, BRAVE);
-  await page.getByRole('button', { name: 'Add word' }).click();
+  const sheet = page.getByRole('dialog', { name: 'New word' });
+  await expect(sheet.getByText('Vocab', { exact: true })).toBeVisible();
+  for (const word of [BRAVE, CALM, QUIET]) await typeAndSave(page, word);
+  // The cursor is back in the word field, ready for the next one.
+  await expect(sheet.getByLabel('The word')).toBeFocused();
+  await sheet.getByRole('button', { name: 'Close' }).click();
+  await expect(sheet).toBeHidden();
+  await expect(spoken(page, '3 cards in your box')).toBeAttached();
+});
+
+test('the same word twice: the form fills in and "Save & start over" keeps one card (canvas N5)', async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(DAY_1);
+  await signIn(page);
+  await page.getByRole('button', { name: 'Add a new word' }).click();
+  await typeAndSave(page, BRAVE);
 
   const sheet = page.getByRole('dialog', { name: 'New word' });
   await sheet.getByLabel('The word').fill('Brave');
-  await sheet.getByRole('button', { name: 'Save word' }).click();
-  await page.getByRole('button', { name: 'Open my card' }).click();
-  await expect(page.getByLabel('Your card: brave')).toBeVisible();
-  await page.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByRole('heading', { name: 'All done for today' })).toBeVisible();
+  await sheet.getByLabel('Similar words').focus();
+  await expect(sheet.getByText('Already in your Vocab box')).toBeVisible();
+  await expect(sheet.getByLabel('Similar words')).toHaveValue('bold, daring');
+  await sheet.getByRole('button', { name: 'Save & start over' }).click();
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Brave updated · back to the start' }),
+  ).toBeVisible();
+  await sheet.getByRole('button', { name: 'Close' }).click();
+  await expect(spoken(page, '1 card in your box')).toBeAttached();
 });

@@ -1,13 +1,15 @@
-import { useId, type ComponentPropsWithRef } from 'react';
+import { useId, type ComponentPropsWithRef, type ReactNode } from 'react';
 import styles from './TextField.module.css';
 
 interface TextFieldProps extends Omit<ComponentPropsWithRef<'input'>, 'id'> {
   label: string;
   /** Shown under the field, in the error colour (PRD: errors appear under the field). */
   error?: string;
+  /** Shown right under the field, e.g. "Already in your Vocab box" (canvas N5). */
+  note?: ReactNode;
 }
 
-export function TextField({ label, error, className, ...input }: TextFieldProps) {
+export function TextField({ label, error, note, className, ...input }: TextFieldProps) {
   const id = useId();
   const errorId = `${id}-error`;
   return (
@@ -22,6 +24,7 @@ export function TextField({ label, error, className, ...input }: TextFieldProps)
         aria-describedby={error ? errorId : undefined}
         {...input}
       />
+      {note}
       {error && (
         <p id={errorId} className={styles.error}>
           <svg

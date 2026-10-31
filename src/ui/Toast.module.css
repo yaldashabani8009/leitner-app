@@ -1,0 +1,62 @@
+/* Canvas N4: centred, 64px from the top, above the dim layer and the sheet. */
+.region {
+  position: absolute;
+  top: 64px;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px 10px 10px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  box-shadow: var(--shadow-hard-md);
+  color: var(--color-ink);
+  font-size: 16px;
+  font-weight: var(--weight-bold);
+  animation: toast-in var(--duration-base) var(--ease-bounce);
+}
+
+.toast b {
+  font-weight: var(--weight-black);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua);
+}
+
+.check svg {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}

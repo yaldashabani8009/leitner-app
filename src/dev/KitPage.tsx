@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { DECKS } from '../domain/decks/decks';
 import { BottomPanel } from '../ui/BottomPanel';
 import { Button } from '../ui/Button';
 import { Card, CardStack } from '../ui/Card';
@@ -14,7 +15,8 @@ import styles from './KitPage.module.css';
 
 /**
  * Dev-only gallery of the UI kit (roadmap 7.7). Open http://localhost:5173/leitner-app/?kit
- * Add &open=bottom or &open=dialog to start with a sheet open (for screenshots).
+ * Add &open=bottom or &open=dialog to start with a sheet open (for screenshots), and
+ * &decks=all to see the + roll-out with all three decks (canvas N2; only vocab is enabled).
  * main.tsx only loads this when import.meta.env.DEV, so it never ships.
  */
 export function KitPage() {
@@ -23,10 +25,16 @@ export function KitPage() {
     startOpen === 'bottom' || startOpen === 'dialog' ? startOpen : null,
   );
   const close = () => setSheet(null);
+  const allDecks = new URLSearchParams(location.search).get('decks') === 'all';
 
   return (
     <main className={styles.page}>
-      <TopBar cardCount={312} streak={12} onAdd={() => setSheet('bottom')} />
+      <TopBar
+        cardCount={312}
+        streak={12}
+        onAdd={() => setSheet('bottom')}
+        decks={allDecks ? DECKS.map((deck) => ({ ...deck, enabled: true })) : undefined}
+      />
 
       <Section title="Mascot" id="mascot">
         <div className={styles.mascotGrid}>

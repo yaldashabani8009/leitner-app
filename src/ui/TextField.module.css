@@ -31,9 +31,11 @@ textarea.input {
   resize: none;
 }
 
+/* Canvas N4 / N5: the field you type in gets a 3px orange border inside an ink outline. */
 .input:focus-visible {
-  outline: 3px solid var(--color-focus-ring);
-  outline-offset: 2px;
+  border: 3px solid var(--color-orange);
+  outline: 2.5px solid var(--color-ink);
+  outline-offset: 0;
 }
 
 .input[aria-invalid='true'] {

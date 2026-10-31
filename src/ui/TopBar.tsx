@@ -1,5 +1,6 @@
-import { IconButton } from './IconButton';
-import { BoxIcon, FlameIcon, PlusIcon } from './icons';
+import { enabledDecks, type Deck } from '../domain/decks/decks';
+import { AddButton } from './AddButton';
+import { BoxIcon, FlameIcon } from './icons';
 import { Pill } from './Pill';
 import styles from './TopBar.module.css';
 
@@ -10,8 +11,10 @@ interface TopBarProps {
   onOpenBox?: () => void;
   /** Days in a row (PRD streak rule). Hidden when not given. */
   streak?: number;
-  /** Opens "add a word". The + is hidden when not given. */
-  onAdd?: () => void;
+  /** Opens "add a word" for a deck (the + rolls out one button per deck; N2). Hidden when not given. */
+  onAdd?: (deck: Deck) => void;
+  /** The decks the + offers; the enabled ones by default (tests pass all three). */
+  decks?: readonly Deck[];
 }
 
 function cardCountLabel(count: number): string {
@@ -23,7 +26,7 @@ function cardCountLabel(count: number): string {
  * A part that isn't given is left out (the pills while their numbers load);
  * the bar keeps its height so screens don't jump when they arrive.
  */
-export function TopBar({ cardCount, onOpenBox, streak, onAdd }: TopBarProps) {
+export function TopBar({ cardCount, onOpenBox, streak, onAdd, decks }: TopBarProps) {
   return (
     <header className={styles.bar}>
       {cardCount !== undefined && (
@@ -45,14 +48,7 @@ export function TopBar({ cardCount, onOpenBox, streak, onAdd }: TopBarProps) {
           {streak}
         </Pill>
       )}
-      {onAdd && (
-        <IconButton
-          label="Add word"
-          icon={<PlusIcon size={26} />}
-          onClick={onAdd}
-          className={styles.add}
-        />
-      )}
+      {onAdd && <AddButton decks={decks ?? enabledDecks()} onPick={onAdd} className={styles.add} />}
     </header>
   );
 }

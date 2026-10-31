@@ -1,0 +1,13 @@
+.chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px 4px 8px;
+  border: 2px solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: var(--weight-black);
+}

@@ -88,8 +88,15 @@
   gap: 10px;
 }
 
-.title {
+.titleGroup {
+  display: flex;
   flex-grow: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.title {
   margin: 0;
   font-size: 30px;
   font-weight: var(--weight-black);

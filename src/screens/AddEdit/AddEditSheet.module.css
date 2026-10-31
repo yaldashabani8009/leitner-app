@@ -16,3 +16,59 @@
 .save {
   margin-top: var(--space-3);
 }
+
+/* Canvas N5: a soft aqua note right under the word field. */
+.duplicate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 2px solid var(--color-ink);
+  border-radius: var(--radius-stamp);
+  background: var(--color-aqua-pale);
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: var(--weight-bold);
+}
+
+.duplicate svg {
+  flex-shrink: 0;
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.duplicateText {
+  flex-grow: 1;
+}
+
+/* Looks like a link (canvas N5), is a button: it empties the form. */
+.another {
+  min-height: 44px;
+  margin: -12px 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: var(--weight-black);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.another:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.startOver {
+  margin: calc(-1 * var(--space-1)) 0 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}

@@ -145,6 +145,59 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
     await queue('streakDays', date, now);
   }
 
+  function editCardTx(cardId: string, draft: CardDraft): Promise<EditCardResult> {
+    return db.transaction('rw', ALL_TABLES, async () => {
+      const now = deps.now();
+      const card = await db.cards.get(cardId);
+      if (!card || card.deletedAt !== null) throw new Error(`No card with id ${cardId}`);
+
+      const result = validateCard(draft);
+      if (!result.ok) return { status: 'invalid', errors: result.errors };
+      const { card: valid } = result;
+
+      const other = await findByWord(valid.word, card.deck);
+      if (other && other.id !== cardId) return { status: 'invalid', errors: { word: 'duplicate' } };
+
+      if (valid.word !== card.word) {
+        await db.cards.put({
+          ...card,
+          word: valid.word,
+          wordKey: wordKey(valid.word),
+          updatedAt: now,
+        });
+        await queue('cards', cardId, now);
+      }
+
+      const current = await liveEntries(cardId);
+      for (const field of LIST_FIELDS) {
+        const kind = KIND_OF[field];
+        const before = new Map(current.filter((e) => e.kind === kind).map((e) => [e.id, e]));
+        const kept = new Set<string>();
+
+        for (const [position, input] of valid[field].entries()) {
+          const old = input.id === undefined ? undefined : before.get(input.id);
+          if (old) {
+            kept.add(old.id);
+            if (old.text !== input.text || old.position !== position) {
+              await db.entries.put({ ...old, text: input.text, position, updatedAt: now });
+              await queue('entries', old.id, now);
+            }
+          } else {
+            await addEntry(cardId, kind, input, position, now);
+          }
+        }
+
+        for (const old of before.values()) {
+          if (!kept.has(old.id)) {
+            await db.entries.put({ ...old, deletedAt: now, updatedAt: now });
+            await queue('entries', old.id, now);
+          }
+        }
+      }
+      return { status: 'saved' };
+    });
+  }
+
   return {
     /**
      * The id of the live card with this word (ignoring capitals and extra spaces), if any.
@@ -218,56 +271,24 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
      * List items keep their id when edited; items left out are soft-deleted so the deletion syncs.
      */
     editCard(cardId: string, draft: CardDraft): Promise<EditCardResult> {
+      return editCardTx(cardId, draft);
+    },
+
+    /**
+     * "Save & start over" in the add sheet (v3 brief 1.8, canvas N5): the word was already in this
+     * deck, so its card is updated with the form, goes back to box 1 (due tomorrow) and counts as
+     * added today. All in one write.
+     */
+    saveAndStartOver(cardId: string, draft: CardDraft): Promise<EditCardResult> {
       return db.transaction('rw', ALL_TABLES, async () => {
+        const result = await editCardTx(cardId, draft);
+        if (result.status !== 'saved') return result;
         const now = deps.now();
-        const card = await db.cards.get(cardId);
-        if (!card || card.deletedAt !== null) throw new Error(`No card with id ${cardId}`);
-
-        const result = validateCard(draft);
-        if (!result.ok) return { status: 'invalid', errors: result.errors };
-        const { card: valid } = result;
-
-        const other = await findByWord(valid.word, card.deck);
-        if (other && other.id !== cardId)
-          return { status: 'invalid', errors: { word: 'duplicate' } };
-
-        if (valid.word !== card.word) {
-          await db.cards.put({
-            ...card,
-            word: valid.word,
-            wordKey: wordKey(valid.word),
-            updatedAt: now,
-          });
-          await queue('cards', cardId, now);
-        }
-
-        const current = await liveEntries(cardId);
-        for (const field of LIST_FIELDS) {
-          const kind = KIND_OF[field];
-          const before = new Map(current.filter((e) => e.kind === kind).map((e) => [e.id, e]));
-          const kept = new Set<string>();
-
-          for (const [position, input] of valid[field].entries()) {
-            const old = input.id === undefined ? undefined : before.get(input.id);
-            if (old) {
-              kept.add(old.id);
-              if (old.text !== input.text || old.position !== position) {
-                await db.entries.put({ ...old, text: input.text, position, updatedAt: now });
-                await queue('entries', old.id, now);
-              }
-            } else {
-              await addEntry(cardId, kind, input, position, now);
-            }
-          }
-
-          for (const old of before.values()) {
-            if (!kept.has(old.id)) {
-              await db.entries.put({ ...old, deletedAt: now, updatedAt: now });
-              await queue('entries', old.id, now);
-            }
-          }
-        }
-        return { status: 'saved' };
+        const card = (await db.cards.get(cardId))!;
+        const date = await today(now);
+        await db.cards.put({ ...card, ...resetToBox1(date), addedOn: date, updatedAt: now });
+        await queue('cards', cardId, now);
+        return result;
       });
     },
 

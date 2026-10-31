@@ -20,7 +20,17 @@
   box-shadow: var(--shadow-hard-on-ink-sm);
 }
 
-.primary:active {
+.whiteRaised {
+  width: 52px;
+  height: 52px;
+  border: var(--border-chunky) solid var(--color-ink);
+  background: var(--color-white);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-hard-on-ink-sm);
+}
+
+.primary:active,
+.whiteRaised:active {
   transform: translateY(var(--press-depth-sm));
   box-shadow: none;
 }
