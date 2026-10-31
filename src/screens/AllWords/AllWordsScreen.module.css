@@ -423,8 +423,32 @@
   }
 }
 
+/* Laptop only (canvas L4): "/ search · N add · H home" at the bottom. */
+.keys {
+  display: none;
+}
+
 /* Laptop (canvas L4): the same page in the 560px column; the chips wrap instead of scrolling. */
 @media (width >= 700px) {
+  .keys {
+    display: flex;
+    flex-shrink: 0;
+    gap: 14px;
+    align-self: center;
+    margin: var(--space-3) 0 32px;
+    padding: 10px 18px;
+    border: var(--border-chunky) solid var(--color-ink);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    font-weight: var(--weight-bold);
+  }
+
+  .keys b {
+    color: var(--color-ink);
+  }
+
   .header {
     padding: 28px 0 6px;
   }

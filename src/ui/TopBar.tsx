@@ -18,6 +18,8 @@ interface TopBarProps {
   onAdd?: (deck: Deck) => void;
   /** The decks the + offers; the enabled ones by default (tests pass all three). */
   decks?: readonly Deck[];
+  /** Opens the + from the N key (laptop). */
+  addSignal?: number;
 }
 
 function cardCountLabel(count: number): string {
@@ -29,7 +31,15 @@ function cardCountLabel(count: number): string {
  * A part that isn't given is left out (the pills while their numbers load);
  * the bar keeps its height so screens don't jump when they arrive.
  */
-export function TopBar({ leading, cardCount, onOpenBox, streak, onAdd, decks }: TopBarProps) {
+export function TopBar({
+  leading,
+  cardCount,
+  onOpenBox,
+  streak,
+  onAdd,
+  decks,
+  addSignal,
+}: TopBarProps) {
   return (
     <header className={styles.bar}>
       {leading}
@@ -52,7 +62,14 @@ export function TopBar({ leading, cardCount, onOpenBox, streak, onAdd, decks }: 
           {streak}
         </Pill>
       )}
-      {onAdd && <AddButton decks={decks ?? enabledDecks()} onPick={onAdd} className={styles.add} />}
+      {onAdd && (
+        <AddButton
+          decks={decks ?? enabledDecks()}
+          onPick={onAdd}
+          className={styles.add}
+          openSignal={addSignal}
+        />
+      )}
     </header>
   );
 }

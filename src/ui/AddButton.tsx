@@ -11,6 +11,8 @@ interface AddButtonProps {
   /** A deck was picked: open its add sheet. */
   onPick: (deck: Deck) => void;
   className?: string;
+  /** Goes up by one each time the N key asks to open it (laptop shortcut, v3 brief 1.12). */
+  openSignal?: number;
 }
 
 /**
@@ -18,7 +20,7 @@ interface AddButtonProps {
  * straight away. With more, it rolls out one round button per deck below it and turns into a
  * white ✕; ✕, a tap outside or Esc rolls them back. Reduce motion: they appear without the roll.
  */
-export function AddButton({ decks, onPick, className }: AddButtonProps) {
+export function AddButton({ decks, onPick, className, openSignal = 0 }: AddButtonProps) {
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -27,6 +29,15 @@ export function AddButton({ decks, onPick, className }: AddButtonProps) {
   useEffect(() => {
     if (open) firstRef.current?.focus();
   }, [open]);
+
+  // N on a laptop: the same as tapping +.
+  const seen = useRef(openSignal);
+  useEffect(() => {
+    if (openSignal === seen.current) return;
+    seen.current = openSignal;
+    if (decks.length === 1) onPick(decks[0]);
+    else setOpen(true);
+  }, [openSignal, decks, onPick]);
 
   function close() {
     setOpen(false);

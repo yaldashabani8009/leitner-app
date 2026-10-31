@@ -620,3 +620,53 @@ function swipe(element: Element, dx: number) {
   }
   fireEvent.pointerUp(target, { ...start, clientX: 100 + dx, buttons: 0 });
 }
+
+describe('laptop shortcuts N / H / / (v3 brief 1.12)', () => {
+  it('N opens the add sheet (one deck on); typing an "n" or "h" in it is just typing', async () => {
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await screen.findByRole('heading', { name: 'Hi Yali!' });
+    await userEvent.keyboard('n');
+    const sheet = await screen.findByRole('dialog', { name: 'New word' });
+    await userEvent.type(within(sheet).getByLabelText('The word'), 'nh');
+    expect(within(sheet).getByLabelText('The word')).toHaveValue('nh');
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+  });
+
+  it('H goes Home from a session; with Ctrl or ⌘ held nothing happens', async () => {
+    await addCards('brave');
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
+    await screen.findByRole('button', { name: /tap to flip/ });
+    await userEvent.keyboard('{Control>}h{/Control}{Meta>}n{/Meta}');
+    expect(screen.getByRole('button', { name: /tap to flip/ })).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await userEvent.keyboard('H');
+    expect(await screen.findByRole('heading', { name: 'Hi Yali!' })).toBeInTheDocument();
+  });
+
+  it('/ focuses the search on all words; H leaves the page', async () => {
+    await addCards('brave');
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(await screen.findByRole('button', { name: '1 card in your box' }));
+    await screen.findByRole('heading', { name: 'In your box' });
+    await userEvent.keyboard('/');
+    const search = screen.getByRole('searchbox', { name: 'Search words' });
+    expect(search).toHaveFocus();
+    await userEvent.keyboard('h'); // typed into the search, not a shortcut
+    expect(search).toHaveValue('h');
+    search.blur();
+    await userEvent.keyboard('h');
+    expect(await screen.findByRole('heading', { name: 'Hi Yali!' })).toBeInTheDocument();
+  });
+
+  it('keys do nothing while a sheet is open', async () => {
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await screen.findByRole('heading', { name: 'Hi Yali!' });
+    await userEvent.click(screen.getByRole('button', { name: 'Add word' }));
+    const sheet = await screen.findByRole('dialog', { name: 'New word' });
+    sheet.focus();
+    await userEvent.keyboard('h');
+    expect(screen.getByRole('dialog', { name: 'New word' })).toBeInTheDocument();
+  });
+});

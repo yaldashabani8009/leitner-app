@@ -40,6 +40,8 @@ interface AllWordsScreenProps {
   onPracticeDay: (day: string, decks: readonly DeckId[]) => void;
   /** The toast after a delete, with Undo (canvas N10). */
   toast?: ReactNode;
+  /** Opens the + from the N key (laptop). */
+  addSignal?: number;
 }
 
 const SORTS: { id: WordSort; label: string }[] = [
@@ -79,6 +81,7 @@ export function AllWordsScreen({
   onDelete,
   onPracticeDay,
   toast,
+  addSignal,
 }: AllWordsScreenProps) {
   const [deckFilter, setDeckFilter] = useState<DeckId | 'all'>('all');
   const [query, setQuery] = useState('');
@@ -113,7 +116,7 @@ export function AllWordsScreen({
             <span className={styles.total}>{total === 1 ? '1 card' : `${total} cards`}</span>
           )}
         </div>
-        <AddButton decks={decks} onPick={onAdd} />
+        <AddButton decks={decks} onPick={onAdd} openSignal={addSignal} />
       </header>
 
       {rows !== undefined && rows.length === 0 ? (
@@ -189,44 +192,57 @@ export function AllWordsScreen({
             </div>
           </div>
 
-          <VirtualList
-            items={items}
-            renderItem={(item, index) =>
-              item.kind === 'heading' ? (
-                <div className={`${styles.dayHeading} ${index === 0 ? styles.firstHeading : ''}`}>
-                  <span className={styles.dayLabel}>{item.label}</span>
-                  <button
-                    type="button"
-                    className={styles.practice}
-                    aria-label={`Practice words added ${item.label === 'TODAY' ? 'today' : item.label === 'YESTERDAY' ? 'yesterday' : `on ${item.label}`}`}
-                    onClick={() => onPracticeDay(item.day, filterDecks)}
-                  >
-                    <RetryIcon size={16} />
-                    Practice
-                  </button>
-                </div>
-              ) : (
-                <WordRowView
-                  row={item.row}
-                  deck={
-                    deckFilter === 'all' ? decks.find((d) => d.id === item.row.deck) : undefined
-                  }
-                  open={openRow === item.row.id}
-                  onOpenChange={(open) => setOpenRow(open ? item.row.id : null)}
-                  onTap={() => onOpenCard(item.row.id)}
-                  onDelete={() => {
-                    setOpenRow(null);
-                    onDelete(item.row);
-                  }}
-                />
-              )
-            }
-          />
-          {rows !== undefined && items.length === 0 && (
+          {rows !== undefined && items.length === 0 ? (
             <p className={styles.noMatch}>No words match “{query.trim()}”.</p>
+          ) : (
+            <VirtualList
+              items={items}
+              renderItem={(item, index) =>
+                item.kind === 'heading' ? (
+                  <div className={`${styles.dayHeading} ${index === 0 ? styles.firstHeading : ''}`}>
+                    <span className={styles.dayLabel}>{item.label}</span>
+                    <button
+                      type="button"
+                      className={styles.practice}
+                      aria-label={`Practice words added ${item.label === 'TODAY' ? 'today' : item.label === 'YESTERDAY' ? 'yesterday' : `on ${item.label}`}`}
+                      onClick={() => onPracticeDay(item.day, filterDecks)}
+                    >
+                      <RetryIcon size={16} />
+                      Practice
+                    </button>
+                  </div>
+                ) : (
+                  <WordRowView
+                    row={item.row}
+                    deck={
+                      deckFilter === 'all' ? decks.find((d) => d.id === item.row.deck) : undefined
+                    }
+                    open={openRow === item.row.id}
+                    onOpenChange={(open) => setOpenRow(open ? item.row.id : null)}
+                    onTap={() => onOpenCard(item.row.id)}
+                    onDelete={() => {
+                      setOpenRow(null);
+                      onDelete(item.row);
+                    }}
+                  />
+                )
+              }
+            />
           )}
         </>
       )}
+      {/* Laptop only (canvas L4): the keys of this page. */}
+      <p className={styles.keys} aria-hidden="true">
+        <span>
+          <b>/</b> search
+        </span>
+        <span>
+          <b>N</b> add
+        </span>
+        <span>
+          <b>H</b> home
+        </span>
+      </p>
       {toast}
     </main>
   );
