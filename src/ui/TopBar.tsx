@@ -1,32 +1,39 @@
 import { IconButton } from './IconButton';
-import { BookIcon, FlameIcon, PlusIcon } from './icons';
+import { BoxIcon, FlameIcon, PlusIcon } from './icons';
 import { Pill } from './Pill';
 import styles from './TopBar.module.css';
 
 interface TopBarProps {
-  /** Cards that have passed box 1 at least once (PRD: never goes down). Hidden when not given. */
-  wordsLearned?: number;
+  /** Every card in every deck (not deleted; mastered ones included). Hidden when not given. */
+  cardCount?: number;
+  /** Tapping the box badge opens the all-words page. */
+  onOpenBox?: () => void;
   /** Days in a row (PRD streak rule). Hidden when not given. */
   streak?: number;
   /** Opens "add a word". The + is hidden when not given. */
   onAdd?: () => void;
 }
 
+function cardCountLabel(count: number): string {
+  return count === 1 ? '1 card in your box' : `${count} cards in your box`;
+}
+
 /**
- * Option A from the canvas: two floating pills (words learned, streak) and a round + button.
+ * Two floating pills (the box badge and the streak) and a round + button (v3 brief 1.3).
  * A part that isn't given is left out (the pills while their numbers load);
  * the bar keeps its height so screens don't jump when they arrive.
  */
-export function TopBar({ wordsLearned, streak, onAdd }: TopBarProps) {
+export function TopBar({ cardCount, onOpenBox, streak, onAdd }: TopBarProps) {
   return (
     <header className={styles.bar}>
-      {wordsLearned !== undefined && (
+      {cardCount !== undefined && (
         <Pill
           variant="stat"
-          icon={<BookIcon />}
-          srLabel={wordsLearned === 1 ? '1 word learned' : `${wordsLearned} words learned`}
+          icon={<BoxIcon />}
+          srLabel={cardCountLabel(cardCount)}
+          onClick={onOpenBox}
         >
-          {wordsLearned}
+          {cardCount}
         </Pill>
       )}
       {streak !== undefined && (

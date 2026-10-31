@@ -30,6 +30,25 @@ export function BookIcon(props: IconProps) {
   );
 }
 
+/** A cardboard box in the flame's style (cream fill, ink outline): every card in your box. */
+export function BoxIcon({ className, ...props }: IconProps) {
+  return (
+    <Icon className={[styles.box, className].filter(Boolean).join(' ')} {...props}>
+      <path d="M3 8.5 12 4l9 4.5v9L12 22l-9-4.5z" />
+      <path className={styles.boxLine} d="M3 8.5 12 13l9-4.5M12 13v9" />
+    </Icon>
+  );
+}
+
+/** Arrow pointing left: back. */
+export function BackIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </Icon>
+  );
+}
+
 /** Orange flame: streak. */
 export function FlameIcon({ className, ...props }: IconProps) {
   return (

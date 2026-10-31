@@ -56,3 +56,8 @@
     translate: 0 16px;
   }
 }
+
+.blank {
+  min-height: 100%;
+  background: var(--color-bg);
+}

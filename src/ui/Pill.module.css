@@ -67,3 +67,20 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* A stat pill that is a button (box badge): same look, plus press and focus. */
+.tappable {
+  min-height: 44px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.tappable:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.tappable:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}

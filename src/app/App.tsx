@@ -10,7 +10,7 @@ import { ForgotPassword } from '../screens/Auth/ForgotPassword';
 import { SetNewPassword } from '../screens/Auth/SetNewPassword';
 import { SignIn, type AuthScreen } from '../screens/Auth/SignIn';
 import { SignUp } from '../screens/Auth/SignUp';
-import { LoadingScreen } from '../screens/Loading/LoadingScreen';
+import { BlankScreen } from '../screens/Loading/LoadingScreen';
 import { StudyFlow } from '../screens/Study/StudyFlow';
 import { readLastUser, writeLastUser } from './lastUser';
 import { decideStart, settleWithin, START_TIMEOUT_MS } from './startup';
@@ -75,7 +75,8 @@ export function App({ services }: { services: AppServices }) {
 
   switch (view.kind) {
     case 'starting':
-      return <LoadingScreen />;
+      // Only the cream page: the Loading screen comes once the profile (and name) is read.
+      return <BlankScreen />;
     case 'app':
       return (
         <SignedIn

@@ -326,7 +326,15 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       return db.profile.toCollection().first();
     },
 
-    /** How many live cards are in the box. */
+    /** Live cards in every deck, newest first (the all-words page; 11.8 adds search and sorts). */
+    async listCards(): Promise<Pick<CardRow, 'id' | 'word' | 'deck' | 'createdAt'>[]> {
+      const cards = await db.cards.filter((card) => card.deletedAt === null).toArray();
+      return cards
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0))
+        .map(({ id, word, deck, createdAt }) => ({ id, word, deck, createdAt }));
+    },
+
+    /** How many live cards are in the box, in every deck (the top-bar box badge). */
     countCards(): Promise<number> {
       return db.cards.filter((card) => card.deletedAt === null).count();
     },

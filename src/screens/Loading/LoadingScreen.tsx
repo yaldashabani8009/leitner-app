@@ -11,6 +11,15 @@ interface LoadingScreenProps {
   streak?: number;
 }
 
+/**
+ * The cream page alone, while the app works out who is signed in and reads their saved
+ * profile (v3 brief 1.12): no title and no mascot, so the only Loading screen is the one
+ * with the name.
+ */
+export function BlankScreen() {
+  return <main className={styles.blank} aria-busy="true" aria-label="Opening your box" />;
+}
+
 /** 2.5 s on a cold start: confetti, the waving mascot, "Yali's Leitner." and the streak pill. */
 export function LoadingScreen({ name, streak }: LoadingScreenProps) {
   return (

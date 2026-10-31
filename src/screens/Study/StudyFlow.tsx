@@ -14,7 +14,8 @@ import { useAppBadge } from '../../app/useAppBadge';
 import type { ReminderService } from '../../data/reminders';
 import { BackupPrompts } from '../Backup/BackupPrompts';
 import { ReminderOffer } from '../Reminders/ReminderOffer';
-import { LoadingScreen } from '../Loading/LoadingScreen';
+import { BlankScreen, LoadingScreen } from '../Loading/LoadingScreen';
+import { AllWordsScreen } from '../AllWords/AllWordsScreen';
 import { AllDone, Resting, SessionComplete } from '../Rest/RestScreens';
 import { CardViewScreen } from '../Review/CardViewScreen';
 import { ReviewScreen } from '../Review/ReviewScreen';
@@ -29,6 +30,7 @@ type StudyRepo = Pick<
   | 'getProfile'
   | 'getCard'
   | 'countCards'
+  | 'listCards'
   | 'nextSessionCardIds'
   | 'recordAnswer'
   | 'addCard'
@@ -85,6 +87,12 @@ export function StudyFlow({
 
   const [session, setSession] = useState<Session | null>(null);
   const [view, setView] = useState<'study' | 'complete' | 'resting'>('study');
+  /** The all-words page, opened from the box badge; it sits over whatever screen was showing. */
+  const [allWordsOpen, setAllWordsOpen] = useState(false);
+  const allCards = useLiveQuery(
+    async () => (allWordsOpen ? repo.listCards() : undefined),
+    [repo, allWordsOpen],
+  );
   const [reaction, setReaction] = useState<'happy' | 'cheer' | null>(null);
   const saving = useRef(false);
   /** The last answer came while something on the card had focus (keyboard, screen reader). */
@@ -111,7 +119,10 @@ export function StudyFlow({
     [repo, step?.cardId],
   );
 
-  if (!waited || profile === undefined || cardCount === undefined || dueIds === undefined) {
+  // Until the saved profile is read there is no name: show only the cream page, so the one
+  // Loading screen already says "Yali's Leitner" (v3 brief 1.12).
+  if (profile === undefined) return <BlankScreen />;
+  if (!waited || cardCount === undefined || dueIds === undefined) {
     return <LoadingScreen name={profile?.displayName} streak={progress?.streak} />;
   }
 
@@ -122,7 +133,8 @@ export function StudyFlow({
 
   const top = (
     <TopBar
-      wordsLearned={progress?.wordsLearned}
+      cardCount={cardCount}
+      onOpenBox={() => setAllWordsOpen(true)}
       streak={progress?.streak}
       onAdd={() => setEditor({ mode: 'add' })}
     />
@@ -145,6 +157,16 @@ export function StudyFlow({
       <ReminderOffer repo={repo} reminders={reminders} active={doneForNow && editor === null} />
     </>
   );
+
+  if (allWordsOpen) {
+    return withSheet(
+      <AllWordsScreen
+        cards={allCards}
+        onBack={() => setAllWordsOpen(false)}
+        onAdd={() => setEditor({ mode: 'add' })}
+      />,
+    );
+  }
 
   // Start a session as soon as cards are due (also on first open of the day).
   if (view === 'study' && session === null && dueIds.length > 0) {

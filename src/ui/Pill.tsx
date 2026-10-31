@@ -17,16 +17,26 @@ interface PillProps {
    */
   srLabel?: string;
   className?: string;
+  /** Makes the pill a button (the top-bar box badge opens all words). */
+  onClick?: () => void;
   children: ReactNode;
 }
 
-/** A non-interactive full pill. For a tappable dashed pill, use AddPill. */
-export function Pill({ variant, tone = 'cream', icon, srLabel, className, children }: PillProps) {
+/** A full pill; a button when `onClick` is given. For a tappable dashed pill, use AddPill. */
+export function Pill({
+  variant,
+  tone = 'cream',
+  icon,
+  srLabel,
+  className,
+  onClick,
+  children,
+}: PillProps) {
   const classes = [styles.pill, styles[variant], variant === 'label' && styles[tone], className]
     .filter(Boolean)
     .join(' ');
-  return (
-    <span className={classes}>
+  const content = (
+    <>
       {icon}
       {srLabel ? (
         <>
@@ -36,8 +46,16 @@ export function Pill({ variant, tone = 'cream', icon, srLabel, className, childr
       ) : (
         children
       )}
-    </span>
+    </>
   );
+  if (onClick) {
+    return (
+      <button type="button" className={`${classes} ${styles.tappable}`} onClick={onClick}>
+        {content}
+      </button>
+    );
+  }
+  return <span className={classes}>{content}</span>;
 }
 
 type AddPillProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
