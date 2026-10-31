@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { DECKS } from '../domain/decks/decks';
 import { TodayScreen } from '../screens/Today/TodayScreen';
 import { SpellingAddSheet } from '../screens/AddEdit/SpellingAddSheet';
+import { SpellingScreen } from '../screens/Spelling/SpellingScreen';
 import { deckById } from '../domain/decks/decks';
 import { BottomPanel } from '../ui/BottomPanel';
 import { Button } from '../ui/Button';
@@ -9,7 +10,7 @@ import { Card, CardStack } from '../ui/Card';
 import { IconButton } from '../ui/IconButton';
 import { Mascot } from '../ui/Mascot/Mascot';
 import { MASCOT_POSES } from '../ui/Mascot/poses';
-import { BookIcon, FlameIcon, FlipIcon, PencilIcon, PlusIcon } from '../ui/icons';
+import { BookIcon, FlameIcon, FlipIcon, HomeIcon, PencilIcon, PlusIcon } from '../ui/icons';
 import { AddPill, Pill } from '../ui/Pill';
 import { Sheet } from '../ui/Sheet';
 import { TextField } from '../ui/TextField';
@@ -22,6 +23,8 @@ import styles from './KitPage.module.css';
  * &decks=all to see the + roll-out with all three decks (canvas N2; only vocab is enabled).
  * &screen=today shows the Today screen with all three decks, as on canvas N1.
  * &screen=spelling-add shows the Spelling add sheet (P3, P4); "necessary" is already there.
+ * &screen=spelling shows a spelling card (P5–P7) for &word=… (default "necessary"); type
+ * "neccesary" for P6, or use &word=their and type "there" for P7. No sound in the kit.
  * main.tsx only loads this when import.meta.env.DEV, so it never ships.
  */
 export function KitPage() {
@@ -41,6 +44,37 @@ export function KitPage() {
         }}
         deck={deckById('spelling')}
         onClose={() => {}}
+      />
+    );
+  }
+
+  if (new URLSearchParams(location.search).get('screen') === 'spelling') {
+    return (
+      <SpellingScreen
+        cardId="kit"
+        word={new URLSearchParams(location.search).get('word') ?? 'necessary'}
+        kind="scheduled"
+        progress={0.4}
+        speech={null}
+        needsStart={false}
+        onStarted={() => {}}
+        onRecord={() => {}}
+        onNext={() => {}}
+        top={
+          <TopBar
+            leading={
+              <IconButton
+                label="Home"
+                variant="white"
+                icon={<HomeIcon size={20} style={{ strokeWidth: 2.5 }} />}
+                onClick={() => {}}
+              />
+            }
+            cardCount={312}
+            streak={13}
+            onAdd={() => {}}
+          />
+        }
       />
     );
   }

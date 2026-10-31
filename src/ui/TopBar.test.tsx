@@ -40,6 +40,7 @@ describe('TopBar', () => {
     const onAdd = vi.fn();
     render(<TopBar cardCount={0} streak={0} onAdd={onAdd} />);
     await userEvent.click(screen.getByRole('button', { name: 'Add word' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Vocab' }));
     expect(onAdd).toHaveBeenCalledOnce();
   });
 
