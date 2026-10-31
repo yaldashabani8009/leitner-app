@@ -202,8 +202,19 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
           const old = input.id === undefined ? undefined : before.get(input.id);
           if (old) {
             kept.add(old.id);
-            if (old.text !== input.text || old.position !== position) {
-              await db.entries.put({ ...old, text: input.text, position, updatedAt: now });
+            const translation = input.translation ?? null;
+            if (
+              old.text !== input.text ||
+              old.position !== position ||
+              (old.translation ?? null) !== translation
+            ) {
+              await db.entries.put({
+                ...old,
+                text: input.text,
+                translation,
+                position,
+                updatedAt: now,
+              });
               await queue('entries', old.id, now);
             }
           } else {
@@ -551,7 +562,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
           updatedAt: card.updatedAt,
           deletedAt: card.deletedAt,
         })),
-        entries,
+        entries: entries.map((entry) => ({ ...entry, translation: entry.translation ?? null })),
         reviewLogs: reviewLogs.map((log) => ({ ...log, typedAnswer: log.typedAnswer ?? null })),
         streakDays,
       };
@@ -867,6 +878,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       cardId,
       kind,
       text: input.text,
+      translation: input.translation ?? null,
       position,
       updatedAt: now,
       deletedAt: null,

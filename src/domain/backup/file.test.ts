@@ -6,7 +6,7 @@ const T = '2026-03-10T08:00:00.000Z';
 function sample(): Backup {
   return {
     app: 'leitner-backup',
-    version: 2,
+    version: 3,
     exportedAt: T,
     userId: 'u1',
     profile: { displayName: 'Yali', timeZone: 'Asia/Tehran' },
@@ -43,6 +43,17 @@ function sample(): Backup {
         cardId: 'c1',
         kind: 'synonym',
         text: 'bold',
+        translation: null,
+        position: 0,
+        updatedAt: T,
+        deletedAt: null,
+      },
+      {
+        id: 'e2',
+        cardId: 'c1',
+        kind: 'sentence',
+        text: 'She was brave.',
+        translation: 'او شجاع بود.',
         position: 0,
         updatedAt: T,
         deletedAt: null,
@@ -105,7 +116,7 @@ describe('readBackup', () => {
   });
 
   it('refuses a backup from a newer version of the app', () => {
-    expect(read({ ...sample(), version: 3 })).toEqual({ ok: false, problem: 'newerVersion' });
+    expect(read({ ...sample(), version: 4 })).toEqual({ ok: false, problem: 'newerVersion' });
   });
 
   const card = sample().cards[0];
@@ -113,7 +124,7 @@ describe('readBackup', () => {
   const log = sample().reviewLogs[0];
   it.each<[string, Record<string, unknown>]>([
     ['version 0', { version: 0 }],
-    ['version as text', { version: '2' }],
+    ['version as text', { version: '3' }],
     ['no export time', { exportedAt: undefined }],
     ['an export time that is not a time', { exportedAt: 'yesterday' }],
     ['no account', { userId: '' }],
@@ -136,6 +147,7 @@ describe('readBackup', () => {
     ['an unknown deck', { cards: [{ ...card, deck: 'grammar' }] }],
     ['a card without addedOn', { cards: [{ ...card, addedOn: undefined }] }],
     ['a typed answer that is a number', { reviewLogs: [{ ...log, typedAnswer: 5 }] }],
+    ['a blank translation', { entries: [{ ...entry, translation: '' }] }],
   ])('refuses %s as damaged', (_label, change) => {
     expect(read({ ...sample(), ...change })).toEqual({ ok: false, problem: 'damaged' });
   });
@@ -171,6 +183,7 @@ describe('readBackup: version 1 files still restore', () => {
       ...base,
       version: 1,
       cards: base.cards.map((card) => omit(card, 'deck', 'addedOn')),
+      entries: base.entries.map((entry) => omit(entry, 'translation')),
       reviewLogs: base.reviewLogs.map((log) => omit(log, 'typedAnswer')),
     };
   }
@@ -184,12 +197,14 @@ describe('readBackup: version 1 files still restore', () => {
     const result = read(file);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.backup.version).toBe(2);
+    expect(result.backup.version).toBe(3);
     expect(result.backup.cards.map((c) => [c.deck, c.addedOn])).toEqual([
       ['vocab', '2026-03-11'],
       ['vocab', '2026-03-10'],
     ]);
     expect(result.backup.reviewLogs.every((l) => l.typedAnswer === null)).toBe(true);
+    expect(result.backup.entries.every((e) => e.translation === null)).toBe(true);
+    expect(result.backup.version).toBe(3);
   });
 
   it('uses UTC when the file has no profile', () => {
@@ -212,5 +227,23 @@ describe('readBackup: version 1 files still restore', () => {
       ok: false,
       problem: 'damaged',
     });
+  });
+});
+
+describe('readBackup: version 2 files still restore', () => {
+  it('gives every entry no translation, and keeps decks', () => {
+    const base = sample();
+    const v2 = {
+      ...base,
+      version: 2,
+      entries: base.entries.map((entry) => omit(entry, 'translation')),
+    };
+    const result = read(v2);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.backup.entries.map((e) => e.translation)).toEqual([null, null]);
+    expect(result.backup.cards.map((c) => c.deck)).toEqual(['vocab', 'spelling']);
+    expect(read({ ...v2, entries: ['x'] })).toEqual({ ok: false, problem: 'damaged' });
+    expect(read({ ...v2, entries: {} })).toEqual({ ok: false, problem: 'damaged' });
   });
 });

@@ -11,6 +11,14 @@ export interface EntryInput {
   /** Present when editing an existing entry; absent for a new one. */
   readonly id?: string;
   readonly text: string;
+  /** Sentences only (v3 step 4): the Persian translation; empty or blank means none. */
+  readonly translation?: string | null;
+}
+
+/** A translation as stored: trimmed, and null when empty or only spaces (never blank text). */
+export function cleanTranslation(translation: string | null | undefined): string | null {
+  const trimmed = translation?.trim() ?? '';
+  return trimmed === '' ? null : trimmed;
 }
 
 export interface CardDraft {
@@ -44,7 +52,13 @@ function length(text: string): number {
 }
 
 function cleanList(list: readonly EntryInput[]): EntryInput[] {
-  return list.map((entry) => ({ ...entry, text: entry.text.trim() })).filter((e) => e.text !== '');
+  return list
+    .map((entry) => {
+      const cleaned: EntryInput = { ...entry, text: entry.text.trim() };
+      if (entry.translation === undefined) return cleaned;
+      return { ...cleaned, translation: cleanTranslation(entry.translation) };
+    })
+    .filter((e) => e.text !== '');
 }
 
 /**

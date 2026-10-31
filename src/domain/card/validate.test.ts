@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  cleanTranslation,
   MAX_ENTRY_LENGTH,
   MAX_WORD_LENGTH,
   normalizeWord,
@@ -88,5 +89,33 @@ describe('validateCard', () => {
     expect(
       validateCard({ ...good, meanings: items('ok', 'ب'.repeat(MAX_ENTRY_LENGTH + 1)) }),
     ).toEqual({ ok: false, errors: { meanings: 'tooLong' } });
+  });
+});
+
+describe('sentence translations (v3 step 4)', () => {
+  it('are trimmed, and blank ones become none', () => {
+    expect(cleanTranslation('  او شجاع بود.  ')).toBe('او شجاع بود.');
+    expect(cleanTranslation('   ')).toBeNull();
+    expect(cleanTranslation('')).toBeNull();
+    expect(cleanTranslation(null)).toBeNull();
+    expect(cleanTranslation(undefined)).toBeNull();
+  });
+
+  it("validateCard keeps a sentence's translation, cleaned", () => {
+    const result = validateCard({
+      word: 'brave',
+      synonyms: [{ text: 'bold' }],
+      meanings: [{ text: 'شجاع' }],
+      sentences: [
+        { text: ' She was brave. ', translation: ' او شجاع بود. ' },
+        { text: 'No Persian.', translation: '  ' },
+        { text: 'Untouched.' },
+      ],
+    });
+    expect(result.ok && result.card.sentences).toEqual([
+      { text: 'She was brave.', translation: 'او شجاع بود.' },
+      { text: 'No Persian.', translation: null },
+      { text: 'Untouched.' },
+    ]);
   });
 });

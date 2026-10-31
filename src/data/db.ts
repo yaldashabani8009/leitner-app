@@ -33,6 +33,8 @@ export interface EntryRow {
   cardId: string;
   kind: EntryKind;
   text: string;
+  /** Sentences only (v3 step 4): the Persian translation, or null for none. Missing in old rows = none. */
+  translation?: string | null;
   position: number;
   updatedAt: string;
   deletedAt: string | null;
