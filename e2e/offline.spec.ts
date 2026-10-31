@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { BRAVE, CALM, DAY_1, DAY_2, cardFront, saveWord, signIn } from './helpers';
+import { addTo, BRAVE, CALM, DAY_1, DAY_2, cardFront, saveWord, signIn } from './helpers';
 
 /** Signs in on day 1, adds a word, and waits until the service worker has the app cached. */
 async function readyWithOneWord(page: Page): Promise<void> {
@@ -18,7 +18,7 @@ test('keeps working when the connection drops', async ({ page, context }) => {
   await context.setOffline(true);
 
   // Adding a word works offline; it waits on the device for the cloud.
-  await page.getByRole('button', { name: 'Add word' }).click();
+  await addTo(page, 'Vocab');
   await saveWord(page, CALM);
   await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
 });
@@ -41,7 +41,7 @@ test('opens with no connection, with the words still there', async ({
   await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sign in' })).toHaveCount(0);
 
-  await page.getByRole('button', { name: 'Add word' }).click();
+  await addTo(page, 'Vocab');
   await saveWord(page, CALM);
 
   // Still offline the next day: both words are due.

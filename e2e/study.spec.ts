@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
+  addTo,
   BRAVE,
   CALM,
   DAY_1,
@@ -21,7 +22,7 @@ test('sign in, add words, then review them the next day', async ({ page }) => {
   await page.getByRole('button', { name: 'Vocab, empty. Add words' }).click();
   await saveWord(page, BRAVE);
   await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
-  await page.getByRole('button', { name: 'Add word' }).click();
+  await addTo(page, 'Vocab');
   await saveWord(page, CALM);
   // Nothing was due and a word was added: day 1 counts for the streak.
   await expect(spoken(page, '1-day streak')).toBeAttached();
@@ -130,4 +131,57 @@ test("extra practice: today's new words, boxes stay the same (canvas N11, N12)",
   await page.getByRole('button', { name: 'Knew it!' }).click();
   await page.getByRole('button', { name: 'Done' }).click();
   await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
+});
+
+test('paste 10 spelling words, then spell them the next day', async ({ page }) => {
+  const words = [
+    'receive',
+    'necessary',
+    'separate',
+    'definitely',
+    'their',
+    'rhythm',
+    'library',
+    'February',
+    'tomorrow',
+    'beautiful',
+  ];
+  await page.clock.setFixedTime(DAY_1);
+  await signIn(page);
+  await page.getByRole('button', { name: 'Spelling, empty. Add words' }).click();
+  const sheet = page.getByRole('dialog', { name: 'New words' });
+  await sheet.getByRole('textbox', { name: 'Words' }).fill(words.join('\n'));
+  await sheet.getByRole('button', { name: 'Check' }).click();
+  await sheet.getByRole('button', { name: 'Save 10 words' }).click();
+  await expect(page.getByRole('status').filter({ hasText: '10 saved' })).toBeVisible();
+  await sheet.getByRole('button', { name: 'Close' }).click();
+  await expect(spoken(page, '10 cards in your box')).toBeAttached();
+
+  await page.clock.setFixedTime(DAY_2);
+  await page.reload();
+  await page.getByRole('button', { name: 'Spelling, 10 waiting. Start' }).click();
+  const field = page.getByRole('textbox', { name: 'Type what you hear' });
+  await expect(field).toBeFocused();
+  await page.getByRole('button', { name: 'Tap to start' }).click();
+
+  // "Show me" counts as wrong; type the word once to go on.
+  await page.getByRole('button', { name: 'Show me' }).click();
+  const shown = await page
+    .getByRole('region', { name: 'Not quite' })
+    .locator('[class*="big"]')
+    .textContent();
+  const retype = page.getByRole('textbox', { name: 'Type it once to go on' });
+  await retype.fill('nope');
+  await retype.press('Enter');
+  await expect(retype).toBeVisible();
+  await retype.fill(shown ?? '');
+  await retype.press('Enter');
+  await expect(page.getByRole('textbox', { name: 'Type what you hear' })).toBeFocused();
+  await expect(page.getByRole('progressbar', { name: 'Session progress' })).toHaveAttribute(
+    'aria-valuenow',
+    '10',
+  );
+
+  await page.getByRole('button', { name: 'Home' }).click();
+  await expect(page.getByText('Paused · 10 left')).toBeVisible();
 });

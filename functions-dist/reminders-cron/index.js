@@ -26,7 +26,7 @@ var DECKS = [
     edgeColor: "--color-deck-spelling-edge",
     tileColor: "--color-deck-spelling-tile",
     limits: DECK_LIMITS.spelling,
-    enabled: false
+    enabled: true
   },
   {
     id: "phrases",

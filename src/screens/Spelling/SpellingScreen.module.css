@@ -1,0 +1,444 @@
+/* Spelling card: listen and type (canvas P5), not quite (P6), sounds the same (P7). */
+
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ---------- Progress ---------- */
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 28px 0;
+}
+
+.progress {
+  flex-grow: 1;
+  height: 16px;
+  overflow: hidden;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+}
+
+.fill {
+  height: 100%;
+  border-right: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua-dark);
+  transition: width var(--duration-base) ease-out;
+}
+
+/* ---------- Card ---------- */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: 236px;
+  margin: 22px 26px 0;
+  padding: 20px 22px 18px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-card);
+  background: var(--color-white);
+  box-shadow: var(--shadow-card);
+}
+
+/* P6 / P7: the answer, left-aligned under a tag and a small replay button. */
+.answerCard {
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 10px;
+  height: auto;
+  min-height: 222px;
+  padding: 18px 22px;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tagAqua,
+.tagCream {
+  align-self: center;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: var(--weight-bold);
+}
+
+.tagAqua {
+  background: var(--color-aqua-pale);
+}
+
+.tagCream {
+  background: var(--color-cream);
+  color: var(--color-text-secondary);
+}
+
+.cardTop .tagAqua,
+.cardTop .tagCream {
+  align-self: auto;
+}
+
+.speakers {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.speaker,
+.snail,
+.replay,
+.go,
+.countIt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+.speaker {
+  width: 104px;
+  height: 104px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua-dark);
+  box-shadow: var(--shadow-hard);
+}
+
+.snail {
+  width: 56px;
+  height: 56px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.snail:active {
+  box-shadow: none;
+  transform: translateY(3px);
+}
+
+/* Sound is blocked, or the session's first word: the speaker gently pulses (P5 note). */
+.calling {
+  animation: calling 1.6s ease-in-out infinite;
+}
+
+@keyframes calling {
+  0%,
+  100% {
+    outline: 0 solid var(--color-aqua);
+  }
+
+  50% {
+    outline: 10px solid var(--color-aqua);
+  }
+}
+
+.replay {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua-pale);
+}
+
+.speakerIcon {
+  stroke: var(--color-ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.replay .speakerIcon {
+  stroke-width: 2.2;
+}
+
+.speakerBody {
+  fill: var(--color-white);
+}
+
+.speakerBodyAqua {
+  fill: var(--color-aqua-dark);
+}
+
+.waves {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.snailIcon {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.snailIcon .dot {
+  fill: var(--color-ink);
+}
+
+.snailIcon .shell {
+  fill: var(--color-aqua-pale);
+}
+
+.hint {
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  font-weight: var(--weight-bold);
+}
+
+/* ---------- The answer (P6, P7) ---------- */
+
+.comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: var(--weight-bold);
+}
+
+.letters,
+.big {
+  font-size: 32px;
+  font-weight: var(--weight-black);
+  overflow-wrap: anywhere;
+}
+
+.letters {
+  letter-spacing: 3px;
+}
+
+.muted {
+  color: var(--color-text-secondary);
+}
+
+.extra {
+  padding: 0 1px;
+  border-radius: var(--radius-highlight);
+  background: var(--color-terracotta-pale);
+  text-decoration: line-through;
+  text-decoration-color: var(--color-ink);
+  text-decoration-thickness: 3px;
+}
+
+.wrongTyped {
+  padding: 0 1px;
+  border-radius: var(--radius-highlight);
+  background: var(--color-terracotta-pale);
+}
+
+.gap {
+  display: inline-block;
+  width: 16px;
+  height: 26px;
+  margin: 0 2px;
+  border-bottom: 3px solid var(--color-ink);
+  border-radius: var(--radius-highlight);
+  background: var(--color-aqua);
+  vertical-align: -2px;
+}
+
+.missing {
+  padding: 0 2px;
+  border-radius: var(--radius-highlight);
+  background: var(--color-aqua);
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+}
+
+.legend {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pair {
+  display: flex;
+  gap: 12px;
+}
+
+.half {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Typing ---------- */
+
+.countIt {
+  flex-shrink: 0;
+  height: 52px;
+  margin: 18px 24px 0;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  box-shadow: var(--shadow-hard-md);
+  font-size: 17px;
+  font-weight: var(--weight-black);
+}
+
+.answerRow {
+  display: flex;
+  flex-shrink: 0;
+  gap: 10px;
+  margin: 22px 24px 0;
+}
+
+.answerCard ~ .answerRow {
+  margin-top: 18px;
+}
+
+.countIt ~ .answerRow {
+  margin-top: 14px;
+}
+
+.field {
+  flex-grow: 1;
+  box-sizing: border-box;
+  min-width: 0;
+  height: 56px;
+  padding: 0 18px;
+  border: 3px solid var(--color-aqua-dark);
+  border-radius: var(--radius-input);
+  outline: var(--border-chunky) solid var(--color-ink);
+  background: var(--color-white);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  font-size: 20px;
+  font-weight: var(--weight-bold);
+}
+
+.field::placeholder {
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-bold);
+}
+
+/* P7: the plain field under "Sounds the same, count it". */
+.fieldQuiet {
+  border: var(--border-chunky) solid var(--color-ink);
+  outline: none;
+}
+
+/* The field always has the cursor (the iPhone keyboard stays open), so it keeps the canvas
+   look while focused: its ink outline already shows where typing goes. */
+.field:focus-visible {
+  outline: var(--border-chunky) solid var(--color-ink);
+}
+
+.fieldQuiet:focus-visible {
+  outline: none;
+}
+
+.shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+.go {
+  flex-shrink: 0;
+  height: 56px;
+  padding: 0 20px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua-dark);
+  box-shadow: var(--shadow-hard-md);
+  font-size: 17px;
+  font-weight: var(--weight-black);
+}
+
+.speaker:active,
+.go:active,
+.countIt:active {
+  box-shadow: none;
+  transform: translateY(var(--press-depth-sm));
+}
+
+.showMeRow {
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.showMe {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: var(--weight-black);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+/* Reduce motion: a still ring instead of the pulse; no shake. */
+@media (prefers-reduced-motion: reduce) {
+  .calling {
+    animation: none;
+    outline: 6px solid var(--color-aqua);
+  }
+
+  .shake {
+    animation: none;
+  }
+}

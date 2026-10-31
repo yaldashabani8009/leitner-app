@@ -78,6 +78,12 @@ async function startVocab() {
   await userEvent.click(await screen.findByRole('button', { name: /^Vocab, .*(Start|Continue)$/ }));
 }
 
+/** The + roll-out (several decks on, canvas N2): add to this deck. */
+async function pickDeck(label: string) {
+  const menu = await screen.findByRole('group', { name: 'Add to which deck?' });
+  await userEvent.click(within(menu).getByRole('button', { name: label }));
+}
+
 async function flipAndAnswer(answer: 'Knew it!' | 'Not yet') {
   await userEvent.click(await screen.findByRole('button', { name: /tap to flip/ }));
   await userEvent.click(await screen.findByRole('button', { name: answer }));
@@ -485,8 +491,9 @@ describe('StudyFlow', () => {
     const front = await screen.findByRole('button', { name: /tap to flip/ });
     const word = front.textContent;
 
-    // One deck enabled: + opens its add sheet straight away (no roll-out).
+    // Two decks on: + rolls out a button per deck.
     await userEvent.click(screen.getByRole('button', { name: 'Add word' }));
+    await pickDeck('Vocab');
     const sheet = await screen.findByRole('dialog', { name: 'New word' });
     expect(within(sheet).getByText('Vocab')).toBeInTheDocument();
     await userEvent.type(within(sheet).getByLabelText('The word'), 'Calm');
@@ -670,10 +677,11 @@ function swipe(element: Element, dx: number) {
 }
 
 describe('laptop shortcuts N / H / / (v3 brief 1.12)', () => {
-  it('N opens the add sheet (one deck on); typing an "n" or "h" in it is just typing', async () => {
+  it('N rolls out the decks to add to; typing an "n" or "h" in the sheet is just typing', async () => {
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
     await screen.findByRole('heading', { name: 'Hi Yali!' });
     await userEvent.keyboard('n');
+    await pickDeck('Vocab');
     const sheet = await screen.findByRole('dialog', { name: 'New word' });
     await userEvent.type(within(sheet).getByLabelText('The word'), 'nh');
     expect(within(sheet).getByLabelText('The word')).toHaveValue('nh');
@@ -712,9 +720,81 @@ describe('laptop shortcuts N / H / / (v3 brief 1.12)', () => {
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
     await screen.findByRole('heading', { name: 'Hi Yali!' });
     await userEvent.click(screen.getByRole('button', { name: 'Add word' }));
+    await pickDeck('Vocab');
     const sheet = await screen.findByRole('dialog', { name: 'New word' });
     sheet.focus();
     await userEvent.keyboard('h');
     expect(screen.getByRole('dialog', { name: 'New word' })).toBeInTheDocument();
+  });
+});
+
+describe('spelling sessions (v3 brief 1.3, canvas P5–P7)', () => {
+  function fakeSpeech() {
+    return {
+      speak: vi.fn(),
+      state: () => 'idle' as const,
+      subscribe: () => () => {},
+      dispose: () => {},
+    };
+  }
+
+  async function startSpelling() {
+    await userEvent.click(
+      await screen.findByRole('button', { name: /^Spelling, .*(Start|Continue)$/ }),
+    );
+  }
+
+  it('one Start tap, then each next word is said from the answer that moves on', async () => {
+    await repo.addSpellingWords(['receive', 'their', 'necessary']);
+    now = DAY_2;
+    const speech = fakeSpeech();
+    render(<StudyFlow repo={repo} minLoadingMs={0} speech={speech} />);
+    await startSpelling();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Tap to start' }));
+    const first = speech.speak.mock.lastCall![0] as string;
+    expect(screen.getByRole('button', { name: 'Play the word again' })).toBeInTheDocument();
+
+    // Right: moves up a box; the next word is said at once.
+    await userEvent.type(screen.getByRole('textbox', { name: 'Type what you hear' }), `${first}{Enter}`);
+    const second = speech.speak.mock.lastCall![0] as string;
+    expect(second).not.toBe(first);
+    await waitFor(async () => expect(await boxOf(first)).toBe(2));
+
+    // Wrong: back to box 1, the typed answer saved; retype it to go on.
+    const field = screen.getByRole('textbox', { name: 'Type what you hear' });
+    await userEvent.type(field, 'zzz{Enter}');
+    await screen.findByRole('region', { name: 'Not quite' });
+    await waitFor(async () => {
+      const logs = await db.reviewLogs.toArray();
+      expect(logs.map((log) => log.typedAnswer)).toContain('zzz');
+    });
+    await userEvent.type(screen.getByRole('textbox', { name: 'Type it once to go on' }), `${second}{Enter}`);
+    const third = speech.speak.mock.lastCall![0] as string;
+    expect([first, second]).not.toContain(third);
+    expect(await boxOf(second)).toBe(1);
+
+    // Show me, then the practice round brings the missed words back.
+    await userEvent.click(await screen.findByRole('button', { name: 'Show me' }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'Type it once to go on' }), `${third}{Enter}`);
+    expect(speech.speak.mock.lastCall![0]).toBe(second);
+    await userEvent.type(screen.getByRole('textbox', { name: 'Type what you hear' }), `${second}{Enter}`);
+    expect(speech.speak.mock.lastCall![0]).toBe(third);
+    await userEvent.type(screen.getByRole('textbox', { name: 'Type what you hear' }), `${third}{Enter}`);
+    expect(await screen.findByText(/Session complete/)).toBeInTheDocument();
+    expect(await boxOf(second)).toBe(1); // practice answers never move a box
+  });
+
+  it('the answer field stays the same element from card to card (the iPhone keyboard stays open)', async () => {
+    await repo.addSpellingWords(['receive', 'their']);
+    now = DAY_2;
+    const speech = fakeSpeech();
+    render(<StudyFlow repo={repo} minLoadingMs={0} speech={speech} />);
+    await startSpelling();
+    await userEvent.click(await screen.findByRole('button', { name: 'Tap to start' }));
+    const field = screen.getByRole('textbox', { name: 'Type what you hear' });
+    await userEvent.type(field, `${speech.speak.mock.lastCall![0] as string}{Enter}`);
+    expect(screen.getByRole('textbox', { name: 'Type what you hear' })).toBe(field);
+    expect(field).toHaveFocus();
   });
 });

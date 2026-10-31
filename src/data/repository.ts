@@ -426,6 +426,8 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       cardId: string,
       correct: boolean,
       kind: 'scheduled' | 'practice',
+      /** Spelling (v3 brief 1.3): what was typed; null for "Show me" and for other decks. */
+      typedAnswer: string | null = null,
     ): Promise<ReviewLogRow> {
       return db.transaction('rw', ALL_TABLES, async () => {
         const now = deps.now();
@@ -448,7 +450,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
           boxBefore: card.box,
           boxAfter,
           isPractice: kind === 'practice',
-          typedAnswer: null,
+          typedAnswer,
           createdAt: now,
         };
         await db.reviewLogs.add(log);
@@ -862,6 +864,14 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       return cards
         .filter((card) => card.deletedAt === null && decks.includes(card.deck))
         .map((card) => ({ id: card.id, deck: card.deck }));
+    },
+
+    /** The words of these cards (spelling sessions say the next word from a tap, ADR-021). */
+    async cardWords(cardIds: readonly string[]): Promise<Record<string, string>> {
+      const cards = await db.cards.bulkGet([...cardIds]);
+      const words: Record<string, string> = {};
+      for (const card of cards) if (card) words[card.id] = card.word;
+      return words;
     },
 
     /** Today, in the profile time zone (YYYY-MM-DD). */

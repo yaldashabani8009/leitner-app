@@ -28,6 +28,9 @@ import { TodayScreen } from '../Today/TodayScreen';
 import { PracticeDone } from '../Practice/PracticeDone';
 import { missedInRound, practiceOrder, type PracticeCard } from '../../domain/session/extra';
 import { ReviewScreen } from '../Review/ReviewScreen';
+import { SpellingScreen } from '../Spelling/SpellingScreen';
+import type { Speech } from '../../services/speech';
+import { appSpeech } from '../../services/useSpeech';
 
 /** A round of extra practice: the cards it may repeat, this round's order and answers. */
 interface Extra {
@@ -65,6 +68,7 @@ type StudyRepo = Pick<
   | 'cardsAddedOn'
   | 'todayDate'
   | 'recordAnswer'
+  | 'cardWords'
   | 'addCard'
   | 'editCard'
   | 'findCardIdByWord'
@@ -91,6 +95,8 @@ interface StudyFlowProps {
   minLoadingMs?: number;
   /** Sign out (Settings, canvas N13). Without it there is no settings button. */
   onSignOut?: () => void;
+  /** Says spelling words (ADR-021). Tests pass a fake; the default is the browser's voice. */
+  speech?: Speech | null;
 }
 
 /**
@@ -105,6 +111,7 @@ export function StudyFlow({
   reminders,
   minLoadingMs = MIN_LOADING_MS,
   onSignOut,
+  speech = appSpeech(),
 }: StudyFlowProps) {
   const decks = enabledDecks();
   const deckIds = decks.map((deck) => deck.id).join(',');
@@ -156,6 +163,8 @@ export function StudyFlow({
     const timer = setTimeout(() => setDeleted(null), UNDO_MS);
     return () => clearTimeout(timer);
   }, [deleted]);
+  /** A spelling word has been played from a tap in this session: sound is unlocked (ADR-021). */
+  const [soundOn, setSoundOn] = useState(false);
   const [reaction, setReaction] = useState<'happy' | 'cheer' | null>(null);
   const saving = useRef(false);
   /** The last answer came while something on the card had focus (keyboard, screen reader). */
@@ -193,6 +202,15 @@ export function StudyFlow({
     [repo, shownCardId],
   );
 
+  // The words of this session's cards: a spelling word is spoken straight from the tap that
+  // moves on to it, before its card is read from the database (iPhone only allows sound then).
+  const runIds = (view === 'extra' ? extra?.order : session?.scheduled)?.join(',') ?? '';
+  const words = useLiveQuery(
+    async (): Promise<Record<string, string>> =>
+      runIds ? repo.cardWords(runIds.split(',')) : {},
+    [repo, runIds],
+  );
+
   // Until the saved profile is read there is no name: show only the cream page, so the one
   // Loading screen already says "Yali's Leitner" (v3 brief 1.12).
   if (profile === undefined) return <BlankScreen />;
@@ -203,6 +221,7 @@ export function StudyFlow({
   function begin(opened: Session, next: Run) {
     setRun(next);
     setSession(opened);
+    setSoundOn(false);
     setFocusNextCard(false);
     setView(isComplete(opened) ? 'complete' : 'study');
   }
@@ -234,6 +253,7 @@ export function StudyFlow({
     }
     setSession(null);
     setRun(null);
+    setSoundOn(false);
     setFocusNextCard(false);
     setExtra({ cards, order, index: 0, answers: new Map() });
     setView('extra');
@@ -249,6 +269,43 @@ export function StudyFlow({
     setRun(null);
     setExtra(null);
     setView('today');
+  }
+
+  /** Which deck a card of the open session or practice round is in. */
+  function deckOfCard(cardId: string): DeckId | undefined {
+    if (view === 'extra') return extra?.cards.find((card) => card.id === cardId)?.deck;
+    if (!run) return undefined;
+    return run.kind === 'deck' ? run.deck.id : run.deckOf[cardId];
+  }
+
+  /** Called inside the tap / key / swipe that moves on: say the next word if it's a spelling card. */
+  function sayIfSpelling(cardId: string | undefined) {
+    const word = cardId === undefined ? undefined : words?.[cardId];
+    if (!speech || word === undefined || deckOfCard(cardId as string) !== 'spelling') return;
+    speech.speak(word);
+    setSoundOn(true);
+  }
+
+  /** A spelling card, in a session or a practice round (v3 brief 1.3, canvas P5–P7). */
+  function spellingScreen(props: {
+    cardId: string;
+    kind: 'scheduled' | 'practice';
+    progress: number;
+    onRecord: (correct: boolean, typed: string | null) => void;
+    onNext: (correct: boolean) => void;
+  }) {
+    const word = words?.[props.cardId];
+    if (word === undefined) return withSheet(null);
+    return withSheet(
+      <SpellingScreen
+        {...props}
+        word={word}
+        speech={speech}
+        needsStart={!soundOn}
+        onStarted={() => setSoundOn(true)}
+        top={topBar(homeButton)}
+      />,
+    );
   }
 
   const homeButton = (
@@ -379,8 +436,24 @@ export function StudyFlow({
   }
 
   if (view === 'extra' && extra) {
-    if (!loaded || loaded.cardId !== extraCardId) return withSheet(null);
     const current = extra;
+    if (extraCardId !== undefined && deckOfCard(extraCardId) === 'spelling') {
+      const cardId = extraCardId;
+      return spellingScreen({
+        cardId,
+        kind: 'practice',
+        progress: current.index / current.order.length,
+        onRecord: (correct, typed) =>
+          void repo.recordAnswer(cardId, correct, 'practice', typed),
+        onNext: (correct) => {
+          const index = current.index + 1;
+          sayIfSpelling(current.order[index]);
+          setExtra({ ...current, index, answers: new Map(current.answers).set(cardId, correct) });
+          if (index >= current.order.length) setView('extraDone');
+        },
+      });
+    }
+    if (!loaded || loaded.cardId !== extraCardId) return withSheet(null);
     const next = (answers: Map<string, boolean>) => {
       const index = current.index + 1;
       setExtra({ ...current, index, answers });
@@ -397,6 +470,7 @@ export function StudyFlow({
       saving.current = true;
       setFocusNextCard(document.activeElement !== null && document.activeElement !== document.body);
       try {
+        sayIfSpelling(current.order[current.index + 1]);
         await repo.recordAnswer(extraCard.card.id, correct, 'practice');
         next(new Map(current.answers).set(extraCard.card.id, correct));
       } finally {
@@ -452,14 +526,37 @@ export function StudyFlow({
 
   if (!session || !step || !run) return withSheet(null);
 
-  if (!loaded || loaded.cardId !== step.cardId) return withSheet(null); // the card is loading (a few ms)
-  const card = loaded.card;
-
   /** The session is over: forget it (the deck stops saying "Paused") and celebrate. */
   function finish(current: Run) {
     void (current.kind === 'mix' ? repo.closeMixSession() : repo.closeDeckSession(current.deck.id));
     setView('complete');
   }
+
+  const scheduledCount = session.scheduled.length;
+  const sessionProgress = Math.min(session.answered, scheduledCount) / scheduledCount;
+
+  // Spelling cards don't wait for the card to load: the screen (and the iPhone keyboard) stays put.
+  if (deckOfCard(step.cardId) === 'spelling') {
+    const current = session;
+    const currentRun = run;
+    const cardId = step.cardId;
+    const kind = step.kind;
+    return spellingScreen({
+      cardId,
+      kind,
+      progress: kind === 'practice' ? 1 : sessionProgress,
+      onRecord: (correct, typed) => void repo.recordAnswer(cardId, correct, kind, typed),
+      onNext: (correct) => {
+        const next = answerInSession(current, correct);
+        sayIfSpelling(currentStep(next)?.cardId);
+        setSession(next);
+        if (isComplete(next)) finish(currentRun);
+      },
+    });
+  }
+
+  if (!loaded || loaded.cardId !== step.cardId) return withSheet(null); // the card is loading (a few ms)
+  const card = loaded.card;
 
   if (card === null) {
     // The card was deleted on another device mid-session: skip it.
@@ -476,8 +573,10 @@ export function StudyFlow({
     // screen-reader use (and mouse clicks in some browsers, where it does no harm).
     setFocusNextCard(document.activeElement !== null && document.activeElement !== document.body);
     try {
-      await repo.recordAnswer(step.cardId, correct, step.kind);
       const next = answerInSession(session, correct);
+      // Mix them all: a spelling card next is said from this swipe or tap (ADR-021).
+      sayIfSpelling(currentStep(next)?.cardId);
+      await repo.recordAnswer(step.cardId, correct, step.kind);
       setReaction(correct ? 'happy' : 'cheer');
       setSession(next);
       if (isComplete(next)) finish(run);
@@ -486,14 +585,13 @@ export function StudyFlow({
     }
   }
 
-  const scheduledCount = session.scheduled.length;
   return withSheet(
     <ReviewScreen
       // A fresh card each step: back to the front, swipe reset.
       key={session.answered}
       card={card}
       kind={step.kind}
-      progress={Math.min(session.answered, scheduledCount) / scheduledCount}
+      progress={sessionProgress}
       deck={
         run.kind === 'mix' ? decks.find((deck) => deck.id === run.deckOf[card.card.id]) : undefined
       }

@@ -2,7 +2,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { DECKS, enabledDecks, type Deck } from '../domain/decks/decks';
+import { DECKS, deckById, type Deck } from '../domain/decks/decks';
 import { AddButton } from './AddButton';
 
 const ALL: Deck[] = DECKS.map((deck) => ({ ...deck, enabled: true }));
@@ -10,7 +10,7 @@ const ALL: Deck[] = DECKS.map((deck) => ({ ...deck, enabled: true }));
 describe('AddButton (canvas N2)', () => {
   it('with one enabled deck, + opens that deck straight away', async () => {
     const onPick = vi.fn();
-    render(<AddButton decks={enabledDecks()} onPick={onPick} />);
+    render(<AddButton decks={[deckById('vocab')]} onPick={onPick} />);
     const plus = screen.getByRole('button', { name: 'Add word' });
     expect(plus).not.toHaveAttribute('aria-expanded');
     await userEvent.click(plus);
@@ -66,7 +66,7 @@ describe('AddButton opened by the N key', () => {
     expect(screen.queryByRole('group')).not.toBeInTheDocument();
     rerender(<AddButton decks={ALL} onPick={onPick} openSignal={1} />);
     expect(screen.getByRole('group', { name: 'Add to which deck?' })).toBeInTheDocument();
-    rerender(<AddButton decks={enabledDecks()} onPick={onPick} openSignal={2} />);
+    rerender(<AddButton decks={[deckById('vocab')]} onPick={onPick} openSignal={2} />);
     expect(onPick).toHaveBeenCalledWith(expect.objectContaining({ id: 'vocab' }));
   });
 });

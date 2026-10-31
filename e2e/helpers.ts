@@ -72,3 +72,12 @@ export const cardFront = (page: Page) =>
 
 /** Text read by screen readers only (e.g. "2-day streak" on the top-bar pill). */
 export const spoken = (page: Page, text: string) => page.getByText(text, { exact: true });
+
+/** The top-bar +: with several decks on it rolls out one button per deck (canvas N2). */
+export async function addTo(page: Page, deck: 'Vocab' | 'Spelling' | 'Phrases'): Promise<void> {
+  await page.getByRole('button', { name: 'Add word', exact: true }).click();
+  await page
+    .getByRole('group', { name: 'Add to which deck?' })
+    .getByRole('button', { name: deck })
+    .click();
+}
