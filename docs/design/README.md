@@ -1,7 +1,8 @@
 # Design
 
-- **Final iPhone screens (v2):** Claude Design canvas: https://claude.ai/artifact/2VocQPWmQ79DrkFyS3NWB3
-  (top bar options, 11 screens with notes, mascot board with all 8 poses)
+- **Final iPhone screens:** Claude Design canvas: https://claude.ai/artifact/2VocQPWmQ79DrkFyS3NWB3
+  (v2 rows: top bar options, the study screens, mascot board with all 8 poses; **v3 row "Decks, Today screen & all words (calm, 31 Oct)"**: boards N1–N13 and L4, plus the "Mascot · DJ" board). The app must match the boards exactly; each board's orange note holds its rules.
+- **Dev previews:** `?kit&screen=today` (Today with all three decks, as on N1) and `?kit&decks=all` (the + roll-out, N2).
 - **User flow v2:** Figma, personal team, "Leitner App - User Flow v2"
 - **Wireframes v1 (superseded):** https://www.figma.com/design/ygJ6Z5KvZcLt3unBvblHsf
 - **Tokens:** [tokens.md](tokens.md) ↔ `src/styles/tokens.css`
@@ -38,12 +39,20 @@ Sheet is hand-built (decided 2026-10-28). The bottom sheet is only as tall as it
 - "Not yet" is neutral, never red. Never small white text on terracotta.
 - Keyboard focus ring (2026-10-29): 3px `--color-focus-ring`, terracotta on cream and white, ink on the orange and aqua panels (terracotta is too faint there). Only shows for keyboard use, never on tap or click.
 
+## v3 screens (step 11, built 2026-10-31)
+
+- **Calm rules (Today, Mix them all, extra practice):** cream page, white or pale cards with the ink outline, no confetti or sparkles; the DJ mascot on Today is the only playful element. The older study screens (S02–S08) keep their v2 look until their calm redesign.
+- **Today (N1):** deck cards hang from a wheel arc on the left (−9° / 0° / +9°, pin and link), white with a thin bottom edge in the deck colour (`--color-deck-*-edge`), icon tile in the pale tint (`--color-deck-*-tile`). Deck icons: orange book (Vocab), aqua speaker (Spelling), terracotta sparkles (Phrases); see `src/ui/DeckIcon.tsx`.
+- **Add (N2, N4, N5):** the + rolls out round white deck buttons (52px) and turns into a white ✕. The sheet shows a cream deck chip; the "saved" toast is a white pill with an aqua check, 64px from the top; the duplicate note is aqua-pale. Focused fields: a 3px orange border inside the ink outline.
+- **All words (N8–N10, L4):** chips 16px with 10/18px padding (selected: cream, no lift); search and sort 50px tall, outline only; rows without boxes on a `--color-divider` line; dots 58×12; red Delete (`--color-error`) 100px wide; Undo toast at the bottom.
+- **Settings (N13):** one white card (`--radius-group`) holds the switch and the time.
+
 ## Laptop (roadmap 7.13)
 
 - From 700px wide (laptop, tablet) the whole app is the phone layout in a centred 560px column (`--column-desktop`) on the cream page. Phones are unchanged.
 - The add / edit sheet becomes a centred modal: full chunky outline, card shadow, no drag handle (✕, Esc and the overlay close it). Dialogs are the same as on the phone.
 - With a mouse or trackpad the card front says "click or press space" and the panel "then flip the card…"; with touch it stays "tap to flip".
-- Shortcuts: Space flips, ← Not yet, → Knew it!, E edits (back only), Esc closes a sheet. Canvas row "Laptop" (1440×900).
+- Shortcuts: Space flips, ← Not yet, → Knew it!, E edits (back only), Esc closes a sheet; N opens the +, H goes Home, / focuses search on all words (where a hint bar shows them, L4). Canvas row "Laptop" (1440×900).
 
 ## Daily reminder (ADR-018)
 
@@ -63,7 +72,8 @@ A rounded card box (aqua front #BFE7EA, darker back wall #8FD0D6), three index c
 | 5   | celebrate           | Session complete                         | Two hops                   |
 | 6   | flame               | Streak                                   | Flame flickers (loops)     |
 | 7   | sleep               | All done for today                       | z z z float up (loops)     |
-| 8   | write               | Add / edit word                          | Pencil scribbles (loops)   |
+| 8   | write               | Edit word                                | Pencil scribbles (loops)   |
+| 9   | dj (v3)             | Today, next to Mix them all              | Head bobs, notes drift     |
 
 In code: `<Mascot pose="wave" />` from `src/ui/Mascot/` (roadmap 7.8). Options: `size` large (190px, legs) or small (84px, no legs), `body` aqua or white (practice screen), `decorative`, `still`. All motion stops when the phone's "Reduce motion" is on.
 

@@ -96,7 +96,9 @@ Build brief: `HANDOFF-v3-build.md` (Yali and Claude, 2026-10-31). Decisions in i
 | 11.8 ✅  | All-words page                                                                      | Chips, Persian search, 3 sorts, dots, swipe-delete + Undo, virtualised, offline; laptop layout                                                         |
 | 11.9 ✅  | Settings sheet + reminder time + next-reminder index (ADR-020)                      | Time saved to the profile; cron reads only due rows; switch off = no pushes; sign out works; function redeployed                                       |
 | 11.10 ✅ | Laptop shortcuts N / H / / + accessibility pass                                     | Tests for the keys; axe or manual checks noted in the PR                                                                                               |
-| 11.11    | Docs: PRD, design README, canvas notes, roadmap                                     | PRD describes decks, Today, Mix them all, extra practice and all words; "never show box numbers" exception noted                                       |
+| 11.11 ✅ | Docs: PRD, design README, canvas notes, roadmap                                     | PRD describes decks, Today, Mix them all, extra practice and all words; "never show box numbers" exception noted                                       |
+
+**Step 11 done (2026-10-31):** decks (only Vocab switched on), the Today screen with the deck wheel and the DJ, Mix them all, pause and resume, extra practice, the add sheet that stays open, the all-words page, Settings with the reminder time and Sign out, laptop keys N / H / /. PRs #29–#39 (and fix #32), each matched to its canvas board. Next: the steps 4–6 brief (`HANDOFF-v3-steps4-6.md`, roadmap step 12).
 
 **Still to do on the phone (Yali), after step 11 is merged:**
 
