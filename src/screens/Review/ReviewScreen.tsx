@@ -33,6 +33,12 @@ interface ReviewScreenProps {
   /** The mascot's short reaction to the previous answer. */
   reaction: 'happy' | 'cheer' | null;
   onAnswer: (correct: boolean) => void;
+  /**
+   * The answer was just given, before the card flies off: still inside the user's own swipe,
+   * tap or key press. Mix them all says the next spelling word here (iPhone only allows sound
+   * and the keyboard from a touch; onAnswer comes after the animation).
+   */
+  onCommit?: (correct: boolean) => void;
   /** Pencil on the card back; hidden until editing exists (roadmap 7.10). */
   onEdit?: () => void;
   top?: ReactNode;
@@ -56,12 +62,13 @@ export function ReviewScreen({
   practiceLeft,
   reaction,
   onAnswer,
+  onCommit,
   onEdit,
   top,
   focusOnStart = false,
 }: ReviewScreenProps) {
   const [flipped, setFlipped] = useState(false);
-  const swipe = useSwipe(onAnswer, flipped);
+  const swipe = useSwipe(onAnswer, flipped, onCommit);
   const backRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLButtonElement>(null);
   const practice = kind === 'practice';

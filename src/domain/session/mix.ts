@@ -18,8 +18,18 @@ export interface DeckQueue {
   readonly cardIds: readonly string[];
 }
 
-function randomInt(random: Random, min: number, max: number): number {
-  return min + Math.floor(random() * (max - min + 1));
+/**
+ * How many cards the next chunk takes from a deck with `left` cards: 3 to 9, but never leaving
+ * 1 or 2 behind (they would make a tiny chunk later). A deck with fewer than 3 cards gives them all.
+ */
+export function chunkSize(left: number, random: Random): number {
+  if (left < MIX_CHUNK_MIN) return left;
+  const sizes: number[] = [];
+  for (let size = MIX_CHUNK_MIN; size <= Math.min(MIX_CHUNK_MAX, left); size++) {
+    const rest = left - size;
+    if (rest === 0 || rest >= MIX_CHUNK_MIN) sizes.push(size);
+  }
+  return sizes[Math.floor(random() * sizes.length)];
 }
 
 /** Fisher–Yates. */
@@ -33,7 +43,7 @@ function shuffle<T>(items: T[], random: Random): T[] {
 
 /**
  * The mixed order. A deck is drawn at random (never the same twice in a row while another deck
- * still has cards), then its next 3–9 cards, shuffled. Every card appears exactly once.
+ * still has cards), then its next 3–9 cards (see chunkSize), shuffled. Every card appears exactly once.
  */
 export function mixDecks(queues: readonly DeckQueue[], random: Random): string[] {
   const left = queues
@@ -45,7 +55,7 @@ export function mixDecks(queues: readonly DeckQueue[], random: Random): string[]
     const others = left.filter((queue) => queue.deck !== last);
     const choices = others.length > 0 ? others : left;
     const queue = choices[Math.floor(random() * choices.length)];
-    const size = randomInt(random, MIX_CHUNK_MIN, MIX_CHUNK_MAX);
+    const size = chunkSize(queue.ids.length, random);
     mixed.push(...shuffle(queue.ids.splice(0, size), random));
     last = queue.deck;
     if (queue.ids.length === 0) left.splice(left.indexOf(queue), 1);
