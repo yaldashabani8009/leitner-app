@@ -58,3 +58,15 @@ describe('AddButton (canvas N2)', () => {
     expect(onPick).not.toHaveBeenCalled();
   });
 });
+
+describe('AddButton opened by the N key', () => {
+  it('a new signal rolls it out (several decks) or opens the deck (one deck)', () => {
+    const onPick = vi.fn();
+    const { rerender } = render(<AddButton decks={ALL} onPick={onPick} openSignal={0} />);
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
+    rerender(<AddButton decks={ALL} onPick={onPick} openSignal={1} />);
+    expect(screen.getByRole('group', { name: 'Add to which deck?' })).toBeInTheDocument();
+    rerender(<AddButton decks={enabledDecks()} onPick={onPick} openSignal={2} />);
+    expect(onPick).toHaveBeenCalledWith(expect.objectContaining({ id: 'vocab' }));
+  });
+});

@@ -23,6 +23,7 @@ import type { DeckId } from '../../domain/leitner/config';
 import { IconButton } from '../../ui/IconButton';
 import { HomeIcon, SettingsIcon } from '../../ui/icons';
 import { SettingsSheet } from '../Settings/SettingsSheet';
+import { useAppShortcuts } from '../../app/useAppShortcuts';
 import { TodayScreen } from '../Today/TodayScreen';
 import { PracticeDone } from '../Practice/PracticeDone';
 import { missedInRound, practiceOrder, type PracticeCard } from '../../domain/session/extra';
@@ -159,6 +160,20 @@ export function StudyFlow({
   const [focusNextCard, setFocusNextCard] = useState(false);
   const [editor, setEditor] = useState<Editor | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  /** Goes up each time N is pressed; the + on screen opens (laptop, v3 brief 1.12). */
+  const [addSignal, setAddSignal] = useState(0);
+  useAppShortcuts({
+    onAdd: () => setAddSignal((n) => n + 1),
+    onHome: () => {
+      setAllWordsOpen(false);
+      setViewingId(null);
+      setSession(null);
+      setRun(null);
+      setExtra(null);
+      setView('today');
+    },
+    onSearch: () => document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
+  });
 
   useEffect(() => {
     if (!reaction) return;
@@ -249,6 +264,7 @@ export function StudyFlow({
       onOpenBox={() => setAllWordsOpen(true)}
       streak={progress?.streak}
       onAdd={(deck) => setEditor({ mode: 'add', deck })}
+      addSignal={addSignal}
     />
   );
   const sheet = <AddEditSheet repo={repo} editor={editor} onClose={() => setEditor(null)} />;
@@ -299,6 +315,7 @@ export function StudyFlow({
         }}
         onAdd={(deck) => setEditor({ mode: 'add', deck })}
         onOpenCard={setViewingId}
+        addSignal={addSignal}
         onDelete={(row) => {
           void repo.deleteCard(row.id);
           setDeleted({ id: row.id, word: row.word, at: Date.now() });
