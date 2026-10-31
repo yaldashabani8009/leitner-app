@@ -107,3 +107,27 @@ test('the same word twice: the form fills in and "Save & start over" keeps one c
   await sheet.getByRole('button', { name: 'Close' }).click();
   await expect(spoken(page, '1 card in your box')).toBeAttached();
 });
+
+test("extra practice: today's new words, boxes stay the same (canvas N11, N12)", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(DAY_1);
+  await signIn(page);
+  await page.getByRole('button', { name: 'Vocab, empty. Add words' }).click();
+  await typeAndSave(page, BRAVE);
+  await saveWord(page, CALM);
+
+  // Nothing is due today, so "Mix them all" practises the words added today.
+  await page.getByRole('button', { name: /Mix them all/ }).click();
+  await expect(page.getByText('Practice · your boxes stay the same')).toBeVisible();
+  await cardFront(page).click();
+  await page.getByRole('button', { name: 'Not yet' }).click();
+  await cardFront(page).click();
+  await page.getByRole('button', { name: 'Knew it!' }).click();
+  await expect(page.getByRole('heading', { name: 'Practice done!' })).toBeVisible();
+  await page.getByRole('button', { name: 'Practice it again' }).click();
+  await cardFront(page).click();
+  await page.getByRole('button', { name: 'Knew it!' }).click();
+  await page.getByRole('button', { name: 'Done' }).click();
+  await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
+});

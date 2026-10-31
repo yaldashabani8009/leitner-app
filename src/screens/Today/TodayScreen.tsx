@@ -23,6 +23,8 @@ interface TodayScreenProps {
   onStudy: (deck: Deck) => void;
   /** Open a deck's add sheet. */
   onAdd: (deck: Deck) => void;
+  /** Extra practice of today's new words of a deck (from a finished deck, N3). */
+  onPractice?: (deck: Deck) => void;
 }
 
 /** Drag this far up or down to turn the wheel by one deck. */
@@ -45,6 +47,7 @@ export function TodayScreen({
   onMix,
   onStudy,
   onAdd,
+  onPractice = () => {},
 }: TodayScreenProps) {
   const [offset, setOffset] = useState(0);
   const [doneDeck, setDoneDeck] = useState<Deck | null>(null);
@@ -198,6 +201,13 @@ export function TodayScreen({
         onAdd={(deck) => {
           setDoneDeck(null);
           onAdd(deck);
+        }}
+        addedToday={
+          doneDeck ? (statuses[decks.findIndex((d) => d.id === doneDeck.id)]?.addedToday ?? 0) : 0
+        }
+        onPractice={(deck) => {
+          setDoneDeck(null);
+          onPractice(deck);
         }}
       />
     </main>

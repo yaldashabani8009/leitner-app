@@ -109,8 +109,10 @@ describe('StudyFlow', () => {
     expect(await screen.findByRole('dialog', { name: 'New word' })).toBeInTheDocument();
   });
 
-  it('"Mix them all" with nothing due shows "All done for today"; Home goes back', async () => {
+  it('"Mix them all" with nothing due and nothing new today shows "All done for today"', async () => {
     await addCards('brave');
+    now = DAY_2;
+    await db.cards.toCollection().modify({ dueDate: '2026-03-20' });
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
     await userEvent.click(await screen.findByRole('button', { name: /Mix them all/ }));
     expect(await screen.findByRole('heading', { name: 'All done for today' })).toBeInTheDocument();
@@ -163,6 +165,64 @@ describe('StudyFlow', () => {
     await startVocab();
     const bar = await screen.findByRole('progressbar', { name: 'Session progress' });
     expect(within(bar.parentElement!).queryByText('Vocab')).not.toBeInTheDocument();
+  });
+
+  it('extra practice from a finished deck: never moves a card; missed ones can go again (N3, N11, N12)', async () => {
+    await addCards('brave', 'calm'); // added today, due tomorrow
+    const before = (await db.cards.toArray()).map((c) => [c.id, c.box, c.dueDate]);
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Vocab, all done for today' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Vocab' });
+    const practice = within(sheet).getByRole('button', { name: /Practice today's new words/ });
+    expect(practice).toHaveTextContent('2');
+    await userEvent.click(practice);
+
+    expect(await screen.findByText('Practice · your boxes stay the same')).toBeInTheDocument();
+    expect(screen.getByText('2 left')).toBeInTheDocument();
+    expect(screen.getByText("today's new words")).toBeInTheDocument();
+    expect(
+      screen.getByText('Just for fun: answers here never move your cards'),
+    ).toBeInTheDocument();
+    const missed = await frontWord();
+    await flipAndAnswer('Not yet');
+    expect(await screen.findByText('1 left')).toBeInTheDocument();
+    await flipAndAnswer('Knew it!');
+
+    expect(await screen.findByRole('heading', { name: 'Practice done!' })).toBeInTheDocument();
+    expect(
+      screen.getByText('You missed 1. Want one more go at just that one?'),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Practice it again' }));
+    expect(await frontWord()).toBe(missed);
+    await flipAndAnswer('Knew it!');
+    expect(await screen.findByText('You knew every one.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(await screen.findByRole('heading', { name: 'Hi Yali!' })).toBeInTheDocument();
+
+    // Nothing moved; every answer was logged as practice.
+    expect((await db.cards.toArray()).map((c) => [c.id, c.box, c.dueDate])).toEqual(before);
+    expect((await db.reviewLogs.toArray()).every((log) => log.isPractice)).toBe(true);
+    expect(await db.reviewLogs.count()).toBe(3);
+  });
+
+  it('a finished deck with no words added today offers only Add', async () => {
+    await addCards('brave');
+    now = DAY_2;
+    await db.cards.toCollection().modify({ dueDate: '2026-03-20' });
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Vocab, all done for today' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Vocab' });
+    expect(within(sheet).queryByRole('button', { name: /Practice/ })).not.toBeInTheDocument();
+  });
+
+  it('"Mix them all" with nothing due practises today\'s new words; Done goes Home', async () => {
+    await addCards('brave');
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(await screen.findByRole('button', { name: /Mix them all/ }));
+    expect(await screen.findByText('Practice · your boxes stay the same')).toBeInTheDocument();
+    await flipAndAnswer('Knew it!');
+    await userEvent.click(await screen.findByRole('button', { name: 'Done' }));
+    expect(await screen.findByRole('heading', { name: 'Hi Yali!' })).toBeInTheDocument();
   });
 
   it('Home pauses a session (no "are you sure?"); Continue carries on, practice round included', async () => {

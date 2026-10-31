@@ -735,6 +735,21 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       });
     },
 
+    /**
+     * The live cards of `decks` added (or re-added with "Save & start over") on `date`, in the
+     * profile time zone; today when no date is given. Extra practice runs these (v3 brief 1.7).
+     */
+    async cardsAddedOn(
+      decks: readonly DeckId[],
+      date?: string,
+    ): Promise<{ id: string; deck: DeckId }[]> {
+      const day = date ?? (await today(deps.now()));
+      const cards = await db.cards.where('addedOn').equals(day).toArray();
+      return cards
+        .filter((card) => card.deletedAt === null && decks.includes(card.deck))
+        .map((card) => ({ id: card.id, deck: card.deck }));
+    },
+
     /** Cards left in today's "Mix them all" left half way; null when there is none. */
     async mixPausedLeft(): Promise<number | null> {
       const now = deps.now();

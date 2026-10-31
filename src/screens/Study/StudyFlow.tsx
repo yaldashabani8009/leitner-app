@@ -21,7 +21,17 @@ import type { DeckId } from '../../domain/leitner/config';
 import { IconButton } from '../../ui/IconButton';
 import { HomeIcon } from '../../ui/icons';
 import { TodayScreen } from '../Today/TodayScreen';
+import { PracticeDone } from '../Practice/PracticeDone';
+import { missedInRound, practiceOrder, type PracticeCard } from '../../domain/session/extra';
 import { ReviewScreen } from '../Review/ReviewScreen';
+
+/** A round of extra practice: the cards it may repeat, this round's order and answers. */
+interface Extra {
+  cards: readonly PracticeCard[];
+  order: string[];
+  index: number;
+  answers: Map<string, boolean>;
+}
 
 /** The open session: one deck's, or "Mix them all" with each card's deck. */
 type Run = { kind: 'deck'; deck: Deck } | { kind: 'mix'; deckOf: Record<string, DeckId> };
@@ -43,6 +53,7 @@ type StudyRepo = Pick<
   | 'openMixSession'
   | 'closeMixSession'
   | 'mixPausedLeft'
+  | 'cardsAddedOn'
   | 'recordAnswer'
   | 'addCard'
   | 'editCard'
@@ -105,7 +116,11 @@ export function StudyFlow({
   const [session, setSession] = useState<Session | null>(null);
   /** What the open session is: one deck's, or Mix them all (with each card's deck for the chip). */
   const [run, setRun] = useState<Run | null>(null);
-  const [view, setView] = useState<'today' | 'study' | 'complete' | 'allDone'>('today');
+  const [view, setView] = useState<
+    'today' | 'study' | 'complete' | 'allDone' | 'extra' | 'extraDone'
+  >('today');
+  /** A round of extra practice (v3 brief 1.7): never moves a card. */
+  const [extra, setExtra] = useState<Extra | null>(null);
   /** The all-words page, opened from the box badge; it sits over whatever screen was showing. */
   const [allWordsOpen, setAllWordsOpen] = useState(false);
   const allCards = useLiveQuery(
@@ -125,11 +140,13 @@ export function StudyFlow({
   }, [reaction]);
 
   const step = session ? currentStep(session) : null;
+  const extraCardId = view === 'extra' && extra ? extra.order[extra.index] : undefined;
+  const shownCardId = extraCardId ?? step?.cardId;
   // Tagged with the card id: while a new step's card loads, the hook still returns the old result.
   const loaded = useLiveQuery(
     async () =>
-      step ? { cardId: step.cardId, card: (await repo.getCard(step.cardId)) ?? null } : null,
-    [repo, step?.cardId],
+      shownCardId ? { cardId: shownCardId, card: (await repo.getCard(shownCardId)) ?? null } : null,
+    [repo, shownCardId],
   );
 
   // Until the saved profile is read there is no name: show only the cream page, so the one
@@ -157,9 +174,25 @@ export function StudyFlow({
    * chunks. With nothing due anywhere: "All done for today" (11.7 makes this extra practice).
    */
   async function mix() {
-    const opened = await repo.openMixSession(decks.map((deck) => deck.id));
+    const ids = decks.map((deck) => deck.id);
+    const opened = await repo.openMixSession(ids);
     if (opened) begin(opened.session, { kind: 'mix', deckOf: opened.deckOf });
-    else setView('allDone');
+    // Nothing due in any deck: practise today's new words from all decks instead.
+    else startExtra(await repo.cardsAddedOn(ids));
+  }
+
+  /** One round of extra practice over these cards, shuffled again; none → "All done for today". */
+  function startExtra(cards: readonly PracticeCard[]) {
+    const order = practiceOrder(cards, Math.random);
+    if (order.length === 0) {
+      setView('allDone');
+      return;
+    }
+    setSession(null);
+    setRun(null);
+    setFocusNextCard(false);
+    setExtra({ cards, order, index: 0, answers: new Map() });
+    setView('extra');
   }
 
   function openRun(current: Run) {
@@ -170,6 +203,7 @@ export function StudyFlow({
   function goHome() {
     setSession(null);
     setRun(null);
+    setExtra(null);
     setView('today');
   }
 
@@ -223,6 +257,60 @@ export function StudyFlow({
         onMix={() => void mix()}
         onStudy={(deck) => void openDeck(deck)}
         onAdd={(deck) => setEditor({ mode: 'add', deck })}
+        onPractice={(deck) => void repo.cardsAddedOn([deck.id]).then(startExtra)}
+      />,
+    );
+  }
+
+  if (view === 'extraDone' && extra) {
+    const missed = missedInRound(extra.order, extra.answers);
+    return withSheet(
+      <PracticeDone
+        missed={missed.length}
+        onAgain={() => startExtra(extra.cards.filter((card) => missed.includes(card.id)))}
+        onDone={goHome}
+      />,
+    );
+  }
+
+  if (view === 'extra' && extra) {
+    if (!loaded || loaded.cardId !== extraCardId) return withSheet(null);
+    const current = extra;
+    const next = (answers: Map<string, boolean>) => {
+      const index = current.index + 1;
+      setExtra({ ...current, index, answers });
+      if (index >= current.order.length) setView('extraDone');
+    };
+    if (loaded.card === null) {
+      // Deleted on another device meanwhile: skip it.
+      next(current.answers);
+      return withSheet(null);
+    }
+    const extraCard = loaded.card;
+    const answerExtra = async (correct: boolean) => {
+      if (saving.current) return;
+      saving.current = true;
+      setFocusNextCard(document.activeElement !== null && document.activeElement !== document.body);
+      try {
+        await repo.recordAnswer(extraCard.card.id, correct, 'practice');
+        next(new Map(current.answers).set(extraCard.card.id, correct));
+      } finally {
+        saving.current = false;
+      }
+    };
+    return withSheet(
+      <ReviewScreen
+        key={`extra-${current.order.length}-${current.index}`}
+        card={extraCard}
+        kind="scheduled"
+        progress={0}
+        extra={{ left: current.order.length - current.index }}
+        practiceLeft={0}
+        reaction={null}
+        onAnswer={(correct) => void answerExtra(correct)}
+        focusOnStart={focusNextCard}
+        onEdit={() => setEditor({ mode: 'edit', cardId: extraCard.card.id })}
+        top={topBar(homeButton)}
       />,
     );
   }

@@ -6,7 +6,7 @@ import { BottomPanel } from '../../ui/BottomPanel';
 import { Button } from '../../ui/Button';
 import { Card, CardStack } from '../../ui/Card';
 import { Confetti } from '../../ui/Confetti';
-import { FlipIcon } from '../../ui/icons';
+import { FlipIcon, RetryIcon } from '../../ui/icons';
 import { Mascot, type MascotPose } from '../../ui/Mascot/Mascot';
 import { Pill } from '../../ui/Pill';
 import { CardBack } from './CardBack';
@@ -22,6 +22,12 @@ interface ReviewScreenProps {
   progress: number;
   /** In Mix them all: the deck of this card, shown as a chip next to the progress bar (N6). */
   deck?: Deck;
+  /**
+   * Extra practice (v3 brief 1.7, canvas N11): the calm look. A white banner "Practice · your
+   * boxes stay the same" with the cards left, the tag "today's new words", one quiet line under
+   * the card and no coloured panel. Answers are logged as practice and never move the card.
+   */
+  extra?: { left: number };
   /** Practice cards left, this one included. */
   practiceLeft: number;
   /** The mascot's short reaction to the previous answer. */
@@ -46,6 +52,7 @@ export function ReviewScreen({
   kind,
   progress,
   deck,
+  extra,
   practiceLeft,
   reaction,
   onAnswer,
@@ -100,9 +107,16 @@ export function ReviewScreen({
 
   return (
     <main className={styles.screen}>
-      <Confetti amount="touch" />
+      {!extra && <Confetti amount="touch" />}
       {top}
-      {practice ? (
+      {extra ? (
+        <div className={styles.extraBanner}>
+          <span className={styles.extraTitle}>
+            <RetryIcon /> Practice · your boxes stay the same
+          </span>
+          <span className={styles.extraLeft}>{extra.left} left</span>
+        </div>
+      ) : practice ? (
         <div className={styles.practiceBanner}>
           <span className={styles.practiceTitle}>
             <FlipIcon /> Practice round
@@ -156,8 +170,8 @@ export function ReviewScreen({
                 onClick={() => setFlipped(true)}
                 aria-keyshortcuts="Space"
               >
-                <Pill variant="label" tone={practice ? 'aqua' : 'cream'}>
-                  {practice ? 'one more look' : 'do you know it?'}
+                <Pill variant="label" tone={extra ? 'aquaPale' : practice ? 'aqua' : 'cream'}>
+                  {extra ? "today's new words" : practice ? 'one more look' : 'do you know it?'}
                 </Pill>
                 <span className={styles.word}>{card.card.word}</span>
                 <span className={styles.hint}>
@@ -170,37 +184,9 @@ export function ReviewScreen({
         </CardStack>
       </div>
 
-      <BottomPanel
-        color={practice ? 'aqua' : 'orange'}
-        className={[styles.panel, flipped && !practice && styles.answerPanel]
-          .filter(Boolean)
-          .join(' ')}
-        mascot={<Mascot pose={pose} size="small" body={practice ? 'white' : 'aqua'} decorative />}
-      >
-        {!flipped ? (
-          practice ? (
-            <>
-              <p className={styles.panelTitle}>Just for practice</p>
-              <p className={styles.panelText}>
-                The words you missed, one more time. Answers here don't change anything.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className={styles.panelTitle}>Think first…</p>
-              <p className={styles.panelText}>
-                <span className={styles.touchOnly}>then tap the card to see if you were right</span>
-                <span className={styles.pointerOnly}>
-                  then flip the card to see if you were right
-                </span>
-              </p>
-            </>
-          )
-        ) : (
-          <>
-            {!practice && direction === 'left' && (
-              <p className={styles.reassure}>That's okay. You'll see it again tomorrow.</p>
-            )}
+      {extra ? (
+        <div className={styles.calmFooter}>
+          {flipped && (
             <div className={styles.answers}>
               <Button
                 variant="secondary"
@@ -209,18 +195,72 @@ export function ReviewScreen({
               >
                 Not yet
               </Button>
-              {/* Aqua on the white review panel; orange on the aqua practice panel. */}
               <Button
-                variant={practice ? 'primary' : 'aqua'}
+                variant="aqua"
                 onClick={() => swipe.flyOut('right')}
                 aria-keyshortcuts="ArrowRight"
               >
                 Knew it!
               </Button>
             </div>
-          </>
-        )}
-      </BottomPanel>
+          )}
+          <p className={styles.quiet}>Just for fun: answers here never move your cards</p>
+        </div>
+      ) : (
+        <BottomPanel
+          color={practice ? 'aqua' : 'orange'}
+          className={[styles.panel, flipped && !practice && styles.answerPanel]
+            .filter(Boolean)
+            .join(' ')}
+          mascot={<Mascot pose={pose} size="small" body={practice ? 'white' : 'aqua'} decorative />}
+        >
+          {!flipped ? (
+            practice ? (
+              <>
+                <p className={styles.panelTitle}>Just for practice</p>
+                <p className={styles.panelText}>
+                  The words you missed, one more time. Answers here don't change anything.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className={styles.panelTitle}>Think first…</p>
+                <p className={styles.panelText}>
+                  <span className={styles.touchOnly}>
+                    then tap the card to see if you were right
+                  </span>
+                  <span className={styles.pointerOnly}>
+                    then flip the card to see if you were right
+                  </span>
+                </p>
+              </>
+            )
+          ) : (
+            <>
+              {!practice && direction === 'left' && (
+                <p className={styles.reassure}>That's okay. You'll see it again tomorrow.</p>
+              )}
+              <div className={styles.answers}>
+                <Button
+                  variant="secondary"
+                  onClick={() => swipe.flyOut('left')}
+                  aria-keyshortcuts="ArrowLeft"
+                >
+                  Not yet
+                </Button>
+                {/* Aqua on the white review panel; orange on the aqua practice panel. */}
+                <Button
+                  variant={practice ? 'primary' : 'aqua'}
+                  onClick={() => swipe.flyOut('right')}
+                  aria-keyshortcuts="ArrowRight"
+                >
+                  Knew it!
+                </Button>
+              </div>
+            </>
+          )}
+        </BottomPanel>
+      )}
     </main>
   );
 }
