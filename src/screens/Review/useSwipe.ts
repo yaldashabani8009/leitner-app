@@ -19,7 +19,12 @@ export type SwipeDirection = 'right' | 'left';
  * Swipe a card: right = knew it, left = not yet (ADR-014).
  * Returns the card's horizontal offset while dragging, and `flyOut` for the buttons.
  */
-export function useSwipe(onAnswer: (correct: boolean) => void, enabled: boolean) {
+export function useSwipe(
+  onAnswer: (correct: boolean) => void,
+  enabled: boolean,
+  /** Called at once, inside the swipe / tap / key itself, before the card flies off. */
+  onCommit?: (correct: boolean) => void,
+) {
   const reducedMotion = useReducedMotion();
   const [offset, setOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -29,6 +34,7 @@ export function useSwipe(onAnswer: (correct: boolean) => void, enabled: boolean)
   function flyOut(direction: SwipeDirection) {
     if (done.current) return;
     done.current = true;
+    onCommit?.(direction === 'right');
     const answerNow = () => onAnswer(direction === 'right');
     if (reducedMotion) {
       answerNow();

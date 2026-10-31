@@ -131,7 +131,7 @@ Laptop (built in 7.13; v3 keys in 11.10): Space flips, ← / → answer, E edits
 
 ## Mix them all (v3, canvas N6)
 
-- With cards due in any deck: the real sessions of every such deck in one stream, in random chunks of 3–9 cards from one deck, each chunk shuffled; no pause between chunks. The deck chip next to the progress bar shows which deck a card is from. Each deck's session size and daily limit apply; answers move boxes; the practice round comes at the end. Home and Mix them all again carry on where it stopped.
+- With cards due in any deck: the real sessions of every such deck in one stream, in random chunks of 3–9 cards from one deck (a deck with only 1–2 cards due gives just those; a deck never leaves 1–2 behind for a tiny last chunk), each chunk shuffled; no pause between chunks; two chunks from the same deck only come back to back when no other deck has cards left. Spelling cards are included: the swipe or tap that ends the card before a spelling chunk says the first word and opens the keyboard; a Vocab chunk closes it again. The deck chip next to the progress bar shows which deck a card is from. Each deck's session size and daily limit apply; answers move boxes; the practice round comes at the end. Home and Mix them all again carry on where it stopped.
 - With nothing due anywhere: extra practice of today's new words from all decks.
 
 ## Extra practice (v3, canvas N11, N12)

@@ -31,6 +31,7 @@ import { ReviewScreen } from '../Review/ReviewScreen';
 import { SpellingScreen } from '../Spelling/SpellingScreen';
 import type { Speech } from '../../services/speech';
 import { appSpeech } from '../../services/useSpeech';
+import { KeyboardKeeper } from '../../ui/KeyboardKeeper';
 
 /** A round of extra practice: the cards it may repeat, this round's order and answers. */
 interface Extra {
@@ -165,6 +166,8 @@ export function StudyFlow({
   }, [deleted]);
   /** A spelling word has been played from a tap in this session: sound is unlocked (ADR-021). */
   const [soundOn, setSoundOn] = useState(false);
+  /** Mix them all: opens the iPhone keyboard from the swipe that leads into a spelling chunk. */
+  const keyboardKeeper = useRef<HTMLInputElement>(null);
   const [reaction, setReaction] = useState<'happy' | 'cheer' | null>(null);
   const saving = useRef(false);
   /** The last answer came while something on the card had focus (keyboard, screen reader). */
@@ -206,8 +209,7 @@ export function StudyFlow({
   // moves on to it, before its card is read from the database (iPhone only allows sound then).
   const runIds = (view === 'extra' ? extra?.order : session?.scheduled)?.join(',') ?? '';
   const words = useLiveQuery(
-    async (): Promise<Record<string, string>> =>
-      runIds ? repo.cardWords(runIds.split(',')) : {},
+    async (): Promise<Record<string, string>> => (runIds ? repo.cardWords(runIds.split(',')) : {}),
     [repo, runIds],
   );
 
@@ -286,6 +288,17 @@ export function StudyFlow({
     setSoundOn(true);
   }
 
+  /**
+   * Mix them all (v3 brief 1.4): a Vocab card was just answered, inside the swipe or tap. If the
+   * next card is a spelling card, say it and open the keyboard now; the card itself comes after
+   * the fly-out animation, when iPhone no longer allows either.
+   */
+  function intoSpellingChunk(nextCardId: string | undefined) {
+    if (nextCardId === undefined || deckOfCard(nextCardId) !== 'spelling') return;
+    sayIfSpelling(nextCardId);
+    keyboardKeeper.current?.focus({ preventScroll: true });
+  }
+
   /** A spelling card, in a session or a practice round (v3 brief 1.3, canvas P5–P7). */
   function spellingScreen(props: {
     cardId: string;
@@ -332,6 +345,7 @@ export function StudyFlow({
   const withSheet = (screen: ReactNode) => (
     <>
       {screen}
+      <KeyboardKeeper ref={keyboardKeeper} />
       {sheet}
       {userId && <BackupPrompts repo={repo} userId={userId} paused={editor !== null} />}
       <ReminderOffer repo={repo} reminders={reminders} active={doneForNow && editor === null} />
@@ -443,8 +457,7 @@ export function StudyFlow({
         cardId,
         kind: 'practice',
         progress: current.index / current.order.length,
-        onRecord: (correct, typed) =>
-          void repo.recordAnswer(cardId, correct, 'practice', typed),
+        onRecord: (correct, typed) => void repo.recordAnswer(cardId, correct, 'practice', typed),
         onNext: (correct) => {
           const index = current.index + 1;
           sayIfSpelling(current.order[index]);
@@ -470,7 +483,6 @@ export function StudyFlow({
       saving.current = true;
       setFocusNextCard(document.activeElement !== null && document.activeElement !== document.body);
       try {
-        sayIfSpelling(current.order[current.index + 1]);
         await repo.recordAnswer(extraCard.card.id, correct, 'practice');
         next(new Map(current.answers).set(extraCard.card.id, correct));
       } finally {
@@ -487,6 +499,7 @@ export function StudyFlow({
         practiceLeft={0}
         reaction={null}
         onAnswer={(correct) => void answerExtra(correct)}
+        onCommit={() => intoSpellingChunk(current.order[current.index + 1])}
         focusOnStart={focusNextCard}
         onEdit={() => setEditor({ mode: 'edit', cardId: extraCard.card.id })}
         top={topBar(homeButton)}
@@ -573,10 +586,8 @@ export function StudyFlow({
     // screen-reader use (and mouse clicks in some browsers, where it does no harm).
     setFocusNextCard(document.activeElement !== null && document.activeElement !== document.body);
     try {
-      const next = answerInSession(session, correct);
-      // Mix them all: a spelling card next is said from this swipe or tap (ADR-021).
-      sayIfSpelling(currentStep(next)?.cardId);
       await repo.recordAnswer(step.cardId, correct, step.kind);
+      const next = answerInSession(session, correct);
       setReaction(correct ? 'happy' : 'cheer');
       setSession(next);
       if (isComplete(next)) finish(run);
@@ -598,6 +609,9 @@ export function StudyFlow({
       practiceLeft={scheduledCount + session.practice.length - session.answered}
       reaction={reaction}
       onAnswer={handleAnswer}
+      onCommit={(correct) =>
+        intoSpellingChunk(currentStep(answerInSession(session, correct))?.cardId)
+      }
       focusOnStart={focusNextCard}
       onEdit={() => setEditor({ mode: 'edit', cardId: card.card.id })}
       top={topBar(homeButton)}

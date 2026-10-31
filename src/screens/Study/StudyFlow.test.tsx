@@ -39,6 +39,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   await db.delete();
 });
 
@@ -796,5 +797,45 @@ describe('spelling sessions (v3 brief 1.3, canvas P5–P7)', () => {
     await userEvent.type(field, `${speech.speak.mock.lastCall![0] as string}{Enter}`);
     expect(screen.getByRole('textbox', { name: 'Type what you hear' })).toBe(field);
     expect(field).toHaveFocus();
+  });
+});
+
+describe('Mix them all with spelling chunks (v3 brief 1.4)', () => {
+  it('the swipe into a spelling chunk says the word and opens the keyboard; a vocab chunk closes it', async () => {
+    await addCards('brave', 'calm', 'quiet', 'word1', 'word2', 'word3', 'word4');
+    await repo.addSpellingWords(['receive', 'their', 'rhythm']);
+    now = DAY_2;
+    // Random 0: Vocab first with the smallest chunk (3 of 7), then Spelling (3), then Vocab (4).
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const speech = {
+      speak: vi.fn<(text: string, options?: { slow?: boolean }) => void>(),
+      state: () => 'idle' as const,
+      subscribe: () => () => {},
+      dispose: () => {},
+    };
+    render(<StudyFlow repo={repo} minLoadingMs={0} speech={speech} />);
+    await userEvent.click(await screen.findByRole('button', { name: /Mix them all/ }));
+
+    for (let i = 0; i < 3; i++) await flipAndAnswer('Knew it!');
+    // Said from the "Knew it!" tap itself; no "Tap to start" in Mix after a swipe.
+    expect(speech.speak).toHaveBeenCalledOnce();
+    const field = await screen.findByRole('textbox', { name: 'Type what you hear' });
+    // The swipe focused the hidden keyboard field; the card then moves focus into its own field.
+    await waitFor(() => expect(field).toHaveFocus());
+    expect(screen.queryByRole('button', { name: 'Tap to start' })).not.toBeInTheDocument();
+
+    for (let i = 0; i < 3; i++) {
+      const word = speech.speak.mock.lastCall![0];
+      await userEvent.type(
+        screen.getByRole('textbox', { name: 'Type what you hear' }),
+        `${word}{Enter}`,
+      );
+    }
+    // Back to a vocab card: the answer field (and with it the keyboard) is gone.
+    expect(await screen.findByRole('button', { name: /tap to flip/ })).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(speech.speak).toHaveBeenCalledTimes(3);
+    for (let i = 0; i < 4; i++) await flipAndAnswer('Knew it!');
+    expect(await screen.findByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
   });
 });
