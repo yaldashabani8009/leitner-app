@@ -1,0 +1,45 @@
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-cream);
+}
+
+/* Canvas N3: a white pill with the ink outline and shadow, a + before the words. */
+.add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin: 6px 0 20px;
+  padding: 16px 0;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  box-shadow: var(--shadow-hard);
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: var(--weight-black);
+  cursor: pointer;
+}
+
+.add svg {
+  stroke-width: 3;
+}
+
+.add:active {
+  transform: translateY(var(--press-depth));
+  box-shadow: none;
+}
+
+.add:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}

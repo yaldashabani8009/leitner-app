@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Box } from '../leitner/config';
 import { answer } from '../leitner/engine';
-import { pickSessionCards, reviewsDoneToday, type LoggedReview, type SessionCard } from './pick';
+import {
+  pickSessionCards,
+  reviewsDoneToday,
+  waitingInDeck,
+  type LoggedReview,
+  type SessionCard,
+} from './pick';
 
 const TODAY = '2026-03-10';
 const NOW = '2026-03-10T08:00:00.000Z';
@@ -215,5 +221,14 @@ describe('per deck: session size and daily limit (v3 brief 1.1)', () => {
     expect(reviewsDoneToday(logs, NOW, 'UTC', 'spelling')).toBe(1);
     expect(reviewsDoneToday(logs, NOW, 'UTC', 'phrases')).toBe(0);
     expect(reviewsDoneToday(logs, NOW, 'UTC')).toBe(3);
+  });
+});
+
+describe('waitingInDeck', () => {
+  it("is the due cards, but never past the deck's daily limit", () => {
+    expect(waitingInDeck(20, 0, 'vocab')).toBe(20);
+    expect(waitingInDeck(20, 90, 'vocab')).toBe(10);
+    expect(waitingInDeck(20, 120, 'vocab')).toBe(0);
+    expect(waitingInDeck(50, 0, 'phrases')).toBe(30);
   });
 });

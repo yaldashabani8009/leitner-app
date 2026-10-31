@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { enabledDecks, type Deck } from '../domain/decks/decks';
 import { AddButton } from './AddButton';
 import { BoxIcon, FlameIcon } from './icons';
@@ -5,6 +6,8 @@ import { Pill } from './Pill';
 import styles from './TopBar.module.css';
 
 interface TopBarProps {
+  /** Top left: settings on Today, Home inside a session (canvas N1, N6). */
+  leading?: ReactNode;
   /** Every card in every deck (not deleted; mastered ones included). Hidden when not given. */
   cardCount?: number;
   /** Tapping the box badge opens the all-words page. */
@@ -26,9 +29,10 @@ function cardCountLabel(count: number): string {
  * A part that isn't given is left out (the pills while their numbers load);
  * the bar keeps its height so screens don't jump when they arrive.
  */
-export function TopBar({ cardCount, onOpenBox, streak, onAdd, decks }: TopBarProps) {
+export function TopBar({ leading, cardCount, onOpenBox, streak, onAdd, decks }: TopBarProps) {
   return (
     <header className={styles.bar}>
+      {leading}
       {cardCount !== undefined && (
         <Pill
           variant="stat"

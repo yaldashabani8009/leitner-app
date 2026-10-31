@@ -5,9 +5,9 @@ import { BRAVE, CALM, DAY_1, DAY_2, cardFront, saveWord, signIn } from './helper
 async function readyWithOneWord(page: Page): Promise<void> {
   await page.clock.setFixedTime(DAY_1);
   await signIn(page);
-  await page.getByRole('button', { name: 'Add a new word' }).click();
+  await page.getByRole('button', { name: 'Vocab, empty. Add words' }).click();
   await saveWord(page, BRAVE);
-  await expect(page.getByRole('heading', { name: 'All done for today' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
   await page.waitForFunction(() => navigator.serviceWorker?.controller != null, null, {
     timeout: 30_000,
   });
@@ -20,7 +20,7 @@ test('keeps working when the connection drops', async ({ page, context }) => {
   // Adding a word works offline; it waits on the device for the cloud.
   await page.getByRole('button', { name: 'Add word' }).click();
   await saveWord(page, CALM);
-  await expect(page.getByRole('heading', { name: 'All done for today' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
 });
 
 test('opens with no connection, with the words still there', async ({
@@ -35,10 +35,10 @@ test('opens with no connection, with the words still there', async ({
 
   await readyWithOneWord(page);
 
-  // No connection at all: the app still opens, on the box, not on Sign in.
+  // No connection at all: the app still opens, on Today, not on Sign in.
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'All done for today' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sign in' })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Add word' }).click();
@@ -47,6 +47,7 @@ test('opens with no connection, with the words still there', async ({
   // Still offline the next day: both words are due.
   await page.clock.setFixedTime(DAY_2);
   await page.reload();
+  await page.getByRole('button', { name: 'Vocab, 2 waiting. Start' }).click();
   await cardFront(page).click();
   await page.getByRole('button', { name: 'Knew it!' }).click();
   await cardFront(page).click();

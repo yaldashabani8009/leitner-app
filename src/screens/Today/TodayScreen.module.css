@@ -1,0 +1,284 @@
+/* Canvas N1, measured on a 393 × 852 phone. */
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+.greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 16px 24px 0;
+}
+
+.hi {
+  margin: 0;
+  font-size: 34px;
+  font-weight: var(--weight-black);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.ask {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.dj {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 9px 24px 0 16px;
+}
+
+.mix {
+  position: relative;
+  top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+/* A text button with a thick aqua underline (board "Mascot · DJ": no panel around it). */
+.mixButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 2px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: var(--weight-black);
+  text-decoration: underline;
+  text-decoration-color: var(--color-aqua-dark);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 7px;
+  cursor: pointer;
+}
+
+.mixButton svg {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mixButton:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-highlight);
+}
+
+.mixCount {
+  padding-left: 2px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* The wheel starts 300px from the top of the screen; the cards hang 122 / 214 / 306px into it. */
+.wheel {
+  position: relative;
+  height: 540px;
+  margin-top: -7px;
+  touch-action: pan-x;
+}
+
+.arc {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.arcOuter,
+.arcInner {
+  fill: none;
+}
+
+.arcOuter {
+  stroke: var(--color-ink);
+  stroke-width: 16;
+}
+
+.arcInner {
+  stroke: var(--color-cream);
+  stroke-width: 10;
+}
+
+.decks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hanger {
+  position: absolute;
+  width: 330px;
+  height: 76px;
+  transform-origin: 0 50%;
+  transition: transform var(--duration-base) ease-out;
+}
+
+.top {
+  top: 122px;
+  left: 29px;
+  transform: rotate(-9deg);
+}
+
+.middle {
+  top: 214px;
+  left: 36px;
+}
+
+.bottom {
+  top: 306px;
+  left: 29px;
+  transform: rotate(9deg);
+}
+
+.pin {
+  position: absolute;
+  top: 28px;
+  left: -7px;
+}
+
+.pinHead {
+  fill: var(--color-white);
+  stroke: var(--color-ink);
+  stroke-width: 2.5;
+}
+
+.pinLink {
+  stroke: var(--color-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.pinRing {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 2.5;
+}
+
+/* White card with a thin bottom edge in the deck's colour. */
+.deck {
+  position: absolute;
+  top: 0;
+  left: 30px;
+  box-sizing: border-box;
+  width: 290px;
+  height: 76px;
+  padding: 0 0 7px;
+  border: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-deck);
+  background: var(--edge);
+  color: var(--color-ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.deck:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+.face {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+  padding: 0 12px;
+  border-bottom: var(--border-chunky) solid var(--color-ink);
+  border-radius: var(--radius-deck-face);
+  background: var(--color-white);
+  transition: transform var(--duration-fast) ease-out;
+}
+
+.deck:active .face {
+  transform: translateY(3px);
+}
+
+.tile {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-tile);
+  background: var(--tile);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  line-height: 1.2;
+}
+
+.name {
+  font-size: 17px;
+  font-weight: var(--weight-black);
+}
+
+.status {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.play,
+.check {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-pill);
+}
+
+.play {
+  box-sizing: border-box;
+  border: var(--border-chunky) solid var(--color-ink);
+  background: var(--color-white);
+}
+
+.play svg {
+  fill: var(--color-ink);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.check {
+  background: var(--color-cream);
+}
+
+.check svg {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hanger,
+  .face {
+    transition: none;
+  }
+}

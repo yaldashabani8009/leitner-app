@@ -103,6 +103,24 @@
   letter-spacing: -0.3px;
 }
 
+/* Canvas N3: a 28px title with a short muted line under it. */
+.titleStack {
+  display: flex;
+  flex-direction: column;
+}
+
+.titleWithLine {
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .footer {
   padding: var(--space-3) var(--space-5) max(30px, env(safe-area-inset-bottom));
 }

@@ -44,6 +44,9 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 | `--radius-panel-tall`     | 56px, complete / all done panels             |
 | `--radius-sheet`          | 44px, add / edit sheet                       |
 | `--radius-input`          | 22px                                         |
+| `--radius-deck`           | 24px, deck cards on Today (N1)               |
+| `--radius-deck-face`      | 22 22 18 18px, a deck card's white face      |
+| `--radius-tile`           | 13px, deck icon tiles                        |
 | `--radius-stamp`          | 18px, KNEW IT! / NOT YET stamps              |
 | `--radius-highlight`      | 6px, word marked in a sentence               |
 | `--radius-pill`           | 999px                                        |

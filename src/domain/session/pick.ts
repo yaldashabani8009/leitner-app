@@ -39,6 +39,11 @@ export function reviewsDoneToday(
   ).length;
 }
 
+/** Cards of one deck still to review today: due, and within the deck's daily limit. */
+export function waitingInDeck(dueCount: number, reviewsToday: number, deck: DeckId): number {
+  return Math.min(dueCount, Math.max(0, DECK_LIMITS[deck].dailyLimit - reviewsToday));
+}
+
 /** FNV-1a: a small, stable hash so the same day always gives the same shuffle. */
 function hash(text: string): number {
   let h = 0x811c9dc5;
