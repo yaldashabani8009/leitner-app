@@ -51,6 +51,69 @@
   line-height: 1.4;
 }
 
+/* Canvas P2: sentences sit 10px in, like the tappable ones, so they line up. */
+.plainSentence {
+  padding: 8px 10px;
+}
+
+/* A sentence with Persian: a button with no look of its own until it is open. */
+.sentenceButton {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-reveal);
+  background: transparent;
+  color: var(--color-ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.revealed {
+  background: var(--color-reveal);
+}
+
+.sentenceButton:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.sentenceLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.sentenceLine .sentence {
+  flex-grow: 1;
+}
+
+/* "fa": a translation is there. */
+.fa {
+  flex-shrink: 0;
+  margin-top: 2px;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-cream);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+}
+
+/* Smaller and softer than the sentence. */
+.translation {
+  display: block;
+  width: 100%;
+  color: var(--color-text-secondary);
+  font-family: var(--font-persian);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
 .mark {
   padding: 0 3px;
   border-radius: var(--radius-highlight);

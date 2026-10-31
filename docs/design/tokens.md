@@ -20,6 +20,10 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 | `--color-black`            | #000000          | Only the shadow under ink buttons                                                                                          |
 | `--color-line`             | #D9C3AE          | Sheet handle, empty-field outline, soft dividers                                                                           |
 | `--color-overlay`          | #2B1D16 at 45%   | Dim layer behind sheets and dialogs                                                                                        |
+| `--color-reveal`           | #FFF8F0          | A sentence with its Persian shown (P2)                                                                                     |
+| `--color-odd`              | #B4532F          | Dashed outline of "looks odd" spelling chips (P4)                                                                          |
+| `--color-skipped`          | #EFE4D8          | Greyed "already there" spelling chips, outline `--color-sand` (P4)                                                         |
+| `--color-field-soft`       | #FFFDF9          | The optional Persian field under a sentence (P1)                                                                           |
 | `--color-sand`             | #D9C3AE          | Phrases deck edge (same value as `--color-line`)                                                                           |
 | `--color-divider`          | #E7D6C4          | Row dividers on the all-words page                                                                                         |
 | `--color-aqua-pale`        | #E3F4F5          | Spelling icon tile, practice tags, duplicate note                                                                          |
@@ -37,30 +41,31 @@ Implemented in `src/styles/tokens.css`. Use `var(--token)`; Stylelint blocks raw
 
 ## Shape & depth
 
-| Token                     | Value                                        |
-| ------------------------- | -------------------------------------------- |
-| `--radius-card`           | 40px                                         |
-| `--radius-panel`          | 52px, review / practice panels               |
-| `--radius-panel-tall`     | 56px, complete / all done panels             |
-| `--radius-sheet`          | 44px, add / edit sheet                       |
-| `--radius-input`          | 22px                                         |
-| `--radius-deck`           | 24px, deck cards on Today (N1)               |
-| `--radius-deck-face`      | 22 22 18 18px, a deck card's white face      |
-| `--radius-tile`           | 13px, deck icon tiles                        |
-| `--radius-delete`         | 16px, swipe-to-delete button (N9)            |
-| `--radius-group`          | 28px, settings card (N13)                    |
-| `--radius-stamp`          | 18px, KNEW IT! / NOT YET stamps              |
-| `--radius-highlight`      | 6px, word marked in a sentence               |
-| `--radius-pill`           | 999px                                        |
-| `--border-chunky`         | 2.5px                                        |
-| `--press-depth`           | 5px                                          |
-| `--press-depth-sm`        | 4px (round + button)                         |
-| `--shadow-hard`           | 0 5px 0 ink                                  |
-| `--shadow-hard-on-ink`    | 0 5px 0 black (ink buttons)                  |
-| `--shadow-hard-sm`        | 0 3px 0 ink (top-bar stat pills)             |
-| `--shadow-hard-md`        | 0 4px 0 ink (toast, + roll-out deck buttons) |
-| `--shadow-hard-on-ink-sm` | 0 4px 0 black (round + button)               |
-| `--shadow-card`           | 0 6px 0 ink (word card, dialog)              |
+| Token                     | Value                                         |
+| ------------------------- | --------------------------------------------- |
+| `--radius-card`           | 40px                                          |
+| `--radius-panel`          | 52px, review / practice panels                |
+| `--radius-panel-tall`     | 56px, complete / all done panels              |
+| `--radius-sheet`          | 44px, add / edit sheet                        |
+| `--radius-input`          | 22px                                          |
+| `--radius-deck`           | 24px, deck cards on Today (N1)                |
+| `--radius-deck-face`      | 22 22 18 18px, a deck card's white face       |
+| `--radius-tile`           | 13px, deck icon tiles                         |
+| `--radius-delete`         | 16px, swipe-to-delete button (N9)             |
+| `--radius-group`          | 28px, settings card (N13)                     |
+| `--radius-reveal`         | 16px, tappable sentence on the card back (P2) |
+| `--radius-stamp`          | 18px, KNEW IT! / NOT YET stamps               |
+| `--radius-highlight`      | 6px, word marked in a sentence                |
+| `--radius-pill`           | 999px                                         |
+| `--border-chunky`         | 2.5px                                         |
+| `--press-depth`           | 5px                                           |
+| `--press-depth-sm`        | 4px (round + button)                          |
+| `--shadow-hard`           | 0 5px 0 ink                                   |
+| `--shadow-hard-on-ink`    | 0 5px 0 black (ink buttons)                   |
+| `--shadow-hard-sm`        | 0 3px 0 ink (top-bar stat pills)              |
+| `--shadow-hard-md`        | 0 4px 0 ink (toast, + roll-out deck buttons)  |
+| `--shadow-hard-on-ink-sm` | 0 4px 0 black (round + button)                |
+| `--shadow-card`           | 0 6px 0 ink (word card, dialog)               |
 
 ## Spacing
 

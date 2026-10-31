@@ -32,6 +32,10 @@
   --color-deck-spelling-tile: var(--color-aqua-pale);
   --color-deck-phrases-edge: var(--color-sand);
   --color-deck-phrases-tile: var(--color-terracotta-pale);
+  --color-reveal: #fff8f0; /* a sentence with its Persian shown (canvas P2) */
+  --color-odd: #b4532f; /* dashed outline of "looks odd" spelling chips (P4) */
+  --color-skipped: #efe4d8; /* greyed "already there" spelling chips (P4) */
+  --color-field-soft: #fffdf9; /* the optional Persian field under a sentence (P1) */
   --color-overlay: rgb(43 29 22 / 45%); /* ink at 45%, behind sheets and dialogs */
 
   /* Type */
@@ -51,6 +55,7 @@
   --radius-tile: 13px; /* deck icon tiles */
   --radius-delete: 16px; /* the red Delete revealed by a swipe (canvas N9) */
   --radius-group: 28px; /* settings card holding rows (canvas N13) */
+  --radius-reveal: 16px; /* a tappable sentence on the card back (P2) */
   --radius-stamp: 18px; /* KNEW IT! / NOT YET stamps */
   --radius-highlight: 6px; /* the word marked inside a sentence */
   --radius-pill: 999px;
