@@ -344,3 +344,19 @@ describe('all-words page data (v3 brief 1.9)', () => {
     expect(await repo.countCards()).toBe(1);
   });
 });
+
+describe('soft boxes in the repository (ADR-022)', () => {
+  it('a missed phrase steps back one box; a missed vocab card goes to box 1', async () => {
+    const [phrase] = await add('phrases', 'break the ice');
+    const [word] = await add('vocab', 'brave');
+    await db.cards.update(phrase, { box: 3 });
+    await db.cards.update(word, { box: 3 });
+    now = DAY_2;
+    await repo.recordAnswer(phrase, false, 'scheduled');
+    await repo.recordAnswer(word, false, 'scheduled');
+    expect(await db.cards.get(phrase)).toMatchObject({ box: 2, dueDate: '2026-03-13' });
+    expect(await db.cards.get(word)).toMatchObject({ box: 1, dueDate: '2026-03-12' });
+    const logs = await db.reviewLogs.toArray();
+    expect(logs.find((log) => log.cardId === phrase)).toMatchObject({ boxBefore: 3, boxAfter: 2 });
+  });
+});

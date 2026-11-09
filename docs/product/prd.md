@@ -66,7 +66,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 1. New card → box 1, due tomorrow.
 2. Right answer → up one box; due = today + that box's gap.
 3. Right answer in box 5 → mastered.
-4. Wrong answer → box 1, due tomorrow (from any box).
+4. Wrong answer → box 1, due tomorrow (from any box). **Phrases** use soft boxes (ADR-022): a miss ("Show me sooner") moves the card down one box only, never below box 1, due after that box's normal wait.
 5. Missed days: nothing moves by itself; a due card stays due.
 6. Box number, counter and due date are never shown in the UI. The one exception (v3): the progress dots on the all-words page (5 dots filled up to the box, a star when mastered; spoken "Box 3 of 5" / "Mastered").
 7. Gaps live in one config value (`src/domain/leitner/config.ts`).
@@ -122,7 +122,7 @@ Laptop (built in 7.13; v3 keys in 11.10): Space flips, ← / → answer, E edits
 ## Decks (v3, ADR-019)
 
 - One `cards` table with a `deck`: `vocab | spelling | phrases`; old cards are vocab. Decks come from a registry (`src/domain/decks`), each with a label, icon, colours, limits and `enabled`. **Only Vocab is enabled** until the spelling (step 5) and phrases (step 6) cards are designed; every screen works with any number of enabled decks.
-- The Leitner engine (boxes, gaps, "Not yet" to box 1) is the same for every deck.
+- The Leitner engine (boxes, gaps) is the same for every deck; what a miss does is set per deck (ADR-022): Vocab and Spelling go back to box 1, Phrases step back one box.
 - Each card stores `added_on`: the day it was added, or re-added with "Save & start over" (profile time zone).
 
 ## Today (v3, canvas N1, N3)

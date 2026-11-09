@@ -20,7 +20,7 @@ import { shouldOfferRestore, shouldRemindToSave, snoozeUntil } from '../domain/b
 import { enabledDecks } from '../domain/decks/decks';
 import { answer, isDue, newCard, resetToBox1 } from '../domain/leitner/engine';
 import { currentStreak, wordsLearned } from '../domain/progress/progress';
-import type { DeckId } from '../domain/leitner/config';
+import { DECK_MISS_RULE, type DeckId } from '../domain/leitner/config';
 import { pickSessionCards, reviewsDoneToday, waitingInDeck } from '../domain/session/pick';
 import type { WordRow } from '../domain/allWords/allWords';
 import { mixDecks, type Random } from '../domain/session/mix';
@@ -436,7 +436,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
 
         let boxAfter: ReviewLogRow['boxAfter'] = card.box;
         if (kind === 'scheduled') {
-          const result = answer(card, correct, await today(now), now);
+          const result = answer(card, correct, await today(now), now, DECK_MISS_RULE[card.deck]);
           await db.cards.put({ ...card, ...result.schedule, updatedAt: now });
           await queue('cards', cardId, now);
           boxAfter = result.log.boxAfter;

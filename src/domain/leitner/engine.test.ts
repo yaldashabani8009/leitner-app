@@ -159,3 +159,28 @@ describe('a full journey', () => {
     expect(schedule.masteredAt).toBe(NOW);
   });
 });
+
+describe('soft boxes: the "stepBack" miss rule (ADR-022, phrases)', () => {
+  it.each([
+    [5, 4, '2026-03-18'],
+    [4, 3, '2026-03-14'],
+    [3, 2, '2026-03-12'],
+    [2, 1, '2026-03-11'],
+    [1, 1, '2026-03-11'], // never below box 1
+  ] as const)('a miss in box %i goes to box %i, due after its normal wait', (from, to, due) => {
+    expect(answer(card(from), false, TODAY, NOW, 'stepBack')).toEqual({
+      schedule: { box: to, dueDate: due, masteredAt: null },
+      log: { correct: false, boxBefore: from, boxAfter: to },
+    });
+  });
+
+  it('a right answer is the same as with "reset"', () => {
+    expect(answer(card(3), true, TODAY, NOW, 'stepBack')).toEqual(
+      answer(card(3), true, TODAY, NOW),
+    );
+  });
+
+  it('"reset" (the default) still sends a miss back to box 1', () => {
+    expect(answer(card(4), false, TODAY, NOW, 'reset').schedule.box).toBe(1);
+  });
+});

@@ -33,5 +33,6 @@ Once **Accepted**, an ADR is not edited. To change a decision, write a new ADR t
 | [019](0019-several-decks-in-one-cards-table.md)       | Several decks in one cards table                            | Accepted                  |
 | [020](0020-reminder-time-and-next-reminder-index.md)  | Reminder time per user and next-reminder index              | Accepted                  |
 | [021](0021-spelling-audio-built-in-speech.md)         | Spelling audio: built-in speech and the iPhone sound unlock | Accepted                  |
+| [022](0022-soft-boxes-per-deck-miss-rule.md)          | Soft boxes: a miss rule per deck                            | Accepted                  |
 
 Template: [template.md](template.md)
