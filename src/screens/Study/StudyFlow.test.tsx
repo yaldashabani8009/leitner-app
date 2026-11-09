@@ -150,15 +150,15 @@ describe('StudyFlow', () => {
     await screen.findByRole('button', { name: /tap to flip/ });
 
     await userEvent.click(screen.getByRole('button', { name: 'Home' }));
-    expect(await screen.findByText('Paused · 3 left')).toBeInTheDocument();
+    // The miss isn't waited for: only the 2 unanswered cards are left (bug 3, 2026-11-09).
+    expect(await screen.findByText('Paused · 2 left')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /Mix them all/ }));
     await flipAndAnswer('Knew it!');
     await flipAndAnswer('Knew it!');
-    expect(await screen.findByText('Practice round')).toBeInTheDocument();
-    await flipAndAnswer('Knew it!');
     expect(await screen.findByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
     expect(screen.getByText('You went through 3 words. Nice work.')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
+    expect(screen.getByRole('button', { name: 'Practice the 1 you missed' })).toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('button', { name: 'Done for today' }));
     expect(
       await screen.findByRole('button', { name: 'Vocab, all done for today' }),
     ).toBeInTheDocument();
@@ -232,28 +232,30 @@ describe('StudyFlow', () => {
     expect(await screen.findByRole('heading', { name: 'Hi Yali!' })).toBeInTheDocument();
   });
 
-  it('Home pauses a session (no "are you sure?"); Continue carries on, practice round included', async () => {
+  it('Home pauses a session (no "are you sure?"); Continue carries on with the card you left', async () => {
     await addCards('brave', 'calm', 'quiet');
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
     await startVocab();
-    const missed = await frontWord();
+    await frontWord();
     await flipAndAnswer('Not yet');
-    await screen.findByRole('button', { name: /tap to flip/ });
+    // Left on the second card, flipped but not answered (bug 4, 2026-11-09).
+    const left = await frontWord();
+    await userEvent.click(screen.getByRole('button', { name: /tap to flip/ }));
+    await screen.findByLabelText(`Answer for ${left}`);
 
     await userEvent.click(screen.getByRole('button', { name: 'Home' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    const deck = await screen.findByRole('button', { name: 'Vocab, paused · 3 left. Continue' });
+    const deck = await screen.findByRole('button', { name: 'Vocab, paused · 2 left. Continue' });
     await userEvent.click(deck);
 
+    // The card you left comes back first, on its front.
+    expect(await frontWord()).toBe(left);
     await flipAndAnswer('Knew it!');
-    await flipAndAnswer('Knew it!');
-    expect(await screen.findByText('Practice round')).toBeInTheDocument();
-    expect(await frontWord()).toBe(missed);
     await flipAndAnswer('Knew it!');
     expect(await screen.findByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
     expect(screen.getByText('You went through 3 words. Nice work.')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Done for today' }));
     expect(
       await screen.findByRole('button', { name: 'Vocab, all done for today' }),
     ).toBeInTheDocument();
@@ -289,11 +291,10 @@ describe('StudyFlow', () => {
     await startVocab();
     await flipAndAnswer('Knew it!');
     await flipAndAnswer('Not yet');
-    await flipAndAnswer('Knew it!'); // practice: changes nothing
 
     // Both due cards were reviewed: day 2 counts too.
     expect(await screen.findByText(/2 days in a row!/)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Done for today' }));
     // The badge counts every card, whatever its box.
     expect(await screen.findByText('2 cards in your box')).toBeInTheDocument();
     expect(screen.getByText('2-day streak')).toBeInTheDocument();
@@ -402,7 +403,7 @@ describe('StudyFlow', () => {
     expect(within(back).getAllByText(/^brave$/i, { selector: 'mark' })).toHaveLength(2);
   });
 
-  it('runs a session: right answers move up, a miss comes back as practice that changes nothing', async () => {
+  it('runs a session: the bar fills → Session complete; practising the miss is optional and changes nothing', async () => {
     await addCards('brave', 'calm');
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
@@ -411,24 +412,26 @@ describe('StudyFlow', () => {
     await flipAndAnswer('Knew it!');
     await flipAndAnswer('Not yet');
 
-    // Practice round: the missed card once more.
-    expect(await screen.findByText('Practice round')).toBeInTheDocument();
-    expect(screen.getByText('1 left')).toBeInTheDocument();
-    expect(screen.getByText('one more look')).toBeInTheDocument();
-    const missed = (await db.cards.toArray()).find((card) => card.box === 1)!;
-    const before = await repo.getCard(missed.id);
-    await flipAndAnswer('Knew it!');
-
+    // The session is over as soon as every card is answered (Yali, 2026-11-09).
     expect(await screen.findByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
     expect(screen.getByText('You went through 2 words. Nice work.')).toBeInTheDocument();
     // No score, and no "Next" when nothing else is due.
     expect(screen.queryByText(/of 2/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Next/ })).not.toBeInTheDocument();
+    expect([await boxOf('brave'), await boxOf('calm')].sort()).toEqual([1, 2]);
+    const missed = (await db.cards.toArray()).find((card) => card.box === 1)!;
+    const before = await repo.getCard(missed.id);
+
+    // "Practice the 1 you missed": extra practice with just that card.
+    await userEvent.click(screen.getByRole('button', { name: 'Practice the 1 you missed' }));
+    expect(await screen.findByText('Practice · your boxes stay the same')).toBeInTheDocument();
+    expect(await frontWord()).toBe(missed.word);
+    await flipAndAnswer('Knew it!');
+    expect(await screen.findByText('You knew every one.')).toBeInTheDocument();
     // The practice answer did not move the card.
     expect((await repo.getCard(missed.id))?.card).toEqual(before?.card);
-    expect([await boxOf('brave'), await boxOf('calm')].sort()).toEqual([1, 2]);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Done for today' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(
       await screen.findByRole('button', { name: 'Vocab, all done for today' }),
     ).toBeInTheDocument();
@@ -595,7 +598,6 @@ describe('StudyFlow with a keyboard (laptop, roadmap 7.13)', () => {
 
     expect(await boxOf(first!)).toBe(2);
     expect(await boxOf(second!)).toBe(1);
-    expect(await screen.findByText('Practice round')).toBeInTheDocument();
   });
 
   it('arrows and E do nothing on the front (no answering or editing before you flip)', async () => {
@@ -757,33 +759,72 @@ describe('spelling sessions (v3 brief 1.3, canvas P5–P7)', () => {
     expect(screen.getByRole('button', { name: 'Play the word again' })).toBeInTheDocument();
 
     // Right: moves up a box; the next word is said at once.
-    await userEvent.type(screen.getByRole('textbox', { name: 'Type what you hear' }), `${first}{Enter}`);
+    await userEvent.type(
+      screen.getByRole('textbox', { name: 'Type what you hear' }),
+      `${first}{Enter}`,
+    );
     const second = speech.speak.mock.lastCall![0] as string;
     expect(second).not.toBe(first);
     await waitFor(async () => expect(await boxOf(first)).toBe(2));
 
-    // Wrong: back to box 1, the typed answer saved; retype it to go on.
+    // Wrong: shown over the word, saved only once it's retyped (leaving now would keep it).
     const field = screen.getByRole('textbox', { name: 'Type what you hear' });
     await userEvent.type(field, 'zzz{Enter}');
     await screen.findByRole('region', { name: 'Not quite' });
+    expect((await db.reviewLogs.toArray()).map((log) => log.typedAnswer)).not.toContain('zzz');
+    await userEvent.type(
+      screen.getByRole('textbox', { name: 'Type it once to go on' }),
+      `${second}{Enter}`,
+    );
+    const third = speech.speak.mock.lastCall![0] as string;
+    expect([first, second]).not.toContain(third);
     await waitFor(async () => {
       const logs = await db.reviewLogs.toArray();
       expect(logs.map((log) => log.typedAnswer)).toContain('zzz');
     });
-    await userEvent.type(screen.getByRole('textbox', { name: 'Type it once to go on' }), `${second}{Enter}`);
-    const third = speech.speak.mock.lastCall![0] as string;
-    expect([first, second]).not.toContain(third);
     expect(await boxOf(second)).toBe(1);
 
-    // Show me, then the practice round brings the missed words back.
+    // Show me counts as wrong; the bar is full → Session complete (no automatic round).
     await userEvent.click(await screen.findByRole('button', { name: 'Show me' }));
-    await userEvent.type(screen.getByRole('textbox', { name: 'Type it once to go on' }), `${third}{Enter}`);
-    expect(speech.speak.mock.lastCall![0]).toBe(second);
-    await userEvent.type(screen.getByRole('textbox', { name: 'Type what you hear' }), `${second}{Enter}`);
-    expect(speech.speak.mock.lastCall![0]).toBe(third);
-    await userEvent.type(screen.getByRole('textbox', { name: 'Type what you hear' }), `${third}{Enter}`);
-    expect(await screen.findByText(/Session complete/)).toBeInTheDocument();
+    await userEvent.type(
+      screen.getByRole('textbox', { name: 'Type it once to go on' }),
+      `${third}{Enter}`,
+    );
+    expect(await screen.findByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
+
+    // "Practice the 2 you missed": the first word is said from that tap; boxes stay.
+    speech.speak.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'Practice the 2 you missed' }));
+    for (let i = 0; i < 2; i++) {
+      const word = speech.speak.mock.lastCall![0] as string;
+      expect([second, third]).toContain(word);
+      await userEvent.type(
+        await screen.findByRole('textbox', { name: 'Type what you hear' }),
+        `${word}{Enter}`,
+      );
+    }
+    expect(await screen.findByText('You knew every one.')).toBeInTheDocument();
     expect(await boxOf(second)).toBe(1); // practice answers never move a box
+    expect(await boxOf(third)).toBe(1);
+  });
+
+  it('Home after a wrong spelling, then Continue: the same word again (bug 4, 2026-11-09)', async () => {
+    await repo.addSpellingWords(['receive', 'their']);
+    now = DAY_2;
+    const speech = fakeSpeech();
+    render(<StudyFlow repo={repo} minLoadingMs={0} speech={speech} />);
+    await startSpelling();
+    await userEvent.click(await screen.findByRole('button', { name: 'Tap to start' }));
+    const word = speech.speak.mock.lastCall![0] as string;
+    await userEvent.type(screen.getByRole('textbox', { name: 'Type what you hear' }), 'zzz{Enter}');
+    await screen.findByRole('region', { name: 'Not quite' });
+    await userEvent.click(screen.getByRole('button', { name: 'Home' }));
+
+    // Nothing answered yet, so the deck isn't even paused.
+    await startSpelling();
+    await userEvent.click(await screen.findByRole('button', { name: 'Tap to start' }));
+    expect(speech.speak.mock.lastCall![0]).toBe(word);
+    expect(await db.reviewLogs.count()).toBe(0);
   });
 
   it('the answer field stays the same element from card to card (the iPhone keyboard stays open)', async () => {

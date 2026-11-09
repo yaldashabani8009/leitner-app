@@ -1,31 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import {
   answerInSession,
-  currentStep,
+  cardsLeft,
+  currentCard,
   isComplete,
   startSession,
   type Session,
-  type Step,
 } from './session';
 
 const ids = (count: number) => Array.from({ length: count }, (_, i) => `c${i + 1}`);
 
-/** Answers every step in turn; `wrong` lists the card ids answered "Not yet" in the scheduled part. */
-function play(session: Session, wrong: string[] = []): { steps: Step[]; end: Session } {
-  const steps: Step[] = [];
-  let step = currentStep(session);
-  while (step) {
-    steps.push(step);
-    const correct = !(step.kind === 'scheduled' && wrong.includes(step.cardId));
-    session = answerInSession(session, correct);
-    step = currentStep(session);
+/** Answers every card in turn; `wrong` lists the card ids answered "Not yet". */
+function play(session: Session, wrong: string[] = []): { shown: string[]; end: Session } {
+  const shown: string[] = [];
+  let card = currentCard(session);
+  while (card) {
+    shown.push(card);
+    session = answerInSession(session, !wrong.includes(card));
+    card = currentCard(session);
   }
-  return { steps, end: session };
+  return { shown, end: session };
 }
 
 describe('startSession', () => {
-  it('starts on the first card as a scheduled review', () => {
-    expect(currentStep(startSession(['a', 'b']))).toEqual({ cardId: 'a', kind: 'scheduled' });
+  it('starts on the first card', () => {
+    expect(currentCard(startSession(['a', 'b']))).toBe('a');
   });
 
   it('an empty session is complete straight away', () => {
@@ -40,66 +39,31 @@ describe('startSession', () => {
   });
 });
 
-describe('all right: no practice round', () => {
-  it('shows each card once as scheduled, then completes', () => {
-    const { steps, end } = play(startSession(ids(20)));
-    expect(steps).toHaveLength(20);
-    expect(steps.every((s) => s.kind === 'scheduled')).toBe(true);
+describe('the session ends when every card is answered (Yali, 2026-11-09)', () => {
+  it('all right: each card once, then complete', () => {
+    const { shown, end } = play(startSession(ids(20)));
+    expect(shown).toEqual(ids(20));
     expect(isComplete(end)).toBe(true);
     expect(end.correct).toBe(20);
-    expect(end.practice).toEqual([]);
+    expect(end.missed).toEqual([]);
   });
-});
 
-describe('wrong answers are repeated once at the end as practice (rules 5–6)', () => {
-  it('3 misses out of 20 → those 3 come back after the 20, in the order missed', () => {
-    const { steps, end } = play(startSession(ids(20)), ['c12', 'c3', 'c17']);
-    expect(steps).toHaveLength(23);
-    expect(steps.slice(0, 20).every((s) => s.kind === 'scheduled')).toBe(true);
-    expect(steps.slice(20)).toEqual([
-      { cardId: 'c3', kind: 'practice' },
-      { cardId: 'c12', kind: 'practice' },
-      { cardId: 'c17', kind: 'practice' },
-    ]);
-    expect(end.correct).toBe(17);
+  it('3 misses out of 20: still complete after the 20; the misses are kept in the order missed', () => {
+    const { shown, end } = play(startSession(ids(20)), ['c12', 'c3', 'c17']);
+    expect(shown).toEqual(ids(20)); // no automatic practice round
     expect(isComplete(end)).toBe(true);
-  });
-
-  it('a practice answer is marked "practice" so nothing gets rescheduled', () => {
-    let session = answerInSession(startSession(['a']), false);
-    expect(currentStep(session)).toEqual({ cardId: 'a', kind: 'practice' });
-    session = answerInSession(session, true);
-    expect(isComplete(session)).toBe(true);
-  });
-
-  it('missing a card again in practice does not repeat it a third time', () => {
-    let session = answerInSession(startSession(['a', 'b']), false); // a wrong
-    session = answerInSession(session, true); // b right
-    session = answerInSession(session, false); // a wrong again, in practice
-    expect(isComplete(session)).toBe(true);
-    expect(session.practice).toEqual(['a']);
-  });
-
-  it('practice answers are not scored', () => {
-    let session = answerInSession(startSession(['a']), false);
-    session = answerInSession(session, true);
-    expect(session.correct).toBe(0);
-  });
-
-  it('every card wrong → every card practised once', () => {
-    const { steps } = play(startSession(ids(5)), ids(5));
-    expect(steps.filter((s) => s.kind === 'practice').map((s) => s.cardId)).toEqual(ids(5));
+    expect(end.missed).toEqual(['c3', 'c12', 'c17']);
+    expect(end.correct).toBe(17);
   });
 });
 
 describe('leaving mid-session (rule 7)', () => {
-  it('after 5 answers, the 15 unanswered cards were never reviewed', () => {
+  it('after 5 answers, 15 cards are left and the 6th card is next', () => {
     let session = startSession(ids(20));
-    for (let i = 0; i < 5; i++) session = answerInSession(session, true);
-    expect(session.answered).toBe(5);
-    expect(currentStep(session)).toEqual({ cardId: 'c6', kind: 'scheduled' });
-    // Only the 5 answered cards were moved by the caller; the rest stay due.
-    expect(session.scheduled.slice(session.answered)).toHaveLength(15);
+    for (let i = 0; i < 5; i++) session = answerInSession(session, i !== 2);
+    expect(currentCard(session)).toBe('c6');
+    expect(cardsLeft(session)).toBe(15);
+    expect(session.missed).toEqual(['c3']);
   });
 });
 

@@ -51,14 +51,11 @@ test('sign in, add words, then review them the next day', async ({ page }) => {
   await expect(page.getByLabel(/^Answer for /)).toBeVisible();
   await page.keyboard.press('ArrowLeft');
 
-  // The miss comes back once as practice.
-  await expect(page.getByText('Practice round')).toBeVisible();
-  await cardFront(page).click();
-  await page.getByRole('button', { name: 'Knew it!' }).click();
-
+  // Every card answered: the session is complete; practising the miss is optional.
   await expect(page.getByRole('heading', { name: 'Session complete!' })).toBeVisible();
   await expect(page.getByText('You went through 2 words. Nice work.')).toBeVisible();
   await expect(page.getByText('2 days in a row!')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Practice the 1 you missed' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Done for today' }).click();
   await expect(page.getByRole('button', { name: 'Vocab, all done for today' })).toBeVisible();
@@ -183,5 +180,5 @@ test('paste 10 spelling words, then spell them the next day', async ({ page }) =
   );
 
   await page.getByRole('button', { name: 'Home' }).click();
-  await expect(page.getByText('Paused · 10 left')).toBeVisible();
+  await expect(page.getByText('Paused · 9 left')).toBeVisible();
 });

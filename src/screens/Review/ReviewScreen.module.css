@@ -7,7 +7,7 @@
   overflow: hidden;
 }
 
-/* ---------- Progress / practice banner ---------- */
+/* ---------- Progress ---------- */
 
 /* Lower, closer to the cards (canvas 03, 2026-10-29). */
 .progressAlone,
@@ -38,33 +38,6 @@
   border-radius: var(--radius-pill);
   background: var(--color-orange);
   transition: width var(--duration-base) ease-out;
-}
-
-.practiceBanner {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 40px var(--space-5) 0;
-  padding: 10px var(--space-4);
-  border: var(--border-chunky) solid var(--color-ink);
-  border-radius: var(--radius-pill);
-  background: var(--color-aqua);
-  font-size: 15px;
-  font-weight: var(--weight-black);
-}
-
-.practiceTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.practiceLeft {
-  padding: 2px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--color-white);
-  font-size: 14px;
 }
 
 /* ---------- Card ---------- */
