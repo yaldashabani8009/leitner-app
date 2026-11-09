@@ -96,11 +96,14 @@
   outline-offset: -8px;
 }
 
+/* 42px, smaller for a long word so it stays on one line (FitText; bug 2, 2026-11-09). */
 .word {
+  align-self: stretch;
   font-size: 42px;
   font-weight: var(--weight-black);
   letter-spacing: -0.5px;
-  overflow-wrap: anywhere;
+  text-align: center;
+  overflow-wrap: normal;
 }
 
 /* "tap to flip" on phones; "click or press space" with a mouse or trackpad (roadmap 7.13). */

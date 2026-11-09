@@ -6,11 +6,17 @@
 
 .backWord {
   flex-grow: 1;
+  min-width: 0;
   margin: 0;
   font-size: 28px;
   font-weight: var(--weight-black);
   letter-spacing: -0.3px;
-  overflow-wrap: anywhere;
+}
+
+/* Smaller for a long word, never cut in two (FitText; bug 2, 2026-11-09). */
+.backWordText {
+  display: block;
+  overflow-wrap: normal;
 }
 
 .section {
@@ -32,16 +38,23 @@
   gap: 6px;
 }
 
+/* Persian meanings: cream chips, right to left, wrapping like the similar words. */
 .persian {
-  padding: 10px var(--space-4);
-  border-radius: var(--radius-input);
-  background: var(--color-cream);
-  font-size: 17px;
-  line-height: 1.6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.persian p {
-  margin: 0;
+.persianChip {
+  padding: 3px 13px;
+  border-radius: var(--radius-pill);
+  background: var(--color-cream);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
 }
 
 .sentence {

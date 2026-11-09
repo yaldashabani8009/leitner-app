@@ -36,19 +36,19 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 
 ## Card structure
 
-| Field                               | Side  | How many     | Notes                    |
-| ----------------------------------- | ----- | ------------ | ------------------------ |
-| Word                                | Front | Exactly 1    | English word or phrase   |
-| Synonyms ("similar words")          | Back  | ≥ 1 required |                          |
-| Persian meanings ("in Persian")     | Back  | ≥ 1 required | Right to left, Vazirmatn |
-| Example sentences ("in a sentence") | Back  | ≥ 1 required |                          |
+| Field                               | Side  | How many     | Notes                                                             |
+| ----------------------------------- | ----- | ------------ | ----------------------------------------------------------------- |
+| Word                                | Front | Exactly 1    | English word or phrase                                            |
+| Synonyms ("similar words")          | Back  | ≥ 1 required |                                                                   |
+| Persian meanings ("in Persian")     | Back  | ≥ 1 required | Right to left, Vazirmatn; one cream chip per meaning (2026-11-09) |
+| Example sentences ("in a sentence") | Back  | ≥ 1 required |                                                                   |
 
 - Editing never changes the box or due date.
 - Editing the word into a word another card already has is blocked, with an error under the word field (decided 2026-10-28).
 - Capitals and extra spaces don't make a different word ("Happy" = " happy ").
 - **Duplicate word (v3, canvas N5):** one card per word **per deck**; the same word in another deck is not a duplicate. Typing a word that is already in the deck shows a soft note "Already in your Vocab box" under the word field (when you leave it, or on Save); the form fills with the existing card and keeps what you typed. Save becomes **Save & start over**: the card is updated, goes back to box 1 (due tomorrow; mastered cards are un-mastered) and counts as added today. "Add another word" empties the form; ✕ changes nothing. No popup (the v2 "Open my card" dialog is retired).
 - **Adding stays open (canvas N4):** after Save the fields clear, the cursor goes back to the word field and a toast says "meticulous saved" (about 2 s). The sheet closes only with ✕, Esc or a drag down; a chip next to "New word" shows the deck.
-- Similar words and Persian meanings are typed in **one field each, separated by a comma** (`,` or the Persian `،`); empty pieces and repeats are dropped. Add or remove an item by typing (decided 2026-10-29, after Yali's iPhone test).
+- Similar words and Persian meanings are typed in **one field each, separated by a comma** (`,` or the Persian `،`); empty pieces and repeats are dropped. Add or remove an item by typing (decided 2026-10-29, after Yali's iPhone test). A Persian field (meanings, or the Persian under a sentence) holding English letters and no Persian ones shows a soft note, "This looks like English. The Persian goes here."; saving still works (Yali, 2026-11-09). A long word shrinks (front 42 → 24px, back 28 → 20px, spelling 32 → 20px) so it stays on one line; lines only break at spaces.
 - Sentences are never split (they contain commas): one field per sentence, "+ sentence" right under them, and in Edit a ✕ next to each sentence while there is more than one (decided 2026-10-29).
 - Validation: Save is never disabled; the error appears under the empty field.
 

@@ -48,3 +48,20 @@ describe('CardBack: sentence translations (canvas P2)', () => {
     expect(sentence).toHaveAttribute('aria-expanded', 'true');
   });
 });
+
+describe('CardBack: Persian meanings (bug 6, 2026-11-09)', () => {
+  it('each meaning is its own chip, right to left', () => {
+    const two = {
+      ...card,
+      meanings: [entry('m1', 'meaning', 'بررسی کردن'), entry('m2', 'meaning', 'مطالعه کردن')],
+    } as unknown as CardWithEntries;
+    render(<CardBack card={two} />);
+    const list = screen.getByRole('list');
+    expect(list).toHaveAttribute('lang', 'fa');
+    expect(list).toHaveAttribute('dir', 'rtl');
+    expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'بررسی کردن',
+      'مطالعه کردن',
+    ]);
+  });
+});

@@ -218,11 +218,13 @@
   font-weight: var(--weight-bold);
 }
 
+/* Smaller for a long word, never cut in two (FitText; bug 2, 2026-11-09). */
 .letters,
 .big {
+  display: block;
   font-size: 32px;
   font-weight: var(--weight-black);
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
 }
 
 .letters {

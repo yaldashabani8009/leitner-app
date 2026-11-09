@@ -10,6 +10,7 @@ import { soundsAlike } from '../../domain/spelling/homophones';
 import type { Speech } from '../../services/speech';
 import { useSpeechState } from '../../services/useSpeech';
 import { DeckChip } from '../../ui/DeckChip';
+import { FitText } from '../../ui/FitText';
 import styles from './SpellingScreen.module.css';
 
 interface SpellingScreenProps {
@@ -184,7 +185,11 @@ export function SpellingScreen({
             </button>
           </div>
           <span className={styles.hint}>
-            {needsStart ? 'Tap to start' : speechState === 'blocked' ? 'Tap to hear' : 'tap to hear it again'}
+            {needsStart
+              ? 'Tap to start'
+              : speechState === 'blocked'
+                ? 'Tap to hear'
+                : 'tap to hear it again'}
           </span>
         </section>
       ) : phase.kind === 'wrong' ? (
@@ -200,7 +205,7 @@ export function SpellingScreen({
           ) : (
             <>
               <span className={styles.label}>the word</span>
-              <span className={styles.big}>{word}</span>
+              <FitText className={styles.big} text={word} max={32} min={20} />
             </>
           )}
         </section>
@@ -213,11 +218,16 @@ export function SpellingScreen({
           <div className={styles.pair}>
             <div className={styles.half}>
               <span className={styles.label}>you typed</span>
-              <span className={`${styles.big} ${styles.muted}`}>{phase.typed}</span>
+              <FitText
+                className={`${styles.big} ${styles.muted}`}
+                text={phase.typed}
+                max={32}
+                min={18}
+              />
             </div>
             <div className={styles.half}>
               <span className={styles.label}>the word</span>
-              <span className={styles.big}>{word}</span>
+              <FitText className={styles.big} text={word} max={32} min={18} />
             </div>
           </div>
           <p className={styles.note}>
@@ -282,17 +292,17 @@ function Comparison({ typed, word }: { typed: string; word: string }) {
       <p className={styles.srOnly}>{spokenComparison(typed, word)}</p>
       <div aria-hidden="true" className={styles.comparison}>
         <span className={styles.label}>you typed</span>
-        <span className={`${styles.letters} ${styles.muted}`}>
+        <FitText className={`${styles.letters} ${styles.muted}`} text={typed} max={32} min={20}>
           {steps.map((step, i) => (
             <TypedLetter key={i} step={step} />
           ))}
-        </span>
+        </FitText>
         <span className={styles.label}>the word</span>
-        <span className={styles.letters}>
+        <FitText className={styles.letters} text={word} max={32} min={20}>
           {steps.map((step, i) => (
             <WordLetter key={i} step={step} />
           ))}
-        </span>
+        </FitText>
         <span className={styles.legend}>crossed out = extra letter · aqua = missing letter</span>
       </div>
     </>
@@ -314,7 +324,12 @@ function WordLetter({ step }: { step: LetterStep }) {
 
 function ReplayButton({ onClick }: { onClick: () => void }) {
   return (
-    <button type="button" className={styles.replay} aria-label="Play the word again" onClick={onClick}>
+    <button
+      type="button"
+      className={styles.replay}
+      aria-label="Play the word again"
+      onClick={onClick}
+    >
       <SpeakerIcon size={22} filled />
     </button>
   );
@@ -322,7 +337,13 @@ function ReplayButton({ onClick }: { onClick: () => void }) {
 
 function SpeakerIcon({ size, filled = false }: { size: number; filled?: boolean }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" className={styles.speakerIcon}>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={styles.speakerIcon}
+    >
       <path
         className={filled ? styles.speakerBodyAqua : styles.speakerBody}
         d="M4 9h3l5-4v14l-5-4H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z"

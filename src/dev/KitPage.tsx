@@ -3,6 +3,8 @@ import { DECKS } from '../domain/decks/decks';
 import { TodayScreen } from '../screens/Today/TodayScreen';
 import { SpellingAddSheet } from '../screens/AddEdit/SpellingAddSheet';
 import { SpellingScreen } from '../screens/Spelling/SpellingScreen';
+import { ReviewScreen } from '../screens/Review/ReviewScreen';
+import type { CardWithEntries } from '../data/repository';
 import { deckById } from '../domain/decks/decks';
 import { BottomPanel } from '../ui/BottomPanel';
 import { Button } from '../ui/Button';
@@ -23,6 +25,8 @@ import styles from './KitPage.module.css';
  * &decks=all to see the + roll-out with all three decks (canvas N2; only vocab is enabled).
  * &screen=today shows the Today screen with all three decks, as on canvas N1.
  * &screen=spelling-add shows the Spelling add sheet (P3, P4); "necessary" is already there.
+ * &screen=card shows a review card for &word=… (default "Contemporary"; tap it to flip), with
+ * two Persian meanings as chips (bug 2 and 6 checks).
  * &screen=spelling shows a spelling card (P5–P7) for &word=… (default "necessary"); type
  * "neccesary" for P6, or use &word=their and type "there" for P7. No sound in the kit.
  * main.tsx only loads this when import.meta.env.DEV, so it never ships.
@@ -44,6 +48,36 @@ export function KitPage() {
         }}
         deck={deckById('spelling')}
         onClose={() => {}}
+      />
+    );
+  }
+
+  if (new URLSearchParams(location.search).get('screen') === 'card') {
+    const word = new URLSearchParams(location.search).get('word') ?? 'Contemporary';
+    const entry = (id: string, kind: 'synonym' | 'meaning' | 'sentence', text: string) => ({
+      id,
+      cardId: 'kit',
+      kind,
+      text,
+      translation: null,
+      position: 0,
+      updatedAt: '',
+      deletedAt: null,
+    });
+    const card = {
+      card: { id: 'kit', word, deck: 'vocab' },
+      synonyms: [entry('s1', 'synonym', 'modern'), entry('s2', 'synonym', 'current')],
+      meanings: [entry('m1', 'meaning', 'معاصر'), entry('m2', 'meaning', 'هم‌دوره، امروزی')],
+      sentences: [entry('e1', 'sentence', `She loves ${word.toLowerCase()} art.`)],
+    } as unknown as CardWithEntries;
+    return (
+      <ReviewScreen
+        card={card}
+        progress={0.35}
+        reaction={null}
+        onAnswer={() => {}}
+        onEdit={() => {}}
+        top={<TopBar cardCount={133} streak={2} onAdd={() => {}} />}
       />
     );
   }

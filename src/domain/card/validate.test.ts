@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   cleanTranslation,
+  looksNotPersian,
   MAX_ENTRY_LENGTH,
   MAX_WORD_LENGTH,
   normalizeWord,
@@ -158,5 +159,20 @@ describe('required lists per deck (v3)', () => {
       ok: false,
       errors: { word: 'required' },
     });
+  });
+});
+
+describe('looksNotPersian (bug 5, 2026-11-09)', () => {
+  it.each([
+    ['The mold and the plants proved', true],
+    ['harmless', true],
+    ['بررسی کردن', false],
+    ['پردازنده CPU', false],
+    ['۱۲۳', false],
+    ['', false],
+    ['  ', false],
+    ['123, 456', false],
+  ])('%j → %s', (text, expected) => {
+    expect(looksNotPersian(text)).toBe(expected);
   });
 });
