@@ -41,10 +41,13 @@ const type = (text: string) => userEvent.type(field(), text);
 describe('SpellingScreen: listen and type (canvas P5)', () => {
   it('shows the speaker, the slow snail and an answer field set up for spelling', () => {
     setup();
-    expect(screen.getByText('listen and type')).toBeInTheDocument();
+    // No tag; "Show me" sits in the card, under the speakers (2026-11-10).
+    expect(screen.queryByText('listen and type')).not.toBeInTheDocument();
+    const card = screen.getByRole('region', { name: 'Listen and type' });
     expect(screen.getByRole('button', { name: 'Play the word again' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Play slowly' })).toBeInTheDocument();
-    expect(screen.getByText('tap to hear it again')).toBeInTheDocument();
+    expect(card).toContainElement(screen.getByRole('button', { name: 'Show me' }));
+    expect(screen.queryByText(/tap to hear/i)).not.toBeInTheDocument();
     expect(screen.getByText('Spelling')).toBeInTheDocument();
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '40');
     const input = screen.getByRole('textbox', { name: 'Type what you hear' });
@@ -160,7 +163,7 @@ describe('SpellingScreen: not quite (canvas P6)', () => {
     const { all, view } = setup();
     await type('recieve{Enter}');
     view.rerender(<SpellingScreen {...all} cardId="c2" word="their" />);
-    expect(screen.getByText('listen and type')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Listen and type' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Type what you hear' })).toHaveValue('');
   });
 });
