@@ -18,11 +18,19 @@ self.addEventListener('push', (event) => {
     : Promise.resolve();
   event.waitUntil(
     Promise.all([
-      self.registration.showNotification(message.title, {
-        body: message.body,
-        icon: 'icons/icon-192.png',
-        tag: 'daily-reminder', // a new reminder replaces yesterday's
-      }),
+      // iPhone ignores `tag` replacement, so yesterday's reminders piled up on the lock screen
+      // (bug 1, 2026-11-09): close the earlier ones first, so only today's stays.
+      self.registration
+        .getNotifications()
+        .catch(() => [])
+        .then((earlier) => {
+          for (const old of earlier) old.close();
+          return self.registration.showNotification(message.title, {
+            body: message.body,
+            icon: 'icons/icon-192.png',
+            tag: 'daily-reminder', // replaces yesterday's where the browser supports it
+          });
+        }),
       badge.catch(() => {}),
     ]),
   );

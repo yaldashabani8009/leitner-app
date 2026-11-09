@@ -110,6 +110,7 @@ Build brief: `HANDOFF-v3-build.md` (Yali and Claude, 2026-10-31). Decisions in i
 - [ ] Set the reminder time.
 - [ ] 12.5: in a spelling session on the iPhone (Home Screen app), tap Start once; each next word should play by itself after Check, the retype or a swipe. Then mark 12.5 ✅.
 - [ ] 12.7: Mix them all with Vocab and Spelling due on the iPhone: when a spelling chunk starts, the word plays and the keyboard opens straight from your swipe or tap; when a Vocab chunk comes back, the keyboard closes.
+- [ ] 12b.4: two days in a row with a reminder: only the newest stays on the lock screen (bug 1).
 - [ ] 12b.3: in a spelling session on the iPhone, tap the answer field: the keyboard opens and nothing moves; the top bar, card, field and Check stay above the keyboard (bug 7).
 - [ ] 12b.1: leave a session on a card (Vocab and Spelling, also after a wrong spelling), then Continue: the same card comes back (bug 4).
 
@@ -146,4 +147,4 @@ Yali used the app for a week and sent 8 bugs with screenshots; the causes and de
 | 12b.1 ✅ | Session ends when the bar is full; "Practice the N you missed" is optional; Continue shows the card you left | Bugs 8, 3, 4: no automatic practice round; Mix never "Paused" for misses only; a card counts only once you move on from it |
 | 12b.2 ✅ | Card text: long words fit on one line, Persian meanings as chips, "looks like English" note                  | Bugs 2, 6, 5; canvas card-back boards updated; screenshots                                                                 |
 | 12b.3 ✅ | Spelling screen stays put when the iPhone keyboard opens                                                     | Bug 7; fits above the keyboard (393×440 check); on Yali's phone list                                                       |
-| 12b.4    | Only today's reminder stays on the lock screen                                                               | Bug 1; older reminders closed before a new one shows                                                                       |
+| 12b.4 ✅ | Only today's reminder stays on the lock screen                                                               | Bug 1; older reminders closed before a new one shows                                                                       |
