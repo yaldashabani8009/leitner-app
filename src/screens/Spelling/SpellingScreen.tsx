@@ -171,7 +171,6 @@ export function SpellingScreen({
 
       {phase.kind === 'typing' ? (
         <section className={`${styles.card} ${styles.listen}`} aria-label="Listen and type">
-          <span className={styles.tagAqua}>listen and type</span>
           <div className={styles.speakers}>
             <button
               type="button"
@@ -190,13 +189,14 @@ export function SpellingScreen({
               <SnailIcon />
             </button>
           </div>
-          <span className={styles.hint}>
-            {needsStart
-              ? 'Tap to start'
-              : speechState === 'blocked'
-                ? 'Tap to hear'
-                : 'tap to hear it again'}
-          </span>
+          {/* Only when a tap is needed: the session's first word, or sound was blocked. */}
+          {(needsStart || speechState === 'blocked') && (
+            <span className={styles.hint}>{needsStart ? 'Tap to start' : 'Tap to hear'}</span>
+          )}
+          {/* In the card, under the speaker, so the card holds together (Yali, 2026-11-10). */}
+          <button type="button" className={styles.showMe} onClick={showMe}>
+            Show me
+          </button>
         </section>
       ) : phase.kind === 'wrong' ? (
         <section className={`${styles.card} ${styles.answerCard}`} aria-label="Not quite">
@@ -279,13 +279,6 @@ export function SpellingScreen({
           {phase.kind === 'typing' ? 'Check' : 'Next'}
         </button>
       </form>
-      {phase.kind === 'typing' && (
-        <div className={styles.showMeRow}>
-          <button type="button" className={styles.showMe} onClick={showMe}>
-            Show me
-          </button>
-        </div>
-      )}
     </main>
   );
 }

@@ -64,12 +64,13 @@
   box-shadow: var(--shadow-card);
 }
 
-/* P5: 236px tall, shorter when the keyboard leaves less room (down to 150px). */
+/* P5 (2026-11-10): no tag; the speakers, then "Show me" under them, so the card is only as
+   tall as it needs to be and everything fits above the keyboard. */
 .listen {
-  container-type: size;
-  flex: 0 1 236px;
+  justify-content: center;
+  gap: 4px;
   height: auto;
-  min-height: 150px;
+  padding: 24px 22px 8px;
 }
 
 /* P6 / P7: the answer, left-aligned under a tag and a small replay button. */
@@ -432,12 +433,6 @@
   transform: translateY(var(--press-depth-sm));
 }
 
-.showMeRow {
-  display: flex;
-  justify-content: center;
-  margin-top: 6px;
-}
-
 .showMe {
   min-height: 44px;
   padding: 8px 16px;
@@ -464,20 +459,3 @@
   }
 }
 
-/* Little room (keyboard open): a smaller speaker, no hint line. The full card has ~193px
-   inside its padding; this kicks in once it has shrunk below 185px. */
-@container (height < 185px) {
-  .speaker {
-    width: 76px;
-    height: 76px;
-  }
-
-  .speaker .speakerIcon {
-    width: 38px;
-    height: 38px;
-  }
-
-  .hint {
-    display: none;
-  }
-}
