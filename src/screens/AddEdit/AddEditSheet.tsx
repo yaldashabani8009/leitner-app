@@ -192,29 +192,35 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
 
   const isEdit = editor.mode === 'edit';
   const duplicate = !isEdit && form.duplicateOf !== undefined;
+  const deck = isEdit ? deckById(editing!.card.deck) : editor.deck;
+  // Phrases (v3 brief 1.5): "New phrase", "Save phrase", "Type the next phrase".
+  const thing = deck.id === 'phrases' ? 'phrase' : 'word';
   return (
     <Sheet
       open
       onClose={close}
-      title={isEdit ? 'Edit word' : 'New word'}
+      title={isEdit ? `Edit ${thing}` : `New ${thing}`}
       // Canvas N4 (add) and P1 (edit): the deck chip, no mascot.
-      titleAddon={<DeckChip deck={isEdit ? deckById(editing!.card.deck) : editor.deck} />}
+      titleAddon={<DeckChip deck={deck} />}
       closeOnOverlay={isEdit}
       toast={<Toast messageId={toast?.id}>{toast?.message ?? null}</Toast>}
     >
-      {isEdit && <p className={styles.note}>Editing won't change when you see this word next.</p>}
+      {isEdit && (
+        <p className={styles.note}>Editing won't change when you see this {thing} next.</p>
+      )}
       <WordForm
         key={isEdit ? editor.cardId : form.key}
         id={FORM_ID}
         mode={editor.mode}
         initial={isEdit ? draftOf(editing!) : form.initial}
         wordOnly={isEdit && editing!.card.deck === 'spelling'}
+        deck={deck.id}
         errors={errors}
         onClearError={clearError}
         onSubmit={(draft) => void save(draft)}
         onWordBlur={isEdit ? undefined : (draft) => void checkDuplicate(editor.deck, draft)}
         focusWord={!isEdit && form.focusWord}
-        wordPlaceholder={!isEdit && savedOnce ? 'Type the next word' : undefined}
+        wordPlaceholder={!isEdit && savedOnce ? `Type the next ${thing}` : undefined}
         wordNote={
           duplicate && (
             <div role="status" className={styles.duplicate}>
@@ -224,7 +230,7 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
               </svg>
               <span className={styles.duplicateText}>Already in your {editor.deck.label} box</span>
               <button type="button" className={styles.another} onClick={() => freshForm(true)}>
-                Add another word
+                Add another {thing}
               </button>
             </div>
           )
@@ -232,7 +238,7 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
       />
       {/* At the end of the form, scrolling with it (not pinned; Yali, 2026-10-29). */}
       <Button type="submit" form={FORM_ID} className={styles.save}>
-        {isEdit ? 'Save changes' : duplicate ? 'Save & start over' : 'Save word'}
+        {isEdit ? 'Save changes' : duplicate ? 'Save & start over' : `Save ${thing}`}
       </Button>
       {duplicate && <p className={styles.startOver}>It goes back to the start of your box.</p>}
     </Sheet>

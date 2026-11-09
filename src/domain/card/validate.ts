@@ -8,6 +8,13 @@ import type { DeckId } from '../leitner/config';
 /** Same limits as the database (supabase/migrations: char_length checks). */
 export const MAX_WORD_LENGTH = 200;
 export const MAX_ENTRY_LENGTH = 1000;
+/** A phrase is short: "up to about 80 characters" (v3 brief 1.5). */
+export const MAX_PHRASE_LENGTH = 80;
+
+/** The longest word (or phrase) a deck accepts. */
+export function maxWordLength(deck: DeckId): number {
+  return deck === 'phrases' ? MAX_PHRASE_LENGTH : MAX_WORD_LENGTH;
+}
 
 export interface EntryInput {
   /** Present when editing an existing entry; absent for a new one. */
@@ -95,7 +102,7 @@ export function validateCard(draft: CardDraft, deck: DeckId = 'vocab'): Validati
   const errors: FieldErrors = {};
   const word = normalizeWord(draft.word);
   if (word === '') errors.word = 'required';
-  else if (length(word) > MAX_WORD_LENGTH) errors.word = 'tooLong';
+  else if (length(word) > maxWordLength(deck)) errors.word = 'tooLong';
 
   const lists = {} as Record<ListField, EntryInput[]>;
   for (const field of LIST_FIELDS) {

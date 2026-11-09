@@ -1,6 +1,7 @@
+import type { DeckId } from '../../domain/leitner/config';
 import {
   MAX_ENTRY_LENGTH,
-  MAX_WORD_LENGTH,
+  maxWordLength,
   type CardField,
   type FieldError,
   type ListField,
@@ -46,12 +47,13 @@ export const LISTS: Record<
 };
 
 /** The message shown under a field (PRD: errors appear under the field, Save is never disabled). */
-export function errorText(field: CardField, error: FieldError): string {
-  if (error === 'duplicate') return 'You already have this word.';
+export function errorText(field: CardField, error: FieldError, deck: DeckId = 'vocab'): string {
+  const thing = deck === 'phrases' ? 'phrase' : 'word';
+  if (error === 'duplicate') return `You already have this ${thing}.`;
   if (error === 'orphanTranslation') return 'Add the sentence, or clear the Persian.';
   if (error === 'tooLong') {
-    const max = field === 'word' ? MAX_WORD_LENGTH : MAX_ENTRY_LENGTH;
+    const max = field === 'word' ? maxWordLength(deck) : MAX_ENTRY_LENGTH;
     return `That's too long. Keep it under ${max} characters.`;
   }
-  return field === 'word' ? 'Type the word.' : LISTS[field].required;
+  return field === 'word' ? `Type the ${thing}.` : LISTS[field].required;
 }

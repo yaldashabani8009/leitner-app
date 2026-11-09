@@ -10,6 +10,7 @@ import { CloseIcon } from '../../ui/icons';
 import { AddPill } from '../../ui/Pill';
 import { TextField } from '../../ui/TextField';
 import fieldStyles from '../../ui/TextField.module.css';
+import type { DeckId } from '../../domain/leitner/config';
 import { errorText, LISTS } from './messages';
 import styles from './WordForm.module.css';
 
@@ -41,6 +42,11 @@ interface WordFormProps {
   wordPlaceholder?: string;
   /** A spelling card: the word is the whole card (v3 brief 1.2: one field, "The word"). */
   wordOnly?: boolean;
+  /**
+   * The deck (v3 brief 1.5): Phrases have "The phrase" (up to 80 characters), no similar words,
+   * and an optional Persian and optional sentences.
+   */
+  deck?: DeckId;
 }
 
 let nextKey = 0;
@@ -82,7 +88,9 @@ export function WordForm({
   focusWord = false,
   wordPlaceholder,
   wordOnly = false,
+  deck = 'vocab',
 }: WordFormProps) {
+  const phrase = deck === 'phrases';
   const [word, setWord] = useState(initial?.word ?? '');
   const wordRef = useRef<HTMLInputElement>(null);
   // Only when the form appears (it is remounted after each save); never while typing elsewhere.
@@ -127,13 +135,13 @@ export function WordForm({
   return (
     <form id={id} className={styles.form} onSubmit={handleSubmit} noValidate>
       <TextField
-        label="The word"
+        label={phrase ? 'The phrase' : 'The word'}
         value={word}
         onChange={(event) => {
           setWord(event.target.value);
           onClearError('word');
         }}
-        error={errors.word && errorText('word', errors.word)}
+        error={errors.word && errorText('word', errors.word, deck)}
         note={wordNote}
         onBlur={onWordBlur ? () => onWordBlur(draft()) : undefined}
         ref={wordRef}
@@ -146,15 +154,17 @@ export function WordForm({
 
       {!wordOnly && (
         <>
-          <CommaField
-            field="synonyms"
-            value={synonyms}
-            error={errors.synonyms && errorText('synonyms', errors.synonyms)}
-            onChange={(text) => {
-              setSynonyms(text);
-              onClearError('synonyms');
-            }}
-          />
+          {!phrase && (
+            <CommaField
+              field="synonyms"
+              value={synonyms}
+              error={errors.synonyms && errorText('synonyms', errors.synonyms)}
+              onChange={(text) => {
+                setSynonyms(text);
+                onClearError('synonyms');
+              }}
+            />
+          )}
 
           <CommaField
             field="meanings"

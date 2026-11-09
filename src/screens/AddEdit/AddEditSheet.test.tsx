@@ -144,6 +144,52 @@ describe('Add word', () => {
     await toastSays('benign saved');
   });
 
+  it('Phrases: "New phrase", only the phrase is needed, and Persian and a sentence are optional (v3 1.5)', async () => {
+    open({ mode: 'add', deck: deckById('phrases') });
+    const sheet = await screen.findByRole('dialog', { name: 'New phrase' });
+    expect(within(sheet).getByText('Phrases')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Similar words')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Save phrase' }));
+    expect(await screen.findByText('Type the phrase.')).toBeInTheDocument();
+
+    await userEvent.type(field('The phrase'), 'break the ice');
+    await userEvent.click(screen.getByRole('button', { name: 'Save phrase' }));
+    await toastSays('break the ice saved');
+    expect(field('The phrase')).toHaveAttribute('placeholder', 'Type the next phrase');
+
+    await userEvent.type(field('The phrase'), 'on cloud nine');
+    await userEvent.type(field('In Persian'), 'خیلی خوشحال');
+    await userEvent.type(field('Sentence 1'), 'She was on cloud nine.');
+    await userEvent.click(screen.getByRole('button', { name: 'Save phrase' }));
+    await toastSays('on cloud nine saved');
+
+    const cards = await db.cards.toArray();
+    expect(cards.map((card) => [card.word, card.deck])).toEqual([
+      ['break the ice', 'phrases'],
+      ['on cloud nine', 'phrases'],
+    ]);
+    const entries = await db.entries.where('cardId').equals(cards[0].id).toArray();
+    expect(entries).toHaveLength(0);
+  });
+
+  it('Phrases: longer than 80 characters is too long; the same phrase twice is a duplicate', async () => {
+    open({ mode: 'add', deck: deckById('phrases') });
+    await screen.findByRole('dialog', { name: 'New phrase' });
+    await userEvent.type(field('The phrase'), 'x'.repeat(81));
+    await userEvent.click(screen.getByRole('button', { name: 'Save phrase' }));
+    expect(
+      await screen.findByText("That's too long. Keep it under 80 characters."),
+    ).toBeInTheDocument();
+    await userEvent.clear(field('The phrase'));
+    await userEvent.type(field('The phrase'), 'break the ice');
+    await userEvent.click(screen.getByRole('button', { name: 'Save phrase' }));
+    await toastSays('break the ice saved');
+    await userEvent.type(field('The phrase'), 'Break the ice');
+    await userEvent.click(screen.getByRole('button', { name: 'Save phrase' }));
+    expect(await screen.findByText('Already in your Phrases box')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add another phrase' })).toBeInTheDocument();
+  });
+
   it('adds three words in a row', async () => {
     open(ADD);
     await screen.findByRole('dialog');
