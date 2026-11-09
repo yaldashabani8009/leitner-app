@@ -77,9 +77,9 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 2. The **daily limit** counts that deck's scheduled reviews (practice repeats don't count).
 3. At the cap → "All done for today"; leftovers roll over.
 4. Order: most overdue first, then lowest box. Cards with the same due date and box are shuffled, with the same order all day (decided 2026-10-28).
-5. Wrong answer → rescheduled (box 1, tomorrow) **and** repeated once at the end as practice.
+5. Wrong answer → rescheduled (box 1, tomorrow). The session ends when every card is answered (the progress bar is full); there is no automatic practice round (Yali, 2026-11-09). Session complete then offers **Practice the N you missed**, which runs those cards as extra practice.
 6. Practice answers change nothing.
-7. Leaving mid-session: unanswered cards stay due. **Home** (top left in a session) leaves without asking; the deck then says "Paused · N left" and continues where it stopped. Only the session's card list is saved (per deck per day, on the device); where you were and the practice round are worked out from the review logs, so they survive switching decks or closing the app.
+7. Leaving mid-session: unanswered cards stay due. **Home** (top left in a session) leaves without asking; the deck then says "Paused · N left" (the cards not answered yet) and **Continue shows the card you left on**, unanswered. A card counts as answered only once you move on from it: after Knew it / Not yet (a card left during its fly-away is not answered), and in Spelling after the retype, "Sounds the same, count it" or a right answer. Only the session's card list is saved (per deck per day, on the device); where you were is worked out from the review logs, so it survives switching decks or closing the app. A card answered in another session the same day (a deck's own session after Mix them all) counts as answered everywhere.
 
 ## Streak and progress (top bar)
 
@@ -112,7 +112,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 3. **Today** (v3, canvas N1): choose a deck card, or **Mix them all** (see below).
 4. Card front (word) → tap → back (similar words, in Persian, in a sentence, pencil to edit).
 5. Answer: swipe right = Knew it, left = Not yet, or tap buttons. No swiping on the front.
-6. After the session: practice round for misses, then "Session complete" (celebrating mascot; streak counts). "Next N words" shows only when more are due in that deck (or any deck, in Mix them all); "I'm done for now" / "Done for today" go back to Today.
+6. After the session: "Session complete" as soon as the bar is full (celebrating mascot; streak counts). With misses, **Practice the N you missed** comes first (aqua); it runs them as extra practice ("Practice done! … Practice the N again / Done"), which never moves a card. "Next N words" shows only when more are due in that deck (or any deck, in Mix them all), as an aqua button, or white under "Practice the N you missed"; "I'm done for now" / "Done for today" go back to Today.
 7. Add word: the + rolls out one button per enabled deck (canvas N2; with one deck it opens that deck's sheet straight away). Same on Today, in sessions and on all words. The sheet stays open after Save (see Card structure). It sits above the phone keyboard; fields grow with the text.
 8. Edit: pencil on card back → same sheet, pre-filled, with the reminder "Editing won't change when you see this word next."
 
@@ -131,7 +131,7 @@ Laptop (built in 7.13; v3 keys in 11.10): Space flips, ← / → answer, E edits
 
 ## Mix them all (v3, canvas N6)
 
-- With cards due in any deck: the real sessions of every such deck in one stream, in random chunks of 3–9 cards from one deck (a deck with only 1–2 cards due gives just those; a deck never leaves 1–2 behind for a tiny last chunk), each chunk shuffled; no pause between chunks; two chunks from the same deck only come back to back when no other deck has cards left. Spelling cards are included: the swipe or tap that ends the card before a spelling chunk says the first word and opens the keyboard; a Vocab chunk closes it again. The deck chip next to the progress bar shows which deck a card is from. Each deck's session size and daily limit apply; answers move boxes; the practice round comes at the end. Home and Mix them all again carry on where it stopped.
+- With cards due in any deck: the real sessions of every such deck in one stream, in random chunks of 3–9 cards from one deck (a deck with only 1–2 cards due gives just those; a deck never leaves 1–2 behind for a tiny last chunk), each chunk shuffled; no pause between chunks; two chunks from the same deck only come back to back when no other deck has cards left. Spelling cards are included: the swipe or tap that ends the card before a spelling chunk says the first word and opens the keyboard; a Vocab chunk closes it again. The deck chip next to the progress bar shows which deck a card is from. Each deck's session size and daily limit apply; answers move boxes; Session complete offers practising the misses. Home and Mix them all again carry on where it stopped.
 - With nothing due anywhere: extra practice of today's new words from all decks.
 
 ## Extra practice (v3, canvas N11, N12)
@@ -170,7 +170,7 @@ See `supabase/migrations/` (source of truth) and ADR-003. Tables: `profiles` (di
 
 ## Open questions
 
-- [x] Keep "Think first… then tap the card" on the front: yes (Yali, 2026-10-28). "That's okay. You'll see it again tomorrow." shows while swiping left / after "Not yet", as on the canvas (not in the practice round, where nothing is rescheduled).
+- [x] Keep "Think first… then tap the card" on the front: yes (Yali, 2026-10-28). "That's okay. You'll see it again tomorrow." shows while swiping left / after "Not yet", as on the canvas (not in extra practice, where nothing is rescheduled).
 - [x] Session complete: no score (Yali, 2026-10-28): "You went through 20 words. Nice work."
 - [x] Sign-in / sign-up / forgot-password screens: designed in code in the v2 style, reviewed by Yali from screenshots (2026-10-28). Mascot added in 7.8.
 - [x] Where Export/Import lives: nowhere in the app; it appears as a modal only when needed (Yali, 2026-10-29, ADR-016).

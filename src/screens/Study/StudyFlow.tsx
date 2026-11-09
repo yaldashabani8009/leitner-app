@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Repository } from '../../data/repository';
 import {
   answerInSession,
-  currentStep,
+  currentCard,
   isComplete,
   type Session,
 } from '../../domain/session/session';
@@ -101,7 +101,7 @@ interface StudyFlowProps {
 }
 
 /**
- * The signed-in app: loading → Today (v3 brief 1.4) → a deck's session (+ practice round) →
+ * The signed-in app: loading → Today (v3 brief 1.4) → a deck's session →
  * session complete → Today. The cards for a session are picked once when it starts and saved
  * per deck per day; answers are saved right away, so Home (no "are you sure?") just leaves,
  * and the deck says "Paused · N left" until Continue picks it up where it stopped (1.6).
@@ -142,6 +142,8 @@ export function StudyFlow({
   const [view, setView] = useState<
     'today' | 'study' | 'complete' | 'allDone' | 'extra' | 'extraDone'
   >('today');
+  /** "Next N words" on Session complete, read fresh when the session ends (no stale flash). */
+  const [nextAfter, setNextAfter] = useState(0);
   /** A round of extra practice (v3 brief 1.7): never moves a card. */
   const [extra, setExtra] = useState<Extra | null>(null);
   /** The all-words page, opened from the box badge; it sits over whatever screen was showing. */
@@ -195,9 +197,9 @@ export function StudyFlow({
     return () => clearTimeout(timer);
   }, [reaction]);
 
-  const step = session ? currentStep(session) : null;
+  const stepId = session ? currentCard(session) : null;
   const extraCardId = view === 'extra' && extra ? extra.order[extra.index] : undefined;
-  const shownCardId = extraCardId ?? step?.cardId;
+  const shownCardId = extraCardId ?? stepId ?? undefined;
   // Tagged with the card id: while a new step's card loads, the hook still returns the old result.
   const loaded = useLiveQuery(
     async () =>
@@ -246,16 +248,26 @@ export function StudyFlow({
     else startExtra(await repo.cardsAddedOn(ids));
   }
 
-  /** One round of extra practice over these cards, shuffled again; none → "All done for today". */
-  function startExtra(cards: readonly PracticeCard[]) {
+  /**
+   * One round of extra practice over these cards, shuffled again; none → "All done for today".
+   * `fromTap`: called right inside a tap, so a spelling card first is said at once.
+   */
+  function startExtra(cards: readonly PracticeCard[], fromTap = false) {
     const order = practiceOrder(cards, Math.random);
     if (order.length === 0) {
       setView('allDone');
       return;
     }
+    const first = cards.find((card) => card.id === order[0]);
+    const firstWord = words?.[order[0]];
+    let sayFirst = false;
+    if (fromTap && speech && first?.deck === 'spelling' && firstWord !== undefined) {
+      speech.speak(firstWord);
+      sayFirst = true;
+    }
     setSession(null);
     setRun(null);
-    setSoundOn(false);
+    setSoundOn(sayFirst);
     setFocusNextCard(false);
     setExtra({ cards, order, index: 0, answers: new Map() });
     setView('extra');
@@ -299,7 +311,7 @@ export function StudyFlow({
     keyboardKeeper.current?.focus({ preventScroll: true });
   }
 
-  /** A spelling card, in a session or a practice round (v3 brief 1.3, canvas P5–P7). */
+  /** A spelling card, in a session or extra practice (v3 brief 1.3, canvas P5–P7). */
   function spellingScreen(props: {
     cardId: string;
     kind: 'scheduled' | 'practice';
@@ -493,10 +505,8 @@ export function StudyFlow({
       <ReviewScreen
         key={`extra-${current.order.length}-${current.index}`}
         card={extraCard}
-        kind="scheduled"
         progress={0}
         extra={{ left: current.order.length - current.index }}
-        practiceLeft={0}
         reaction={null}
         onAnswer={(correct) => void answerExtra(correct)}
         onCommit={() => intoSpellingChunk(current.order[current.index + 1])}
@@ -518,13 +528,21 @@ export function StudyFlow({
   }
 
   if (view === 'complete' && session && run) {
-    const nextCount =
-      run.kind === 'mix'
-        ? statuses.reduce((sum, status) => sum + status.waiting, 0)
-        : (statuses[decks.findIndex((deck) => deck.id === run.deck.id)]?.waiting ?? 0);
+    const nextCount = nextAfter;
     return withSheet(
       <SessionComplete
         wordCount={session.scheduled.length}
+        missed={session.missed.length}
+        onPractice={() =>
+          // The words missed in this session, as extra practice: boxes never move.
+          startExtra(
+            session.missed.flatMap((id) => {
+              const deck = deckOfCard(id);
+              return deck ? [{ id, deck }] : [];
+            }),
+            true,
+          )
+        }
         nextCount={nextCount}
         streak={progress?.streak}
         focusOnStart={focusNextCard}
@@ -537,38 +555,43 @@ export function StudyFlow({
     );
   }
 
-  if (!session || !step || !run) return withSheet(null);
+  if (!session || !stepId || !run) return withSheet(null);
 
   /** The session is over: forget it (the deck stops saying "Paused") and celebrate. */
   function finish(current: Run) {
     void (current.kind === 'mix' ? repo.closeMixSession() : repo.closeDeckSession(current.deck.id));
-    setView('complete');
+    // Read after the last answer is saved (IndexedDB runs them in order), so "Next N words"
+    // never flashes the card just answered.
+    const ids = current.kind === 'mix' ? decks.map((deck) => deck.id) : [current.deck.id];
+    void repo.deckStatuses(ids).then((fresh) => {
+      setNextAfter(fresh.reduce((sum, status) => sum + status.waiting, 0));
+      setView('complete');
+    });
   }
 
   const scheduledCount = session.scheduled.length;
   const sessionProgress = Math.min(session.answered, scheduledCount) / scheduledCount;
 
   // Spelling cards don't wait for the card to load: the screen (and the iPhone keyboard) stays put.
-  if (deckOfCard(step.cardId) === 'spelling') {
+  if (deckOfCard(stepId) === 'spelling') {
     const current = session;
     const currentRun = run;
-    const cardId = step.cardId;
-    const kind = step.kind;
+    const cardId = stepId;
     return spellingScreen({
       cardId,
-      kind,
-      progress: kind === 'practice' ? 1 : sessionProgress,
-      onRecord: (correct, typed) => void repo.recordAnswer(cardId, correct, kind, typed),
+      kind: 'scheduled',
+      progress: sessionProgress,
+      onRecord: (correct, typed) => void repo.recordAnswer(cardId, correct, 'scheduled', typed),
       onNext: (correct) => {
         const next = answerInSession(current, correct);
-        sayIfSpelling(currentStep(next)?.cardId);
+        sayIfSpelling(currentCard(next) ?? undefined);
         setSession(next);
         if (isComplete(next)) finish(currentRun);
       },
     });
   }
 
-  if (!loaded || loaded.cardId !== step.cardId) return withSheet(null); // the card is loading (a few ms)
+  if (!loaded || loaded.cardId !== stepId) return withSheet(null); // the card is loading (a few ms)
   const card = loaded.card;
 
   if (card === null) {
@@ -580,13 +603,13 @@ export function StudyFlow({
   }
 
   async function handleAnswer(correct: boolean) {
-    if (!session || !step || !run || saving.current) return;
+    if (!session || !stepId || !run || saving.current) return;
     saving.current = true;
     // Touch taps don't focus buttons on iPhone, so this is only true for keyboard and
     // screen-reader use (and mouse clicks in some browsers, where it does no harm).
     setFocusNextCard(document.activeElement !== null && document.activeElement !== document.body);
     try {
-      await repo.recordAnswer(step.cardId, correct, step.kind);
+      await repo.recordAnswer(stepId, correct, 'scheduled');
       const next = answerInSession(session, correct);
       setReaction(correct ? 'happy' : 'cheer');
       setSession(next);
@@ -601,16 +624,14 @@ export function StudyFlow({
       // A fresh card each step: back to the front, swipe reset.
       key={session.answered}
       card={card}
-      kind={step.kind}
       progress={sessionProgress}
       deck={
         run.kind === 'mix' ? decks.find((deck) => deck.id === run.deckOf[card.card.id]) : undefined
       }
-      practiceLeft={scheduledCount + session.practice.length - session.answered}
       reaction={reaction}
       onAnswer={handleAnswer}
       onCommit={(correct) =>
-        intoSpellingChunk(currentStep(answerInSession(session, correct))?.cardId)
+        intoSpellingChunk(currentCard(answerInSession(session, correct)) ?? undefined)
       }
       focusOnStart={focusNextCard}
       onEdit={() => setEditor({ mode: 'edit', cardId: card.card.id })}

@@ -1,5 +1,5 @@
 import { useDrag } from '@use-gesture/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '../../ui/useReducedMotion';
 
 /** Release past this share of the card width to answer (canvas note 04: "~30%"). */
@@ -30,6 +30,15 @@ export function useSwipe(
   const [dragging, setDragging] = useState(false);
   const [leaving, setLeaving] = useState<SwipeDirection | null>(null);
   const done = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Home while the card is flying off: the card was left, not answered, so nothing is saved
+  // and Continue shows it again (bug 4, 2026-11-09).
+  useEffect(
+    () => () => {
+      if (timer.current !== null) clearTimeout(timer.current);
+    },
+    [],
+  );
 
   function flyOut(direction: SwipeDirection) {
     if (done.current) return;
@@ -41,7 +50,10 @@ export function useSwipe(
       return;
     }
     setLeaving(direction);
-    setTimeout(answerNow, FLY_OUT_MS);
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      answerNow();
+    }, FLY_OUT_MS);
   }
 
   const bind = useDrag(

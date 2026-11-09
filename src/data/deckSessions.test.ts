@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { CardDraft } from '../domain/card/validate';
 import type { DeckId } from '../domain/leitner/config';
-import { currentStep } from '../domain/session/session';
+import { currentCard } from '../domain/session/session';
 import { LeitnerDb } from './db';
 import { createRepository, type Repository } from './repository';
 
@@ -59,14 +59,14 @@ describe('deckStatuses (Today screen, v3 brief 1.4)', () => {
     ]);
   });
 
-  it('a session left half way says how many are left, practice round included', async () => {
+  it('a session left half way says how many cards are left (misses are not waited for)', async () => {
     await add('vocab', 'a', 'b', 'c');
     now = DAY_2;
     const session = (await repo.openDeckSession('vocab'))!;
-    const first = currentStep(session)!.cardId;
-    await repo.recordAnswer(first, false, 'scheduled'); // missed: 2 left + 1 practice
+    const first = currentCard(session)!;
+    await repo.recordAnswer(first, false, 'scheduled'); // missed: 2 cards left
     const [vocab] = await repo.deckStatuses(['vocab']);
-    expect(vocab).toMatchObject({ pausedLeft: 3, waiting: 2 });
+    expect(vocab).toMatchObject({ pausedLeft: 2, waiting: 2 });
   });
 
   it('a session started but not answered yet is not "paused"', async () => {
@@ -80,7 +80,7 @@ describe('deckStatuses (Today screen, v3 brief 1.4)', () => {
     await add('vocab', 'a', 'b');
     now = DAY_2;
     const session = (await repo.openDeckSession('vocab'))!;
-    await repo.recordAnswer(currentStep(session)!.cardId, true, 'scheduled');
+    await repo.recordAnswer(currentCard(session)!, true, 'scheduled');
     now = '2026-03-12T08:00:00.000Z';
     expect((await repo.deckStatuses(['vocab']))[0].pausedLeft).toBeNull();
   });
@@ -109,34 +109,30 @@ describe('openDeckSession / closeDeckSession (v3 brief 1.6)', () => {
     expect(await repo.openDeckSession('phrases')).toBeNull();
   });
 
-  it('Continue carries on where it stopped, with the practice round, after another deck', async () => {
+  it('Continue carries on where it stopped, after another deck', async () => {
     await add('vocab', 'a', 'b');
     await add('spelling', 's');
     now = DAY_2;
     const first = (await repo.openDeckSession('vocab'))!;
-    const missed = currentStep(first)!.cardId;
+    const missed = currentCard(first)!;
     await repo.recordAnswer(missed, false, 'scheduled');
     // Study another deck in between.
     const spelling = (await repo.openDeckSession('spelling'))!;
-    await repo.recordAnswer(currentStep(spelling)!.cardId, true, 'scheduled');
+    await repo.recordAnswer(currentCard(spelling)!, true, 'scheduled');
 
     const again = (await repo.openDeckSession('vocab'))!;
     expect(again.scheduled).toEqual(first.scheduled);
-    expect(again.answered).toBe(1);
-    const second = currentStep(again)!;
-    expect(second.kind).toBe('scheduled');
-    await repo.recordAnswer(second.cardId, true, 'scheduled');
-    expect(currentStep((await repo.openDeckSession('vocab'))!)).toEqual({
-      cardId: missed,
-      kind: 'practice',
-    });
+    expect(again).toMatchObject({ answered: 1, missed: [missed] });
+    await repo.recordAnswer(currentCard(again)!, true, 'scheduled');
+    // Every card answered: nothing more today (the missed card waits for tomorrow).
+    expect(await repo.openDeckSession('vocab')).toBeNull();
   });
 
   it('after closing, the next open picks fresh cards (none left today)', async () => {
     await add('vocab', 'a');
     now = DAY_2;
     const session = (await repo.openDeckSession('vocab'))!;
-    await repo.recordAnswer(currentStep(session)!.cardId, true, 'scheduled');
+    await repo.recordAnswer(currentCard(session)!, true, 'scheduled');
     await repo.closeDeckSession('vocab');
     expect(await repo.openDeckSession('vocab')).toBeNull();
   });
@@ -170,16 +166,16 @@ describe('openMixSession (v3 brief 1.5)', () => {
     expect(new Set(decks.slice(0, 15)).size).toBe(2);
   });
 
-  it('answers move boxes; leaving and coming back carries on, practice round at the end', async () => {
+  it('answers move boxes; leaving and coming back carries on with the next card', async () => {
     await add('vocab', 'a', 'b');
     await add('spelling', 's');
     now = DAY_2;
     const first = (await repo.openMixSession(['vocab', 'spelling'], steady))!;
-    const missed = currentStep(first.session)!.cardId;
+    const missed = currentCard(first.session)!;
     await repo.recordAnswer(missed, false, 'scheduled');
     const again = (await repo.openMixSession(['vocab', 'spelling'], () => 0.1))!;
     expect(again.session.scheduled).toEqual(first.session.scheduled);
-    expect(again.session).toMatchObject({ answered: 1, practice: [missed] });
+    expect(again.session).toMatchObject({ answered: 1, missed: [missed] });
     expect((await db.cards.get(missed))?.box).toBe(1);
   });
 
@@ -231,9 +227,26 @@ describe('mixPausedLeft', () => {
     const mix = (await repo.openMixSession(['vocab'], () => 0.5))!;
     expect(await repo.mixPausedLeft()).toBeNull(); // opened, nothing answered yet
     await repo.recordAnswer(mix.session.scheduled[0], false, 'scheduled');
-    expect(await repo.mixPausedLeft()).toBe(2); // one more card + one practice
+    expect(await repo.mixPausedLeft()).toBe(1); // one more card; the miss isn't waited for
     now = '2026-03-12T08:00:00.000Z';
     expect(await repo.mixPausedLeft()).toBeNull();
+  });
+});
+
+describe('Mix them all after the decks (bug 3, 2026-11-09)', () => {
+  it("cards answered in the decks' own sessions count for a mix left half way", async () => {
+    await add('vocab', 'a', 'b', 'c');
+    now = DAY_2;
+    const mix = (await repo.openMixSession(['vocab'], () => 0.5))!;
+    await repo.recordAnswer(mix.session.scheduled[0], false, 'scheduled');
+    expect(await repo.mixPausedLeft()).toBe(2);
+    // Home, then the Vocab deck card: it picks the 2 cards still due and they're answered.
+    const deck = (await repo.openDeckSession('vocab'))!;
+    expect(deck.scheduled).toHaveLength(2);
+    for (const id of deck.scheduled) await repo.recordAnswer(id, true, 'scheduled');
+    expect(await repo.mixPausedLeft()).toBeNull();
+    expect((await repo.deckStatuses(['vocab']))[0]).toMatchObject({ waiting: 0, pausedLeft: null });
+    expect(await repo.openMixSession(['vocab'], () => 0.5)).toBeNull();
   });
 });
 

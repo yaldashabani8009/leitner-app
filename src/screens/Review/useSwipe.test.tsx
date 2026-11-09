@@ -47,3 +47,16 @@ describe('useSwipe: the answer is committed inside the gesture (v3 brief 1.4)', 
     expect(calls).toEqual(['commit', 'answer']);
   });
 });
+
+describe('useSwipe: leaving during the fly-out (bug 4, 2026-11-09)', () => {
+  it('a card that goes away before the fly-out ends is not answered', () => {
+    motion(false);
+    vi.useFakeTimers();
+    const onAnswer = vi.fn();
+    const { result, unmount } = renderHook(() => useSwipe(onAnswer, true));
+    act(() => result.current.flyOut('right'));
+    unmount();
+    vi.advanceTimersByTime(FLY_OUT_MS);
+    expect(onAnswer).not.toHaveBeenCalled();
+  });
+});

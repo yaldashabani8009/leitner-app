@@ -8,7 +8,7 @@ import { StudyFlow } from '../screens/Study/StudyFlow';
 /**
  * Dev-only: the real study screens with sample words (roadmap 7.9 screenshots).
  * Open http://localhost:5173/leitner-app/?demo (add &empty for an empty box, &many for 23 words,
- * &complete for Session complete with a streak bubble). Unless &empty, it starts with a 12-day
+ * &complete for Session complete with a streak bubble; &complete&missed=3 adds "Practice the 3 you missed"). Unless &empty, it starts with a 12-day
  * streak (up to yesterday) and the sample words already learned once.
  * &backup=save shows "Save a copy?" (20 days without the cloud); &empty&backup=restore shows
  * "Have a backup file?" (empty box, cloud unreachable). &reminder offers "Want a daily reminder?"
@@ -26,6 +26,8 @@ export function DemoPage() {
     return (
       <SessionComplete
         wordCount={20}
+        missed={Number(params.get('missed') ?? 0)}
+        onPractice={() => {}}
         nextCount={20}
         streak={13}
         onNext={() => {}}

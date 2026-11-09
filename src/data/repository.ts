@@ -25,7 +25,7 @@ import { pickSessionCards, reviewsDoneToday, waitingInDeck } from '../domain/ses
 import type { WordRow } from '../domain/allWords/allWords';
 import { mixDecks, type Random } from '../domain/session/mix';
 import { resumeSession } from '../domain/session/resume';
-import type { Session } from '../domain/session/session';
+import { cardsLeft, isComplete, type Session } from '../domain/session/session';
 import { dayCountsForStreak } from '../domain/session/streakDay';
 import { isOnOrBefore } from '../domain/time/calendarDate';
 import { dateInZone, resolveTimeZone } from '../domain/time/zonedDate';
@@ -267,7 +267,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       let pausedLeft: number | null = null;
       if (saved && saved.date === date) {
         const session = resumeSession(saved.scheduled, todayLogs);
-        const left = session.scheduled.length + session.practice.length - session.answered;
+        const left = cardsLeft(session);
         if (left > 0 && session.answered > 0) pausedLeft = left;
       }
       return {
@@ -773,7 +773,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         const saved = (await db.meta.get(key))?.value as SavedSession | undefined;
         if (saved && saved.date === date) {
           const session = resumeSession(saved.scheduled, todayLogs);
-          if (session.answered < session.scheduled.length + session.practice.length) return session;
+          if (!isComplete(session)) return session;
         }
 
         const deckCards = await db.cards.where('deck').equals(deck).primaryKeys();
@@ -821,7 +821,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         const saved = (await db.meta.get(META.mixSession))?.value as SavedSession | undefined;
         if (saved && saved.date === date) {
           const session = resumeSession(saved.scheduled, todayLogs);
-          if (session.answered < session.scheduled.length + session.practice.length) {
+          if (!isComplete(session)) {
             return withDecks(session);
           }
         }
@@ -893,7 +893,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       if (!value || value.date !== date) return null;
       const todayLogs = recent.filter((log) => dateInZone(log.reviewedAt, zone) === date);
       const session = resumeSession(value.scheduled, todayLogs);
-      const left = session.scheduled.length + session.practice.length - session.answered;
+      const left = cardsLeft(session);
       return left > 0 && session.answered > 0 ? left : null;
     },
 

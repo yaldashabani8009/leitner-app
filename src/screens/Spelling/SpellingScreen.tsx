@@ -15,7 +15,7 @@ import styles from './SpellingScreen.module.css';
 interface SpellingScreenProps {
   cardId: string;
   word: string;
-  /** "practice" (the round at the end, extra practice): boxes never move; the tags say less. */
+  /** "practice" = extra practice: boxes never move; the tags say less. */
   kind: 'scheduled' | 'practice';
   /** 0 … 1 through the session. */
   progress: number;
@@ -25,7 +25,10 @@ interface SpellingScreenProps {
   needsStart: boolean;
   /** The Start tap played the word: sound is unlocked for the session. */
   onStarted: () => void;
-  /** Save the answer (logged with what was typed; null for "Show me"). Doesn't move on. */
+  /**
+   * Save the answer (logged with what was typed; null for "Show me"). Called only when the card
+   * is done, right before onNext.
+   */
   onRecord: (correct: boolean, typed: string | null) => void;
   /**
    * Go on to the next card. Called inside the user's own tap or key press, so the next word can
@@ -99,24 +102,28 @@ export function SpellingScreen({
       setAnswer('');
       return;
     }
-    onRecord(false, typed);
+    // Saved when you go on (the retype), not now: leaving here keeps the card for Continue.
     setPhase({ kind: 'wrong', typed });
     setAnswer('');
   }
 
   function showMe() {
-    onRecord(false, null);
     setPhase({ kind: 'wrong', typed: null });
     setAnswer('');
   }
 
-  /** "Type it correctly once to go on": never moves the box again, never logged. */
+  /**
+   * "Type it correctly once to go on": the miss is saved now, with what was typed first (null
+   * after "Show me"). Until then nothing is saved, so Home → Continue shows this card again
+   * (bug 4, 2026-11-09). The retype itself is never logged.
+   */
   function retype() {
+    if (phase.kind === 'typing') return;
     if (!isCorrectSpelling(answer, word)) {
       setShaking(true);
       return;
     }
-    if (phase.kind === 'soundAlike') onRecord(false, phase.typed); // typing it counts as wrong
+    onRecord(false, phase.typed);
     onNext(false);
   }
 

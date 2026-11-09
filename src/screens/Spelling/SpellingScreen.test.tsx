@@ -97,10 +97,11 @@ describe('SpellingScreen: listen and type (canvas P5)', () => {
 });
 
 describe('SpellingScreen: not quite (canvas P6)', () => {
-  it('saves the wrong answer, shows it over the word, and waits for one right retype', async () => {
+  it('shows the wrong answer over the word; it is saved only after one right retype', async () => {
     const { onRecord, onNext } = setup();
     await type('recieve{Enter}');
-    expect(onRecord).toHaveBeenCalledWith(false, 'recieve');
+    // Not saved yet: leaving now keeps the card for Continue (bug 4).
+    expect(onRecord).not.toHaveBeenCalled();
     expect(onNext).not.toHaveBeenCalled();
 
     expect(screen.getByRole('region', { name: 'Not quite' })).toBeInTheDocument();
@@ -124,7 +125,9 @@ describe('SpellingScreen: not quite (canvas P6)', () => {
     await type('receive');
     await userEvent.click(screen.getByRole('button', { name: 'Next' }));
     expect(onNext).toHaveBeenCalledWith(false);
-    expect(onRecord).toHaveBeenCalledOnce(); // the retype is never logged
+    // Saved once, with the first answer; the retype itself is never logged.
+    expect(onRecord).toHaveBeenCalledOnce();
+    expect(onRecord).toHaveBeenCalledWith(false, 'recieve');
   });
 
   it('marks extra and missing letters', async () => {
@@ -136,15 +139,18 @@ describe('SpellingScreen: not quite (canvas P6)', () => {
     expect(region.querySelectorAll('[class*="missing"]')).toHaveLength(1);
   });
 
-  it('"Show me" counts as wrong and shows only the word', async () => {
-    const { onRecord } = setup();
+  it('"Show me" counts as wrong (saved on going on) and shows only the word', async () => {
+    const { onRecord, onNext } = setup();
     await userEvent.click(screen.getByRole('button', { name: 'Show me' }));
-    expect(onRecord).toHaveBeenCalledWith(false, null);
     expect(screen.getByText('receive')).toBeInTheDocument();
     expect(screen.queryByText('you typed')).not.toBeInTheDocument();
+    expect(onRecord).not.toHaveBeenCalled();
+    await type('receive{Enter}');
+    expect(onRecord).toHaveBeenCalledWith(false, null);
+    expect(onNext).toHaveBeenCalledWith(false);
   });
 
-  it('in a practice round the tag only says "not quite"', async () => {
+  it('in extra practice the tag only says "not quite"', async () => {
     setup({ kind: 'practice' });
     await type('recieve{Enter}');
     expect(screen.getByText('not quite')).toBeInTheDocument();

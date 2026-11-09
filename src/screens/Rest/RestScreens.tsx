@@ -5,8 +5,14 @@ import styles from './RestLayout.module.css';
 import { RestLayout } from './RestLayout';
 
 interface SessionCompleteProps {
-  /** Scheduled cards in the session that just ended (practice repeats not counted). */
+  /** Cards in the session that just ended. */
   wordCount: number;
+  /**
+   * Cards answered "Not yet" in it. More than 0 shows "Practice the N you missed" first: the
+   * session is over, the practice is optional and never moves a card (Yali, 2026-11-09).
+   */
+  missed?: number;
+  onPractice?: () => void;
   /** Cards still due today and under the daily cap; 0 hides "Next … words" (canvas note 07). */
   nextCount: number;
   onNext: () => void;
@@ -20,6 +26,8 @@ interface SessionCompleteProps {
 /** Celebrating mascot. No score on purpose (decided 2026-10-28). */
 export function SessionComplete({
   wordCount,
+  missed = 0,
+  onPractice,
   nextCount,
   onNext,
   onDone,
@@ -44,23 +52,39 @@ export function SessionComplete({
         )
       }
       actions={
-        <>
-          {/* Nothing else due: one real button, not a lone link in an empty panel (Yali, 2026-10-29). */}
-          {nextCount > 0 ? (
-            <>
-              <Button variant="aqua" onClick={onNext}>
+        missed > 0 && onPractice ? (
+          <>
+            <Button variant="aqua" onClick={onPractice}>
+              {missed === 1 ? 'Practice the 1 you missed' : `Practice the ${missed} you missed`}
+            </Button>
+            {nextCount > 0 && (
+              <Button variant="secondary" onClick={onNext}>
                 {nextCount === 1 ? 'Next word' : `Next ${nextCount} words`}
               </Button>
-              <Button variant="text" onClick={onDone}>
-                I'm done for now
-              </Button>
-            </>
-          ) : (
-            <Button variant="aqua" onClick={onDone}>
-              Done for today
+            )}
+            <Button variant="text" onClick={onDone}>
+              {nextCount > 0 ? "I'm done for now" : 'Done for today'}
             </Button>
-          )}
-        </>
+          </>
+        ) : (
+          <>
+            {/* Nothing else due: one real button, not a lone link in an empty panel (Yali, 2026-10-29). */}
+            {nextCount > 0 ? (
+              <>
+                <Button variant="aqua" onClick={onNext}>
+                  {nextCount === 1 ? 'Next word' : `Next ${nextCount} words`}
+                </Button>
+                <Button variant="text" onClick={onDone}>
+                  I'm done for now
+                </Button>
+              </>
+            ) : (
+              <Button variant="aqua" onClick={onDone}>
+                Done for today
+              </Button>
+            )}
+          </>
+        )
       }
     />
   );

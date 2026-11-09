@@ -134,3 +134,14 @@ Build brief: `HANDOFF-v3-steps4-6.md` (Yali and Claude, 2026-10-31); canvas row 
 - A natural paid cloud voice for spelling.
 - Meaning → phrase practice.
 - A "where I saw it" note on phrases.
+
+## Step 12b: fixes from Yali's week of use (2026-11-09)
+
+Yali used the app for a week and sent 8 bugs with screenshots; the causes and decisions are in the PR descriptions. One branch and PR per row, before 12.8.
+
+| #        | Fix                                                                                                          | Definition of Done                                                                                                         |
+| -------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| 12b.1 ✅ | Session ends when the bar is full; "Practice the N you missed" is optional; Continue shows the card you left | Bugs 8, 3, 4: no automatic practice round; Mix never "Paused" for misses only; a card counts only once you move on from it |
+| 12b.2    | Card text: long words fit on one line, Persian meanings as chips, "looks like English" note                  | Bugs 2, 6, 5; canvas card-back boards updated; screenshots                                                                 |
+| 12b.3    | Spelling screen stays put when the iPhone keyboard opens                                                     | Bug 7; fits above the keyboard (393×440 check); on Yali's phone list                                                       |
+| 12b.4    | Only today's reminder stays on the lock screen                                                               | Bug 1; older reminders closed before a new one shows                                                                       |
