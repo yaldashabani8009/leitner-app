@@ -22,11 +22,12 @@
 
 /* ---------- Progress ---------- */
 
+/* The lesson header (2026-11-09): Home, the Spelling chip and the bar, in place of the top bar. */
 .progressRow {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 22px 28px 0;
+  padding: 18px 20px 0;
 }
 
 .progress {
@@ -479,5 +480,21 @@
 
   .hint {
     display: none;
+  }
+
+  /* The pulsing ring would touch the tag above it: a slimmer ring. */
+  .calling {
+    animation-name: calling-small;
+  }
+}
+
+@keyframes calling-small {
+  0%,
+  100% {
+    outline: 0 solid var(--color-aqua);
+  }
+
+  50% {
+    outline: 5px solid var(--color-aqua);
   }
 }

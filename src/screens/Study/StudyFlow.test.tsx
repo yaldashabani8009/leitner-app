@@ -487,25 +487,18 @@ describe('StudyFlow', () => {
     await screen.findByRole('button', { name: /tap to flip/ });
     expect(await boxOf(first)).toBe(2);
   });
-  it('adds a word from the top bar mid-session; ✕ goes back to the same card', async () => {
+  it('a session has the lesson header: Home and the bar, no top bar (2026-11-09)', async () => {
     await addCards('brave', 'calm');
     now = DAY_2;
     render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    expect(await screen.findByRole('button', { name: 'Add word' })).toBeInTheDocument();
     await startVocab();
-    const front = await screen.findByRole('button', { name: /tap to flip/ });
-    const word = front.textContent;
-
-    // Two decks on: + rolls out a button per deck.
-    await userEvent.click(screen.getByRole('button', { name: 'Add word' }));
-    await pickDeck('Vocab');
-    const sheet = await screen.findByRole('dialog', { name: 'New word' });
-    expect(within(sheet).getByText('Vocab')).toBeInTheDocument();
-    await userEvent.type(within(sheet).getByLabelText('The word'), 'Calm');
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Save word' }));
-    expect(await within(sheet).findByText('Already in your Vocab box')).toBeInTheDocument();
-
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Close' }));
-    expect((await screen.findByRole('button', { name: /tap to flip/ })).textContent).toBe(word);
+    await screen.findByRole('button', { name: /tap to flip/ });
+    expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument();
+    expect(screen.getByRole('progressbar', { name: 'Session progress' })).toBeInTheDocument();
+    // No box count, streak or + while studying.
+    expect(screen.queryByRole('button', { name: 'Add word' })).not.toBeInTheDocument();
+    expect(screen.queryByText('2 cards in your box')).not.toBeInTheDocument();
   });
 
   it("a sentence's Persian is hidden until tapped; tapping never flips back or answers (P2)", async () => {

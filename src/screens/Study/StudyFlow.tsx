@@ -328,7 +328,7 @@ export function StudyFlow({
         speech={speech}
         needsStart={!soundOn}
         onStarted={() => setSoundOn(true)}
-        top={topBar(homeButton)}
+        home={homeButton}
       />,
     );
   }
@@ -512,7 +512,7 @@ export function StudyFlow({
         onCommit={() => intoSpellingChunk(current.order[current.index + 1])}
         focusOnStart={focusNextCard}
         onEdit={() => setEditor({ mode: 'edit', cardId: extraCard.card.id })}
-        top={topBar(homeButton)}
+        home={homeButton}
       />,
     );
   }
@@ -635,7 +635,7 @@ export function StudyFlow({
       }
       focusOnStart={focusNextCard}
       onEdit={() => setEditor({ mode: 'edit', cardId: card.card.id })}
-      top={topBar(homeButton)}
+      home={homeButton}
     />,
   );
 }

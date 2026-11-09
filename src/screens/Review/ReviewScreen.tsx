@@ -38,7 +38,11 @@ interface ReviewScreenProps {
   onCommit?: (correct: boolean) => void;
   /** Pencil on the card back; hidden until editing exists (roadmap 7.10). */
   onEdit?: () => void;
-  top?: ReactNode;
+  /**
+   * The Home button. Sessions have a lesson header instead of the app's top bar (Yali,
+   * 2026-11-09, Duolingo-style): Home, the deck chip and the progress bar in one row.
+   */
+  home?: ReactNode;
   /**
    * Put focus on the card front when it appears: set after an answer given with the keyboard
    * or a screen reader, so they don't lose their place (audit 2026-10-29, WCAG 2.4.3).
@@ -59,7 +63,7 @@ export function ReviewScreen({
   onAnswer,
   onCommit,
   onEdit,
-  top,
+  home,
   focusOnStart = false,
 }: ReviewScreenProps) {
   const [flipped, setFlipped] = useState(false);
@@ -109,16 +113,19 @@ export function ReviewScreen({
   return (
     <main className={styles.screen}>
       {!extra && <Confetti amount="touch" />}
-      {top}
       {extra ? (
-        <div className={styles.extraBanner}>
-          <span className={styles.extraTitle}>
-            <RetryIcon /> Practice · your boxes stay the same
-          </span>
-          <span className={styles.extraLeft}>{extra.left} left</span>
+        <div className={styles.header}>
+          {home}
+          <div className={styles.extraBanner}>
+            <span className={styles.extraTitle}>
+              <RetryIcon /> Practice · your boxes stay the same
+            </span>
+            <span className={styles.extraLeft}>{extra.left} left</span>
+          </div>
         </div>
       ) : (
-        <div className={deck ? styles.progressRow : styles.progressAlone}>
+        <div className={styles.header}>
+          {home}
           {deck && <DeckChip deck={deck} variant="session" />}
           <div
             className={styles.progress}

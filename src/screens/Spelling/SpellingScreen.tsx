@@ -21,7 +21,11 @@ interface SpellingScreenProps {
   kind: 'scheduled' | 'practice';
   /** 0 … 1 through the session. */
   progress: number;
-  top?: ReactNode;
+  /**
+   * The Home button. Sessions have a lesson header instead of the app's top bar (Yali,
+   * 2026-11-09, Duolingo-style): Home, the deck chip and the progress bar in one row.
+   */
+  home?: ReactNode;
   speech: Speech | null;
   /** The first spelling card of a session: the big speaker says "Tap to start" (ADR-021). */
   needsStart: boolean;
@@ -57,7 +61,7 @@ export function SpellingScreen({
   word,
   kind,
   progress,
-  top,
+  home,
   speech,
   needsStart,
   onStarted,
@@ -154,8 +158,8 @@ export function SpellingScreen({
 
   return (
     <main className={styles.screen}>
-      {top}
       <div className={styles.progressRow}>
+        {home}
         <DeckChip deck={deckById('spelling')} variant="session" />
         <div
           className={styles.progress}

@@ -77,7 +77,14 @@ export function KitPage() {
         reaction={null}
         onAnswer={() => {}}
         onEdit={() => {}}
-        top={<TopBar cardCount={133} streak={2} onAdd={() => {}} />}
+        home={
+          <IconButton
+            label="Home"
+            variant="white"
+            icon={<HomeIcon size={20} style={{ strokeWidth: 2.5 }} />}
+            onClick={() => {}}
+          />
+        }
       />
     );
   }
@@ -94,19 +101,12 @@ export function KitPage() {
         onStarted={() => {}}
         onRecord={() => {}}
         onNext={() => {}}
-        top={
-          <TopBar
-            leading={
-              <IconButton
-                label="Home"
-                variant="white"
-                icon={<HomeIcon size={20} style={{ strokeWidth: 2.5 }} />}
-                onClick={() => {}}
-              />
-            }
-            cardCount={312}
-            streak={13}
-            onAdd={() => {}}
+        home={
+          <IconButton
+            label="Home"
+            variant="white"
+            icon={<HomeIcon size={20} style={{ strokeWidth: 2.5 }} />}
+            onClick={() => {}}
           />
         }
       />

@@ -9,17 +9,13 @@
 
 /* ---------- Progress ---------- */
 
-/* Lower, closer to the cards (canvas 03, 2026-10-29). */
-.progressAlone,
-.progressRow {
+/* The lesson header (2026-11-09): Home, the deck chip in Mix them all, then the bar or the
+   extra-practice banner; it takes the place of the app's top bar in sessions. */
+.header {
   display: flex;
   align-items: center;
-  margin: var(--space-7) 28px 0;
-}
-
-/* Mix them all (canvas N6): the deck chip, then the bar. */
-.progressRow {
   gap: 12px;
+  padding: 18px 20px 0;
 }
 
 .progress {
@@ -48,6 +44,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
+  justify-content: center;
   min-height: 0;
   padding: 40px 0 72px;
 }
@@ -318,10 +315,11 @@
 /* Extra practice (canvas N11): a white banner instead of the progress bar. */
 .extraBanner {
   display: flex;
+  flex-grow: 1;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  margin: 40px 24px 0;
+  min-width: 0;
   padding: 10px 10px 10px 16px;
   border: var(--border-chunky) solid var(--color-ink);
   border-radius: var(--radius-pill);
