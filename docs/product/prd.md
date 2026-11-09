@@ -97,7 +97,8 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 ## Daily reminder (decided 2026-10-29, ADR-018; time per user since v3, ADR-020)
 
 - Once a day at **the user's time** (Settings, 15-minute steps, default 19:00) in the profile's time zone, only when there is something to do:
-  - cards due (counted across all decks, each within its daily limit) → "Time for your words · 20 cards waiting · mostly spelling" (the deck is named only when more than one is enabled)
+  - cards due (counted across all decks, each within its daily limit) → "Time for your words · 20 cards waiting · mostly spelling" (the deck is named only when more than one is enabled). The number is every card waiting today, including the ones from days you skipped, so it grows when you skip days; it is the same total as the decks' "N waiting" on Today and the number on the app icon.
+  - Only the newest reminder stays on the lock screen: the earlier ones are closed when a new one arrives (iPhone ignores the usual "replace" setting; fixed 2026-11-09).
   - nothing due and today not yet counted → "Keep your streak going · Add a word to keep your 5-day streak." (or "Add a new word today and start a streak.")
   - today already counts, or the daily cap is reached → no notification.
 - The app icon shows the number of cards still waiting today across all decks (installed app; on iPhone once notifications are allowed).
