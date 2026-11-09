@@ -104,3 +104,19 @@
   outline: 3px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
+
+/* "This looks like English…" under a Persian field (bug 5): a soft note, saving still works. */
+.notPersian {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Empty: takes no space, but stays in the page so the note is announced when it appears. */
+.notPersian:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

@@ -130,7 +130,7 @@ Build brief: `HANDOFF-v3-steps4-6.md` (Yali and Claude, 2026-10-31); canvas row 
 
 **Future list (not built):**
 
-- Wrong-field hint in the add sheet: Persian letters in an English field (or the reverse) shows "Looks like Persian, move it to the Persian field?" with a one-tap fix.
+- Wrong-field hint in the add sheet: Persian letters in an English field shows "Looks like Persian, move it to the Persian field?" with a one-tap fix (the reverse, English in a Persian field, has a soft note since 12b.2).
 - A natural paid cloud voice for spelling.
 - Meaning → phrase practice.
 - A "where I saw it" note on phrases.
@@ -142,6 +142,6 @@ Yali used the app for a week and sent 8 bugs with screenshots; the causes and de
 | #        | Fix                                                                                                          | Definition of Done                                                                                                         |
 | -------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | 12b.1 ✅ | Session ends when the bar is full; "Practice the N you missed" is optional; Continue shows the card you left | Bugs 8, 3, 4: no automatic practice round; Mix never "Paused" for misses only; a card counts only once you move on from it |
-| 12b.2    | Card text: long words fit on one line, Persian meanings as chips, "looks like English" note                  | Bugs 2, 6, 5; canvas card-back boards updated; screenshots                                                                 |
+| 12b.2 ✅ | Card text: long words fit on one line, Persian meanings as chips, "looks like English" note                  | Bugs 2, 6, 5; canvas card-back boards updated; screenshots                                                                 |
 | 12b.3    | Spelling screen stays put when the iPhone keyboard opens                                                     | Bug 7; fits above the keyboard (393×440 check); on Yali's phone list                                                       |
 | 12b.4    | Only today's reminder stays on the lock screen                                                               | Bug 1; older reminders closed before a new one shows                                                                       |

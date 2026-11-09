@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { CardWithEntries } from '../../data/repository';
+import { FitText } from '../../ui/FitText';
 import { IconButton } from '../../ui/IconButton';
 import { PencilIcon } from '../../ui/icons';
 import { Pill } from '../../ui/Pill';
@@ -11,7 +12,9 @@ export function CardBack({ card, onEdit }: { card: CardWithEntries; onEdit?: () 
   return (
     <>
       <div className={styles.backHeader}>
-        <h1 className={styles.backWord}>{word}</h1>
+        <h1 className={styles.backWord}>
+          <FitText className={styles.backWordText} text={word} max={28} min={20} />
+        </h1>
         {onEdit && (
           <IconButton
             label="Edit word"
@@ -34,11 +37,14 @@ export function CardBack({ card, onEdit }: { card: CardWithEntries; onEdit?: () 
       </section>
       <section className={styles.section} aria-label="In Persian">
         <h2 className={styles.label}>in Persian</h2>
-        <div lang="fa" className={styles.persian}>
+        {/* One chip per meaning, like the similar words (Yali, 2026-11-09). */}
+        <ul lang="fa" dir="rtl" className={styles.persian}>
           {card.meanings.map((entry) => (
-            <p key={entry.id}>{entry.text}</p>
+            <li key={entry.id} className={styles.persianChip}>
+              {entry.text}
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
       <section className={styles.section} aria-label="In a sentence">
         <h2 className={styles.label}>in a sentence</h2>

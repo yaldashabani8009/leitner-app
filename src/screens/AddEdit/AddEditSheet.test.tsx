@@ -125,6 +125,25 @@ describe('Add word', () => {
     expect(card).toMatchObject({ word: 'calm', deck: 'vocab', box: 1, dueDate: '2026-03-11' });
   });
 
+  it('English in a Persian field gets a soft note, but the word still saves (bug 5)', async () => {
+    open(ADD);
+    await screen.findByRole('dialog');
+    await userEvent.type(field('The word'), 'benign');
+    await userEvent.type(field('Similar words'), 'harmless');
+    await userEvent.type(field('In Persian'), 'The mold and the plants');
+    await userEvent.type(field('Sentence 1'), 'A benign tumour.');
+    await userEvent.type(field('Persian for sentence 1 (optional)'), 'not Persian');
+    expect(screen.getAllByText('This looks like English. The Persian goes here.')).toHaveLength(2);
+
+    // Fixing one field removes its note.
+    await userEvent.clear(field('In Persian'));
+    await userEvent.type(field('In Persian'), 'بی‌خطر');
+    expect(screen.getAllByText('This looks like English. The Persian goes here.')).toHaveLength(1);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save word' }));
+    await toastSays('benign saved');
+  });
+
   it('adds three words in a row', async () => {
     open(ADD);
     await screen.findByRole('dialog');

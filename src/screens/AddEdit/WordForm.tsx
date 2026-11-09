@@ -1,6 +1,11 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { itemsFromText, joinList } from '../../domain/card/commaList';
-import { type CardDraft, type CardField, type FieldErrors } from '../../domain/card/validate';
+import {
+  looksNotPersian,
+  type CardDraft,
+  type CardField,
+  type FieldErrors,
+} from '../../domain/card/validate';
 import { CloseIcon } from '../../ui/icons';
 import { AddPill } from '../../ui/Pill';
 import { TextField } from '../../ui/TextField';
@@ -216,8 +221,21 @@ function CommaField({ field, value, error, onChange }: CommaFieldProps) {
       <p id={hintId} className={styles.hint}>
         {words.hint}
       </p>
+      {words.lang === 'fa' && <NotPersianNote text={value} />}
       {error && <FieldError id={errorId} text={error} />}
     </div>
+  );
+}
+
+/**
+ * A soft note under a Persian field holding English (bug 5, 2026-11-09). It never blocks
+ * saving; it is announced politely, once, when it appears.
+ */
+function NotPersianNote({ text }: { text: string }) {
+  return (
+    <p className={styles.notPersian} aria-live="polite">
+      {looksNotPersian(text) ? 'This looks like English. The Persian goes here.' : null}
+    </p>
   );
 }
 
@@ -288,6 +306,7 @@ function SentenceGroup({ items, error, removable, inputRef, onChange }: Sentence
               autoComplete="off"
               onText={(translation) => change(item.key, { translation })}
             />
+            <NotPersianNote text={item.translation ?? ''} />
           </div>
           {removable && (
             <button

@@ -8,6 +8,7 @@ import { Card, CardStack } from '../../ui/Card';
 import { Confetti } from '../../ui/Confetti';
 import { FlipIcon, RetryIcon } from '../../ui/icons';
 import { Mascot, type MascotPose } from '../../ui/Mascot/Mascot';
+import { FitText } from '../../ui/FitText';
 import { Pill } from '../../ui/Pill';
 import { CardBack } from './CardBack';
 import styles from './ReviewScreen.module.css';
@@ -166,7 +167,7 @@ export function ReviewScreen({
                 <Pill variant="label" tone={extra ? 'aquaPale' : 'cream'}>
                   {extra ? "today's new words" : 'do you know it?'}
                 </Pill>
-                <span className={styles.word}>{card.card.word}</span>
+                <FitText className={styles.word} text={card.card.word} max={42} min={24} />
                 <span className={styles.hint}>
                   <FlipIcon /> <span className={styles.touchOnly}>tap to flip</span>
                   <span className={styles.pointerOnly}>click or press space</span>

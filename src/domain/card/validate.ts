@@ -17,6 +17,18 @@ export interface EntryInput {
   readonly translation?: string | null;
 }
 
+const LATIN_LETTER = /[A-Za-z]/;
+/** Arabic-script letters, which Persian uses (with its own letters such as پ چ ژ گ). */
+const PERSIAN_LETTER = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+
+/**
+ * True when text meant to be Persian has English letters and no Persian ones (bug 5,
+ * 2026-11-09): the form shows a soft note but still saves. Mixed text ("پردازنده CPU") is fine.
+ */
+export function looksNotPersian(text: string): boolean {
+  return LATIN_LETTER.test(text) && !PERSIAN_LETTER.test(text);
+}
+
 /** A translation as stored: trimmed, and null when empty or only spaces (never blank text). */
 export function cleanTranslation(translation: string | null | undefined): string | null {
   const trimmed = translation?.trim() ?? '';
