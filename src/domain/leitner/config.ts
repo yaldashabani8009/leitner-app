@@ -26,6 +26,18 @@ export const DECK_LIMITS: Readonly<Record<DeckId, DeckLimits>> = {
   phrases: { sessionSize: 10, dailyLimit: 30 },
 };
 
+/**
+ * What a miss ("Not yet", "Show me sooner") does, per deck (ADR-022, v3 brief 1.5):
+ * - "reset": back to box 1, due tomorrow (vocab, spelling);
+ * - "stepBack": down one box only, never below box 1, due after that box's normal wait (phrases).
+ */
+export type MissRule = 'reset' | 'stepBack';
+export const DECK_MISS_RULE: Readonly<Record<DeckId, MissRule>> = {
+  vocab: 'reset',
+  spelling: 'reset',
+  phrases: 'stepBack',
+};
+
 /** The vocab deck's numbers, kept for callers that only know one deck (the reminder, until 11.9). */
 export const SESSION_SIZE = DECK_LIMITS.vocab.sessionSize;
 export const DAILY_REVIEW_CAP = DECK_LIMITS.vocab.dailyLimit;

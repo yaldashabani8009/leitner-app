@@ -5,7 +5,7 @@
  */
 
 import { addDays, assertCalendarDate, isOnOrBefore, type CalendarDate } from '../time/calendarDate';
-import { BOX_COUNT, gapForBox, type Box } from './config';
+import { BOX_COUNT, gapForBox, type Box, type MissRule } from './config';
 
 /** The scheduling part of a card. Box, due date and mastered are never shown in the UI. */
 export interface Schedule {
@@ -47,19 +47,28 @@ export function resetToBox1(today: CalendarDate): Schedule {
 /**
  * Rules 2–4: apply one scheduled answer. Practice answers must not call this (sessions rule 6).
  * - Right: up one box, due today + that box's gap. Right in the last box: mastered.
- * - Wrong: box 1, due tomorrow, from any box.
+ * - Wrong, with the deck's miss rule (ADR-022): "reset" → box 1, due tomorrow, from any box;
+ *   "stepBack" → one box down (never below box 1), due today + that box's gap.
  */
 export function answer(
   card: Schedule,
   correct: boolean,
   today: CalendarDate,
   now: string,
+  missRule: MissRule = 'reset',
 ): AnswerResult {
   assertCalendarDate(today);
   if (card.masteredAt !== null) throw new Error('A mastered card is not reviewed in v1.');
 
   if (!correct) {
-    return { schedule: startOver(today), log: { correct, boxBefore: card.box, boxAfter: 1 } };
+    if (missRule === 'reset') {
+      return { schedule: startOver(today), log: { correct, boxBefore: card.box, boxAfter: 1 } };
+    }
+    const back = Math.max(1, card.box - 1) as Box;
+    return {
+      schedule: { box: back, dueDate: addDays(today, gapForBox(back)), masteredAt: null },
+      log: { correct, boxBefore: card.box, boxAfter: back },
+    };
   }
 
   if (card.box === BOX_COUNT) {

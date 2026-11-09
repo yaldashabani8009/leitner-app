@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { BOX_COUNT, BOX_GAPS_DAYS, DAILY_REVIEW_CAP, SESSION_SIZE, gapForBox } from './config';
+import {
+  BOX_COUNT,
+  BOX_GAPS_DAYS,
+  DAILY_REVIEW_CAP,
+  DECK_MISS_RULE,
+  SESSION_SIZE,
+  gapForBox,
+} from './config';
 
 describe('leitner config', () => {
   it('has one gap per box, doubling from 1 day', () => {
@@ -14,5 +21,11 @@ describe('leitner config', () => {
 
   it('allows exactly five sessions under the daily cap', () => {
     expect(DAILY_REVIEW_CAP / SESSION_SIZE).toBe(5);
+  });
+});
+
+describe('miss rule per deck (ADR-022)', () => {
+  it('vocab and spelling reset; phrases step back', () => {
+    expect(DECK_MISS_RULE).toEqual({ vocab: 'reset', spelling: 'reset', phrases: 'stepBack' });
   });
 });
