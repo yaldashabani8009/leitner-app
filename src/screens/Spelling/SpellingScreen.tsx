@@ -11,6 +11,7 @@ import type { Speech } from '../../services/speech';
 import { useSpeechState } from '../../services/useSpeech';
 import { DeckChip } from '../../ui/DeckChip';
 import { FitText } from '../../ui/FitText';
+import { useVisualViewport } from '../../ui/useVisualViewport';
 import styles from './SpellingScreen.module.css';
 
 interface SpellingScreenProps {
@@ -71,6 +72,7 @@ export function SpellingScreen({
   const field = useRef<HTMLInputElement>(null);
   const speechState = useSpeechState(speech);
   const practice = kind === 'practice';
+  useVisualViewport();
 
   // A new card: back to typing, empty field (state reset during render, not in an effect).
   if (shownCard !== cardId) {
@@ -81,7 +83,11 @@ export function SpellingScreen({
 
   // Keep the cursor in the field, so the keyboard stays open and Return = Check.
   useEffect(() => {
-    if (autoFocus) field.current?.focus({ preventScroll: true });
+    if (!autoFocus) return;
+    field.current?.focus({ preventScroll: true });
+    // On a short screen (keyboard open) the answer can push the field down: scroll the
+    // screen itself, never the page, so the field stays in view.
+    field.current?.scrollIntoView?.({ block: 'nearest' });
   }, [autoFocus, cardId, phase.kind]);
 
   function play(slow = false) {
@@ -164,7 +170,7 @@ export function SpellingScreen({
       </div>
 
       {phase.kind === 'typing' ? (
-        <section className={styles.card} aria-label="Listen and type">
+        <section className={`${styles.card} ${styles.listen}`} aria-label="Listen and type">
           <span className={styles.tagAqua}>listen and type</span>
           <div className={styles.speakers}>
             <button

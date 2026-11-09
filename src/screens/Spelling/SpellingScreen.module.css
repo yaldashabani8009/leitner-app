@@ -4,9 +4,20 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: var(--viewport-height, 100%);
   min-height: 0;
   overflow-y: auto;
+}
+
+/* Phones: pinned to the part of the screen above the keyboard, so opening it moves nothing
+   (useVisualViewport; bug 7, 2026-11-09). Laptops keep the centred column. */
+@media (width < 700px) {
+  .screen {
+    position: fixed;
+    top: var(--viewport-top, 0);
+    right: 0;
+    left: 0;
+  }
 }
 
 /* ---------- Progress ---------- */
@@ -51,6 +62,14 @@
   border-radius: var(--radius-card);
   background: var(--color-white);
   box-shadow: var(--shadow-card);
+}
+
+/* P5: 236px tall, shorter when the keyboard leaves less room (down to 150px). */
+.listen {
+  container-type: size;
+  flex: 0 1 236px;
+  height: auto;
+  min-height: 150px;
 }
 
 /* P6 / P7: the answer, left-aligned under a tag and a small replay button. */
@@ -442,5 +461,23 @@
 
   .shake {
     animation: none;
+  }
+}
+
+/* Little room (keyboard open): a smaller speaker, no hint line. The full card has ~193px
+   inside its padding; this kicks in once it has shrunk below 185px. */
+@container (height < 185px) {
+  .speaker {
+    width: 76px;
+    height: 76px;
+  }
+
+  .speaker .speakerIcon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .hint {
+    display: none;
   }
 }
