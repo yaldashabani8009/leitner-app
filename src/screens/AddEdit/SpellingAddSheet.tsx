@@ -41,6 +41,11 @@ export function SpellingAddSheet({ repo, deck, onClose }: SpellingAddSheetProps)
   const [toast, setToast] = useState<{ id: number; message: ReactNode } | null>(null);
   const existing = useLiveQuery(() => repo.spellingKeys(), [repo]);
   const boxRef = useRef<HTMLTextAreaElement>(null);
+  /** Goes up after each save: the empty box gets the cursor once it is drawn again. */
+  const [refocus, setRefocus] = useState(0);
+  useEffect(() => {
+    if (refocus > 0) boxRef.current?.focus();
+  }, [refocus]);
   const saving = useRef(false);
 
   useEffect(() => {
@@ -82,8 +87,8 @@ export function SpellingAddSheet({ repo, deck, onClose }: SpellingAddSheetProps)
       setToast((current) => ({ id: (current?.id ?? 0) + 1, message: `${saved} saved` }));
       setChips(null);
       setText('');
-      // The box empties and gets the cursor again, ready for the next list.
-      setTimeout(() => boxRef.current?.focus(), 0);
+      // The box empties and gets the cursor again, ready for the next list (after it is drawn).
+      setRefocus((n) => n + 1);
     } finally {
       saving.current = false;
     }
