@@ -10,6 +10,7 @@ import {
 import {
   listItems,
   matchesSearch,
+  needsWorkPractice,
   progressLabel,
   type ListItem,
   type WordRow,
@@ -38,6 +39,8 @@ interface AllWordsScreenProps {
   onDelete: (row: WordRow) => void;
   /** A day heading's Practice: extra practice of the cards added that day in these decks. */
   onPracticeDay: (day: string, decks: readonly DeckId[]) => void;
+  /** "Needs work" → Practice: extra practice of the most-missed cards shown (13.2). */
+  onPracticeCards?: (cards: { id: string; deck: DeckId }[]) => void;
   /** The toast after a delete, with Undo (canvas N10). */
   toast?: ReactNode;
   /** Opens the + from the N key (laptop). */
@@ -80,6 +83,7 @@ export function AllWordsScreen({
   onOpenCard,
   onDelete,
   onPracticeDay,
+  onPracticeCards,
   toast,
   addSignal,
 }: AllWordsScreenProps) {
@@ -96,6 +100,14 @@ export function AllWordsScreen({
     );
     return listItems(shown, sort, today);
   }, [rows, deckFilter, query, sort, today]);
+
+  const needsWork = useMemo(
+    () =>
+      sort === 'needsWork'
+        ? needsWorkPractice(items.flatMap((item) => (item.kind === 'row' ? [item.row] : [])))
+        : [],
+    [items, sort],
+  );
 
   const filterDecks: readonly DeckId[] =
     deckFilter === 'all' ? decks.map((deck) => deck.id) : [deckFilter];
@@ -191,6 +203,26 @@ export function AllWordsScreen({
               )}
             </div>
           </div>
+
+          {needsWork.length > 0 && onPracticeCards && (
+            // Needs work (13.2): practise the most-missed cards shown; boxes stay the same.
+            <div className={`${styles.dayHeading} ${styles.needsWorkBar}`}>
+              <span className={styles.dayLabel}>MOST MISSED</span>
+              <button
+                type="button"
+                className={styles.practice}
+                aria-label={
+                  needsWork.length === 1
+                    ? 'Practice the most-missed word'
+                    : `Practice the ${needsWork.length} most-missed words`
+                }
+                onClick={() => onPracticeCards(needsWork)}
+              >
+                <RetryIcon size={16} />
+                Practice {needsWork.length}
+              </button>
+            </div>
+          )}
 
           {rows !== undefined && items.length === 0 ? (
             <p className={styles.noMatch}>No words match “{query.trim()}”.</p>

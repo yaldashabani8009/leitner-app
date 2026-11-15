@@ -247,6 +247,12 @@
   margin-top: 0;
 }
 
+/* Needs work: "MOST MISSED · Practice N" above the list, lined up with the rows (13.2). */
+.needsWorkBar {
+  flex-shrink: 0;
+  margin: 14px 20px 0;
+}
+
 .dayLabel {
   flex-grow: 1;
   color: var(--color-text-secondary);

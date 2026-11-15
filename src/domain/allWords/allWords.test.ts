@@ -3,6 +3,8 @@ import {
   dayHeading,
   listItems,
   matchesSearch,
+  needsWorkPractice,
+  NEEDS_WORK_PRACTICE_MAX,
   normalizeForSearch,
   progressLabel,
   sortRows,
@@ -137,5 +139,23 @@ describe('progressLabel', () => {
   it('says the box, or Mastered', () => {
     expect(progressLabel({ box: 3, mastered: false })).toBe('Box 3 of 5');
     expect(progressLabel({ box: 5, mastered: true })).toBe('Mastered');
+  });
+});
+
+describe('needsWorkPractice (13.2, 2026-11-15)', () => {
+  it('the most-missed cards first, only missed and not mastered, at most 20', () => {
+    const rows = [
+      row('never', { misses: 0 }),
+      row('once', { misses: 1 }),
+      row('done', { misses: 9, mastered: true }),
+      row('often', { misses: 5 }),
+      ...Array.from({ length: 25 }, (_, i) => row(`w${i}`, { misses: 2 })),
+    ];
+    const picked = needsWorkPractice(rows);
+    expect(picked).toHaveLength(NEEDS_WORK_PRACTICE_MAX);
+    expect(picked[0].id).toBe(rows[3].id);
+    expect(picked.map((p) => p.id)).not.toContain(rows[0].id);
+    expect(picked.map((p) => p.id)).not.toContain(rows[2].id);
+    expect(needsWorkPractice([row('x', { misses: 0 })])).toEqual([]);
   });
 });

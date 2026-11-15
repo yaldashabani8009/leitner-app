@@ -939,3 +939,27 @@ describe('Phrases (v3 brief 1.5, canvas P8–P11)', () => {
     expect(await screen.findByText(/1 phrase has no meaning yet/)).toBeInTheDocument();
   });
 });
+
+describe('Needs work → Practice (13.2, 2026-11-15)', () => {
+  it('practises the most-missed cards as extra practice; boxes stay', async () => {
+    await addCards('brave', 'calm');
+    now = DAY_2;
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
+    await flipAndAnswer('Not yet');
+    await flipAndAnswer('Knew it!');
+    await userEvent.click(await screen.findByRole('button', { name: 'Done for today' }));
+
+    await userEvent.click(await screen.findByRole('button', { name: '2 cards in your box' }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Sort:/ }));
+    await userEvent.click(screen.getByRole('menuitemradio', { name: 'Needs work' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Practice the most-missed word' }));
+
+    expect(await screen.findByText('Practice · your boxes stay the same')).toBeInTheDocument();
+    const missed = (await db.cards.toArray()).find((card) => card.box === 1)!;
+    expect(await frontWord()).toBe(missed.word);
+    await flipAndAnswer('Knew it!');
+    expect(await screen.findByText('You knew every one.')).toBeInTheDocument();
+    expect(await boxOf(missed.word)).toBe(1);
+  });
+});
