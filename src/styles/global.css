@@ -18,6 +18,13 @@ body,
   margin: 0;
 }
 
+/* No rubber-band bounce of the whole page: on iPhone it turned card swipes into small page
+   scrolls, so "Knew it" / "Not yet" swipes often failed (Yali, 2026-11-15). */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 body {
   background: var(--color-bg);
   color: var(--color-ink);

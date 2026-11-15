@@ -325,6 +325,10 @@ describe('all-words page data (v3 brief 1.9)', () => {
     expect((await repo.allWordRows()).find((r) => r.id === brave)?.translations).toEqual([
       'او شجاع بود.',
     ]);
+    // Similar words come along for the deep search (2026-11-15).
+    expect(
+      (await repo.allWordRows()).find((r) => r.id === brave)?.synonyms?.length,
+    ).toBeGreaterThan(0);
     expect(rows).toHaveLength(2);
   });
 

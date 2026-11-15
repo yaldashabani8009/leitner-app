@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import type { Deck } from '../../domain/decks/decks';
 import { DeckChip } from '../../ui/DeckChip';
 import type { CardWithEntries } from '../../data/repository';
@@ -88,6 +95,13 @@ export function ReviewScreen({
     if (flipped) backRef.current?.focus();
   }, [flipped]);
 
+  /** The back is longer than the card and scrolls: then up/down scrolls it instead of swiping. */
+  const [backScrolls, setBackScrolls] = useState(false);
+  useLayoutEffect(() => {
+    const back = backRef.current;
+    setBackScrolls(flipped && back !== null && back.scrollHeight > back.clientHeight + 1);
+  }, [flipped]);
+
   const direction =
     swipe.leaving ?? (swipe.pull > 0.5 ? 'right' : swipe.pull < -0.5 ? 'left' : null);
   const pose: MascotPose =
@@ -102,6 +116,7 @@ export function ReviewScreen({
 
   const cardClasses = [
     styles.swipeable,
+    backScrolls && styles.swipeableScrolls,
     swipe.dragging && styles.dragging,
     swipe.leaving === 'right' && styles.leaveRight,
     swipe.leaving === 'left' && styles.leaveLeft,

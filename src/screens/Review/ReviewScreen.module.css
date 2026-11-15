@@ -134,11 +134,18 @@
 .swipeable {
   position: relative;
   height: 100%;
-  touch-action: pan-y;
+
+  /* The swipe gets the whole gesture, so a slightly diagonal swipe still counts (2026-11-15). */
+  touch-action: none;
   transform: translateX(var(--swipe-x)) rotate(var(--swipe-turn));
   transition: transform var(--duration-base) var(--ease-bounce);
   animation: flip-in var(--duration-base) ease-out;
   user-select: none;
+}
+
+/* A long card back that scrolls inside the card: up and down still scroll it. */
+.swipeableScrolls {
+  touch-action: pan-y;
 }
 
 .dragging {

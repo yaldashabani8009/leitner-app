@@ -76,6 +76,16 @@ describe('looksOdd / chipKind (canvas P4)', () => {
     ['كتاب', true],
     ['привет', true],
     ['a very long phrase here', true],
+    // Symbols are odd (2026-11-15); names, two words, hyphens and apostrophes are not.
+    ['#words Mc Gonagall', true],
+    ['@home', true],
+    ['50%', true],
+    ['rock & roll', true],
+    ['Madam Pomfrey', false],
+    ['fond of', false],
+    ['well-known', false],
+    ["don't", false],
+    ['don’t', false],
   ])('%s → %s', (word, odd) => {
     expect(looksOdd(word)).toBe(odd);
   });

@@ -112,7 +112,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
 2. Loading (2.5 s, cold start): waving mascot + "{display_name}'s Leitner." + streak pill. Until the saved profile is read, only the cream page shows, so there is one Loading screen, already with the name (v3); "Leitner." alone only when the account has no name.
 3. **Today** (v3, canvas N1): choose a deck card, or **Mix them all** (see below).
 4. Card front (word) → tap → back (similar words, in Persian, in a sentence, pencil to edit).
-5. Answer: swipe right = Knew it, left = Not yet, or tap buttons. No swiping on the front.
+5. Answer: swipe right = Knew it, left = Not yet, or tap buttons. No swiping on the front. The card takes the whole swipe (a slightly diagonal swipe still counts, and the page never bounces); only a card back long enough to scroll keeps up/down for scrolling (2026-11-15).
 6. After the session: "Session complete" as soon as the bar is full (celebrating mascot; streak counts). With misses, **Practice the N you missed** comes first (aqua); it runs them as extra practice ("Practice done! … Practice the N again / Done"), which never moves a card. "Next N words" shows only when more are due in that deck (or any deck, in Mix them all), as an aqua button, or white under "Practice the N you missed"; "I'm done for now" / "Done for today" go back to Today.
 7. Add word: the + rolls out one button per enabled deck (canvas N2; with one deck it opens that deck's sheet straight away). Same on Today, in sessions and on all words. The sheet stays open after Save (see Card structure). It sits above the phone keyboard; fields grow with the text.
 8. Edit: pencil on card back → same sheet, pre-filled, with the reminder "Editing won't change when you see this word next."
@@ -154,7 +154,7 @@ Laptop (built in 7.13; v3 keys in 11.10): Space flips, ← / → answer, E edits
 ## All words (v3, canvas N8–N10, L4)
 
 - Opens from the box badge: back, "In your box" with the total, +. Deck chips (All + each enabled deck, with counts) scroll sideways; on a laptop they wrap.
-- Search matches the word and its Persian meanings as you type (ي = ی, ك = ک, the half-space ignored). Sorts: **By day** (newest first, under TODAY / YESTERDAY / 14 SEP headings, each with Practice), **A–Z**, **Needs work** (most real "Not yet" answers first, ties by lowest box).
+- Search matches the word, its similar words (deep search, 2026-11-15: "enhance" finds a card that has it as a similar word), its Persian meanings and sentence translations as you type (ي = ی, ك = ک, the half-space ignored). Sorts: **By day** (newest first, under TODAY / YESTERDAY / 14 SEP headings, each with Practice), **A–Z**, **Needs work** (most real "Not yet" answers first, ties by lowest box).
 - Rows: no boxes, a thin divider; the deck icon on the All view only; the word and its Persian; progress dots (the only place box progress shows). Tap: the card with Edit. Swipe left: red Delete; tap it to delete (soft delete, synced); a toast "reluctant deleted" with **Undo** for about 5 s.
 - Virtualised (smooth with thousands of words), reads only the device (works offline). Empty: the mascot and "Your box is empty".
 

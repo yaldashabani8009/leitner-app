@@ -150,3 +150,22 @@ Yali used the app for a week and sent 8 bugs with screenshots; the causes and de
 | 12b.3 ✅ | Spelling screen stays put when the iPhone keyboard opens                                                     | Bug 7; fits above the keyboard (393×440 check); on Yali's phone list                                                             |
 | 12b.4 ✅ | Only today's reminder stays on the lock screen                                                               | Bug 1; older reminders closed before a new one shows                                                                             |
 | 12b.5 ✅ | Spelling card without the "listen and type" tag; "Show me" inside the card, under the speakers               | Yali's call after trying 12b.3 (2026-11-10): the card no longer shrinks; everything fits above the keyboard. Canvas P5 to update |
+
+## Step 13: Yali's list from `Leitner-1.zip` (2026-11-15)
+
+Yali's notes and screenshots from Nov 11–15. One branch and PR per row.
+
+| #       | Task                                                                                                                                      | Definition of Done / notes                                                                                                                                 |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 13.1 ✅ | Bugs: no zoom on the sentence's Persian field; symbols are "odd" spelling chips; wrong letters crossed out; deep search; swipes that work | 16px field; `looksOdd` symbols; legend "crossed out = wrong letter · aqua = right letter"; search finds similar words; card owns the swipe, no page bounce |
+| 13.2    | Practice "Needs work"                                                                                                                     | A Practice button for the Needs work list (extra practice: boxes stay)                                                                                     |
+| 13.3    | When done for today: practise today's mistakes along with today's new words                                                               | Done-deck sheet and Mix: today's misses + new words, every deck                                                                                            |
+| 13.4    | "Tap to start" redesign (spelling)                                                                                                        | Options on the canvas first (P5), Yali picks                                                                                                               |
+| 13.5    | Gentle hint when a deck wasn't studied for 2+ days                                                                                        | A quiet line on the deck card on Today; wording and place with Yali                                                                                        |
+| 13.6    | Automatic one-day streak freeze                                                                                                           | Missing one day doesn't break the streak, automatically; how often it can happen to agree with Yali; ADR + PRD                                             |
+| 13.7    | Look-alike words linked, with short notes (advent / adverse; "tempus: time")                                                              | Design on the canvas first; new card fields (migration), add sheet, card back                                                                              |
+
+**Future (noted 2026-11-15, not now):**
+
+- Share a batch of cards (any deck) with someone else.
+- Camera gestures: the front camera follows a hand movement (e.g. a wave to the right) and swipes the card without touching the screen.

@@ -20,6 +20,8 @@ export interface WordRow {
   readonly meanings: readonly string[];
   /** Persian translations of its sentences (v3 step 4); searched, not shown in the list. */
   readonly translations?: readonly string[];
+  /** Similar words; searched, not shown in the list (deep search, Yali 2026-11-15). */
+  readonly synonyms?: readonly string[];
   /** "Not yet" answers in real reviews (practice never counts). */
   readonly misses: number;
 }
@@ -40,12 +42,15 @@ export function normalizeForSearch(text: string): string {
     .trim();
 }
 
-/** Does the row match what was typed? The word, its Persian meanings and sentence translations count. */
+/**
+ * Does the row match what was typed? The word, its similar words, its Persian meanings and its
+ * sentence translations count: typing "enhance" also finds a card with "enhance" as a similar word.
+ */
 export function matchesSearch(row: WordRow, query: string): boolean {
   const wanted = normalizeForSearch(query);
   if (wanted === '') return true;
-  return [row.word, ...row.meanings, ...(row.translations ?? [])].some((text) =>
-    normalizeForSearch(text).includes(wanted),
+  return [row.word, ...(row.synonyms ?? []), ...row.meanings, ...(row.translations ?? [])].some(
+    (text) => normalizeForSearch(text).includes(wanted),
   );
 }
 

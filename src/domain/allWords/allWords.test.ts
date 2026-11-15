@@ -39,6 +39,13 @@ describe('search (v3 brief 1.9)', () => {
     expect(matchesSearch(row('x', { meanings: ['بی‌میل'] }), 'بیمیل')).toBe(true);
   });
 
+  it('deep search: a card is found by one of its similar words (2026-11-15)', () => {
+    const improve = row('improve', { synonyms: ['enhance', 'better'] });
+    expect(matchesSearch(improve, 'enh')).toBe(true);
+    expect(matchesSearch(improve, 'Better')).toBe(true);
+    expect(matchesSearch(improve, 'worse')).toBe(false);
+  });
+
   it('also finds sentence translations, with the same Persian normalisation (v3 step 4)', () => {
     const r = row('meticulous', { translations: ['او یادداشت‌های دقیقی برمی‌دارد.'] });
     expect(matchesSearch(r, 'یادداشتهای')).toBe(true);
