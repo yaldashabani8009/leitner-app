@@ -112,7 +112,7 @@ describe('SpellingScreen: not quite (canvas P6)', () => {
     expect(screen.getByText('you typed')).toBeInTheDocument();
     expect(screen.getByText('the word')).toBeInTheDocument();
     expect(
-      screen.getByText('crossed out = extra letter · aqua = missing letter'),
+      screen.getByText('crossed out = wrong letter · aqua = right letter'),
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Show me' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Play the word again' })).toBeInTheDocument();
@@ -131,6 +131,21 @@ describe('SpellingScreen: not quite (canvas P6)', () => {
     // Saved once, with the first answer; the retype itself is never logged.
     expect(onRecord).toHaveBeenCalledOnce();
     expect(onRecord).toHaveBeenCalledWith(false, 'recieve');
+  });
+
+  it('wrong letters are crossed out too: "throgh" for "threw" (2026-11-15)', async () => {
+    setup({ word: 'threw' });
+    await type('throgh{Enter}');
+    const region = screen.getByRole('region', { name: 'Not quite' });
+    // o and g are wrong, h is extra: all three crossed out; e and w show in aqua.
+    expect([...region.querySelectorAll('[class*="extra"]')].map((el) => el.textContent)).toEqual([
+      'o',
+      'g',
+      'h',
+    ]);
+    expect(
+      [...region.querySelectorAll('[class*="missing"]')].map((el) => el.textContent),
+    ).toEqual(['e', 'w']);
   });
 
   it('marks extra and missing letters', async () => {

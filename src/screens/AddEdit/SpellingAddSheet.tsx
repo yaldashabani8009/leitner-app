@@ -153,7 +153,7 @@ export function SpellingAddSheet({ repo, deck, onClose }: SpellingAddSheetProps)
             </p>
             <p>
               <span className={`${styles.swatch} ${styles.oddSwatch}`} aria-hidden="true" />
-              Looks odd (numbers, Persian, 4+ words): check it
+              Looks odd (numbers, symbols, Persian, 4+ words): check it
             </p>
           </div>
           {toSave.length > 0 ? (

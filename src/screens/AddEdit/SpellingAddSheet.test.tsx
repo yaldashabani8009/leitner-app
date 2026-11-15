@@ -83,7 +83,7 @@ describe('Spelling add sheet (canvas P3, P4)', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Already in your Spelling box: skipped')).toBeInTheDocument();
     expect(
-      screen.getByText('Looks odd (numbers, Persian, 4+ words): check it'),
+      screen.getByText('Looks odd (numbers, symbols, Persian, 4+ words): check it'),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save 8 words' })).toBeInTheDocument();
   });

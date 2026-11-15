@@ -485,14 +485,21 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
           .filter(
             (entry) =>
               entry.deletedAt === null &&
-              (entry.kind === 'meaning' || (entry.kind === 'sentence' && !!entry.translation)),
+              (entry.kind === 'meaning' ||
+                entry.kind === 'synonym' ||
+                (entry.kind === 'sentence' && !!entry.translation)),
           )
           .toArray(),
         db.reviewLogs.filter((log) => !log.correct && !log.isPractice).toArray(),
       ]);
       const meaningsOf = new Map<string, { text: string; position: number }[]>();
       const translationsOf = new Map<string, string[]>();
+      const synonymsOf = new Map<string, string[]>();
       for (const entry of meanings) {
+        if (entry.kind === 'synonym') {
+          synonymsOf.set(entry.cardId, [...(synonymsOf.get(entry.cardId) ?? []), entry.text]);
+          continue;
+        }
         if (entry.kind === 'sentence') {
           translationsOf.set(entry.cardId, [
             ...(translationsOf.get(entry.cardId) ?? []),
@@ -517,6 +524,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
           .map((entry) => entry.text),
         misses: missesOf.get(card.id) ?? 0,
         translations: translationsOf.get(card.id) ?? [],
+        synonyms: synonymsOf.get(card.id) ?? [],
       }));
     },
 
@@ -873,7 +881,8 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
     async phrasesWithoutMeaning(cardIds: readonly string[]): Promise<string[]> {
       const cards = await db.cards.bulkGet([...cardIds]);
       const phrases = cards.filter(
-        (card): card is CardRow => card !== undefined && card.deletedAt === null && card.deck === 'phrases',
+        (card): card is CardRow =>
+          card !== undefined && card.deletedAt === null && card.deck === 'phrases',
       );
       const entries = await db.entries
         .where('cardId')

@@ -44,11 +44,13 @@ export function splitWords(text: string): string[] {
 }
 
 /**
- * A word that looks odd (dashed chip, P4): a digit, a Persian or Arabic letter or any other
- * non-Latin letter, or more than 3 words. It is still saved unless removed.
+ * A word that looks odd (dashed chip, P4): a digit, a symbol such as # or @, a Persian or Arabic
+ * letter or any other non-Latin letter, or more than 3 words. It is still saved unless removed.
  */
 export function looksOdd(word: string): boolean {
   if (/\d/.test(word)) return true;
+  // Symbols (#, @, %, &, …): anything but letters, spaces, hyphens and apostrophes (2026-11-15).
+  if (/[^\p{L}\p{M}\s'’-]/u.test(word)) return true;
   // Any letter outside Latin (accents included in Latin): Persian, Arabic, Cyrillic, Greek…
   if (/[^\p{Script=Latin}\P{L}]/u.test(word)) return true;
   return word.trim().split(/\s+/).length > 3;

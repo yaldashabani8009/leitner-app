@@ -264,12 +264,6 @@
   text-decoration-thickness: 3px;
 }
 
-.wrongTyped {
-  padding: 0 1px;
-  border-radius: var(--radius-highlight);
-  background: var(--color-terracotta-pale);
-}
-
 .gap {
   display: inline-block;
   width: 16px;

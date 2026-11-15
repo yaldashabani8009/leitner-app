@@ -302,7 +302,7 @@ function Comparison({ typed, word }: { typed: string; word: string }) {
             <WordLetter key={i} step={step} />
           ))}
         </FitText>
-        <span className={styles.legend}>crossed out = extra letter · aqua = missing letter</span>
+        <span className={styles.legend}>crossed out = wrong letter · aqua = right letter</span>
       </div>
     </>
   );
@@ -312,7 +312,8 @@ function TypedLetter({ step }: { step: LetterStep }) {
   if (step.kind === 'same') return <>{step.typed}</>;
   if (step.kind === 'extra') return <span className={styles.extra}>{step.typed}</span>;
   if (step.kind === 'missing') return <span className={styles.gap} />;
-  return <span className={styles.wrongTyped}>{step.typed}</span>;
+  // A wrong letter is crossed out like an extra one; the right one shows in aqua below (2026-11-15).
+  return <span className={styles.extra}>{step.typed}</span>;
 }
 
 function WordLetter({ step }: { step: LetterStep }) {
