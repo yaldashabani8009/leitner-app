@@ -63,6 +63,11 @@ export function ReviewScreen({
   focusOnStart = false,
 }: ReviewScreenProps) {
   const [flipped, setFlipped] = useState(false);
+  /** Phrases (v3 brief 1.5, canvas P8–P10): their own words, stack and calm front. */
+  const phrase = card.card.deck === 'phrases';
+  const words = phrase
+    ? { right: 'Got it', left: 'Show me sooner', stampRight: 'GOT IT!', stampLeft: 'SOONER' }
+    : { right: 'Knew it!', left: 'Not yet', stampRight: 'KNEW IT!', stampLeft: 'NOT YET' };
   const swipe = useSwipe(onAnswer, flipped, onCommit);
   const backRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLButtonElement>(null);
@@ -108,7 +113,8 @@ export function ReviewScreen({
 
   return (
     <main className={styles.screen}>
-      {!extra && <Confetti amount="touch" />}
+      {/* Phrases (canvas P8–P10) have no confetti shapes. */}
+      {!extra && !phrase && <Confetti amount="touch" />}
       {top}
       {extra ? (
         <div className={styles.extraBanner}>
@@ -129,7 +135,7 @@ export function ReviewScreen({
             aria-valuenow={Math.round(progress * 100)}
           >
             <div
-              className={styles.progressFill}
+              className={`${styles.progressFill} ${phrase ? styles.progressFillPhrases : ''}`}
               style={{ width: `${Math.max(progress, 0.06) * 100}%` }}
             />
           </div>
@@ -137,7 +143,10 @@ export function ReviewScreen({
       )}
 
       <div className={styles.stage}>
-        <CardStack className={flipped ? styles.stackBack : styles.stackFront}>
+        <CardStack
+          className={flipped ? styles.stackBack : styles.stackFront}
+          tone={phrase ? 'phrases' : 'default'}
+        >
           {flipped ? (
             <div {...swipe.bind()} className={cardClasses} style={cardStyle}>
               <Card
@@ -149,10 +158,10 @@ export function ReviewScreen({
                 <CardBack card={card} onEdit={onEdit} />
               </Card>
               <span className={`${styles.stamp} ${styles.stampRight}`} aria-hidden="true">
-                KNEW IT!
+                {words.stampRight}
               </span>
               <span className={`${styles.stamp} ${styles.stampLeft}`} aria-hidden="true">
-                NOT YET
+                {words.stampLeft}
               </span>
             </div>
           ) : (
@@ -164,10 +173,18 @@ export function ReviewScreen({
                 onClick={() => setFlipped(true)}
                 aria-keyshortcuts="Space"
               >
-                <Pill variant="label" tone={extra ? 'aquaPale' : 'cream'}>
-                  {extra ? "today's new words" : 'do you know it?'}
+                <Pill
+                  variant="label"
+                  tone={extra ? 'aquaPale' : phrase ? 'terracottaPale' : 'cream'}
+                >
+                  {extra ? "today's new words" : phrase ? 'what does it mean?' : 'do you know it?'}
                 </Pill>
-                <FitText className={styles.word} text={card.card.word} max={42} min={24} />
+                <FitText
+                  className={`${styles.word} ${phrase ? styles.phraseWord : ''}`}
+                  text={card.card.word}
+                  max={phrase ? 38 : 42}
+                  min={24}
+                />
                 <span className={styles.hint}>
                   <FlipIcon /> <span className={styles.touchOnly}>tap to flip</span>
                   <span className={styles.pointerOnly}>click or press space</span>
@@ -187,24 +204,31 @@ export function ReviewScreen({
                 onClick={() => swipe.flyOut('left')}
                 aria-keyshortcuts="ArrowLeft"
               >
-                Not yet
+                {words.left}
               </Button>
               <Button
                 variant="aqua"
                 onClick={() => swipe.flyOut('right')}
                 aria-keyshortcuts="ArrowRight"
               >
-                Knew it!
+                {words.right}
               </Button>
             </div>
           )}
           <p className={styles.quiet}>Just for fun: answers here never move your cards</p>
         </div>
+      ) : phrase && !flipped ? (
+        // Phrases front (canvas P8): no panel, one quiet line.
+        <p className={styles.phraseHint}>
+          <span className={styles.touchOnly}>Think first, then tap the card</span>
+          <span className={styles.pointerOnly}>Think first, then flip the card</span>
+        </p>
       ) : (
         <BottomPanel
           color="orange"
           className={[styles.panel, flipped && styles.answerPanel].filter(Boolean).join(' ')}
-          mascot={<Mascot pose={pose} size="small" body="aqua" decorative />}
+          // Phrases (canvas P9, P10): no mascot.
+          mascot={phrase ? undefined : <Mascot pose={pose} size="small" body="aqua" decorative />}
         >
           {!flipped ? (
             <>
@@ -218,7 +242,8 @@ export function ReviewScreen({
             </>
           ) : (
             <>
-              {direction === 'left' && (
+              {/* A phrase only steps back one box (ADR-022): not "tomorrow". */}
+              {direction === 'left' && !phrase && (
                 <p className={styles.reassure}>That's okay. You'll see it again tomorrow.</p>
               )}
               <div className={styles.answers}>
@@ -227,14 +252,14 @@ export function ReviewScreen({
                   onClick={() => swipe.flyOut('left')}
                   aria-keyshortcuts="ArrowLeft"
                 >
-                  Not yet
+                  {words.left}
                 </Button>
                 <Button
                   variant="aqua"
                   onClick={() => swipe.flyOut('right')}
                   aria-keyshortcuts="ArrowRight"
                 >
-                  Knew it!
+                  {words.right}
                 </Button>
               </div>
             </>

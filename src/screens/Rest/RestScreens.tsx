@@ -13,6 +13,11 @@ interface SessionCompleteProps {
    */
   missed?: number;
   onPractice?: () => void;
+  /** "phrase" in a Phrases session: "You went through 10 phrases." */
+  unit?: 'word' | 'phrase';
+  /** Phrases from this session with no meaning and no sentence (canvas P11); 0 hides the line. */
+  noMeaning?: number;
+  onAddMeanings?: () => void;
   /** Cards still due today and under the daily cap; 0 hides "Next … words" (canvas note 07). */
   nextCount: number;
   onNext: () => void;
@@ -28,13 +33,24 @@ export function SessionComplete({
   wordCount,
   missed = 0,
   onPractice,
+  unit = 'word',
+  noMeaning = 0,
+  onAddMeanings,
   nextCount,
   onNext,
   onDone,
   streak,
   focusOnStart = false,
 }: SessionCompleteProps) {
-  const words = wordCount === 1 ? '1 word' : `${wordCount} words`;
+  const words = wordCount === 1 ? `1 ${unit}` : `${wordCount} ${unit}s`;
+  const meaningLine = noMeaning > 0 && onAddMeanings && (
+    <p className={styles.noMeaning}>
+      {noMeaning === 1 ? '1 phrase has' : `${noMeaning} phrases have`} no meaning yet ·
+      <button type="button" className={styles.noMeaningAdd} onClick={onAddMeanings}>
+        Add
+      </button>
+    </p>
+  );
   return (
     <RestLayout
       pose="celebrate"
@@ -54,6 +70,7 @@ export function SessionComplete({
       actions={
         missed > 0 && onPractice ? (
           <>
+            {meaningLine}
             <Button variant="aqua" onClick={onPractice}>
               {missed === 1 ? 'Practice the 1 you missed' : `Practice the ${missed} you missed`}
             </Button>

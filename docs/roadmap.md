@@ -110,6 +110,7 @@ Build brief: `HANDOFF-v3-build.md` (Yali and Claude, 2026-10-31). Decisions in i
 - [ ] Set the reminder time.
 - [ ] 12.5: in a spelling session on the iPhone (Home Screen app), tap Start once; each next word should play by itself after Check, the retype or a swipe. Then mark 12.5 ✅.
 - [ ] 12.7: Mix them all with Vocab and Spelling due on the iPhone: when a spelling chunk starts, the word plays and the keyboard opens straight from your swipe or tap; when a Vocab chunk comes back, the keyboard closes.
+- [ ] 12.9: add 2 phrases (one with no meaning), study them the next day: Got it / Show me sooner, "No meaning yet", then "· Add" on Session complete.
 - [ ] 12b.4: two days in a row with a reminder: only the newest stays on the lock screen (bug 1).
 - [ ] 12b.3: in a spelling session on the iPhone, tap the answer field: the keyboard opens and nothing moves; the top bar, card, field and Check stay above the keyboard (bug 7).
 - [ ] 12b.1: leave a session on a card (Vocab and Spelling, also after a wrong spelling), then Continue: the same card comes back (bug 4).
@@ -128,7 +129,7 @@ Build brief: `HANDOFF-v3-steps4-6.md` (Yali and Claude, 2026-10-31); canvas row 
 | 12.6 ✅ | Spelling study (P5–P7) + practice + extra practice; enable the deck                               | Correct / wrong / show me / sound-alike flows; `typed_answer` logged; retype to go on; laptop works; screenshots ✅ (the answer field stays put from card to card so the iPhone keyboard stays open; e2e: paste 10 words)          |
 | 12.7 ✅ | Mix them all with spelling chunks                                                                 | Keyboard switches with the chunk; 3–9 chunks; no same-deck chunks back to back; seeded-random tests ✅ (the answer is committed inside the swipe, so iPhone allows the word and the keyboard; chunks never leave 1–2 cards behind) |
 | 12.8 ✅ | Soft boxes: per-deck miss rule (ADR-022)                                                          | `stepBack` never goes below box 1; vocab and spelling unchanged; 100% coverage                                                                                                                                                     |
-| 12.9    | Phrases add + study + session-complete line (P8–P11); enable the deck                             | All back states (both, one, none); Got it / Show me sooner; "no meaning yet" run; screenshots                                                                                                                                      |
+| 12.9 ✅ | Phrases add + study + session-complete line (P8–P11); enable the deck                             | All back states (both, one, none); Got it / Show me sooner; "no meaning yet" run; screenshots ✅ (Phrases switched on 2026-11-15; reminder functions redeployed)                                                                   |
 | 12.10   | Docs: PRD, design README, canvas notes, roadmap                                                   | PRD covers translations, spelling and phrases; future list updated                                                                                                                                                                 |
 
 **Future list (not built):**

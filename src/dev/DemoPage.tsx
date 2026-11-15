@@ -70,6 +70,21 @@ const WORDS = [
   },
 ];
 
+/** Phrases (canvas P8–P10): one with Persian and a sentence, one with nothing yet. */
+const PHRASES = [
+  {
+    word: 'break the ice',
+    meanings: ['سر صحبت را باز کردن، یخ را شکستن'],
+    sentences: [
+      {
+        text: 'A quick game helped everyone break the ice.',
+        translation: 'یک بازی کوتاه کمک کرد همه سر صحبت را باز کنند.',
+      },
+    ],
+  },
+  { word: 'on cloud nine', meanings: [], sentences: [] },
+];
+
 const params = new URLSearchParams(location.search);
 
 /** A pretend cloud for the reminder offer: nothing is saved or sent. */
@@ -126,6 +141,17 @@ async function seed(db: LeitnerDb, empty: boolean, many: boolean) {
       sentences: card.sentences.map((text) => ({ text })),
     });
     if (result.status === 'created') ids.push(result.cardId);
+  }
+  for (const phrase of PHRASES) {
+    await past.addCard(
+      {
+        word: phrase.word,
+        synonyms: [],
+        meanings: phrase.meanings.map((text) => ({ text })),
+        sentences: phrase.sentences,
+      },
+      'phrases',
+    );
   }
 
   // Top-bar numbers: the sample words passed box 1 once before, and the 12 days before today

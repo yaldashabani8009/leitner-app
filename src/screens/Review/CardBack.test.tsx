@@ -65,3 +65,29 @@ describe('CardBack: Persian meanings (bug 6, 2026-11-09)', () => {
     ]);
   });
 });
+
+describe('CardBack: phrases (canvas P9, P10)', () => {
+  const phrase = (meanings: unknown[], sentences: unknown[]) =>
+    ({
+      card: { id: 'p', word: 'break the ice', deck: 'phrases' },
+      synonyms: [],
+      meanings,
+      sentences,
+    }) as unknown as CardWithEntries;
+
+  it('only what exists: a sentence and no Persian shows no empty Persian slot', () => {
+    render(
+      <CardBack card={phrase([], [entry('e', 'sentence', 'A game helped break the ice.')])} />,
+    );
+    expect(screen.queryByText('in Persian')).not.toBeInTheDocument();
+    expect(screen.queryByText('similar words')).not.toBeInTheDocument();
+    expect(screen.getByText('in a sentence')).toBeInTheDocument();
+    expect(screen.getByText('break the ice', { selector: 'mark' })).toBeInTheDocument();
+  });
+
+  it('nothing at all: the phrase again and "No meaning yet", pencil still there', () => {
+    render(<CardBack card={phrase([], [])} onEdit={() => {}} />);
+    expect(screen.getByText('No meaning yet')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit phrase' })).toBeInTheDocument();
+  });
+});

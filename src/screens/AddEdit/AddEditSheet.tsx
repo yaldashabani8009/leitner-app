@@ -28,13 +28,18 @@ type AddEditRepo = Pick<
   | 'spellingKeys'
 >;
 
-export type Editor = { mode: 'add'; deck: Deck } | { mode: 'edit'; cardId: string };
+export type Editor =
+  | { mode: 'add'; deck: Deck }
+  /** `step`: one of several edits in a row ("1 of 2", canvas P11). */
+  | { mode: 'edit'; cardId: string; step?: { index: number; count: number } };
 
 interface AddEditSheetProps {
   repo: AddEditRepo;
   /** null = closed. */
   editor: Editor | null;
   onClose: () => void;
+  /** After an edit is saved; without it the sheet closes. Lets a row of edits go to the next. */
+  onSaved?: () => void;
 }
 
 const FORM_ID = 'word-form';
@@ -76,7 +81,7 @@ const EMPTY: FormState = { key: 0, focusWord: false };
  * and counts as added today. "Add another word" empties the form; ✕ changes nothing.
  * The same word in another deck is not a duplicate.
  */
-export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
+export function AddEditSheet({ repo, editor, onClose, onSaved }: AddEditSheetProps) {
   const editingId = editor?.mode === 'edit' ? editor.cardId : null;
   const editing = useLiveQuery(
     async () => (editingId ? ((await repo.getCard(editingId)) ?? null) : null),
@@ -160,7 +165,10 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
       if (editor.mode === 'edit') {
         const result = await repo.editCard(editor.cardId, draft);
         if (result.status === 'invalid') setErrors(result.errors);
-        else close();
+        else if (onSaved) {
+          setErrors({});
+          onSaved();
+        } else close();
         return;
       }
 
@@ -202,6 +210,10 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
       title={isEdit ? `Edit ${thing}` : `New ${thing}`}
       // Canvas N4 (add) and P1 (edit): the deck chip, no mascot.
       titleAddon={<DeckChip deck={deck} />}
+      // Several edits in a row (canvas P11): "1 of 2" under the title.
+      subtitle={
+        isEdit && editor.step ? `${editor.step.index + 1} of ${editor.step.count}` : undefined
+      }
       closeOnOverlay={isEdit}
       toast={<Toast messageId={toast?.id}>{toast?.message ?? null}</Toast>}
     >

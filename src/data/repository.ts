@@ -866,6 +866,27 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         .map((card) => ({ id: card.id, deck: card.deck }));
     },
 
+    /**
+     * The phrases among these cards with neither a Persian meaning nor a sentence (canvas P11:
+     * "2 phrases have no meaning yet · Add"), in the order given. Live: adding one drops it.
+     */
+    async phrasesWithoutMeaning(cardIds: readonly string[]): Promise<string[]> {
+      const cards = await db.cards.bulkGet([...cardIds]);
+      const phrases = cards.filter(
+        (card): card is CardRow => card !== undefined && card.deletedAt === null && card.deck === 'phrases',
+      );
+      const entries = await db.entries
+        .where('cardId')
+        .anyOf(phrases.map((card) => card.id))
+        .toArray();
+      const withMeaning = new Set(
+        entries
+          .filter((entry) => entry.deletedAt === null && entry.kind !== 'synonym')
+          .map((entry) => entry.cardId),
+      );
+      return phrases.filter((card) => !withMeaning.has(card.id)).map((card) => card.id);
+    },
+
     /** The words of these cards (spelling sessions say the next word from a tap, ADR-021). */
     async cardWords(cardIds: readonly string[]): Promise<Record<string, string>> {
       const cards = await db.cards.bulkGet([...cardIds]);

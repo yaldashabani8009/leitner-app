@@ -33,6 +33,15 @@
   transform: rotate(4deg);
 }
 
+/* Phrases (canvas P8): white and pale terracotta behind. */
+.behindWhite {
+  background: var(--color-white);
+}
+
+.behindTerracotta {
+  background: var(--color-terracotta-pale);
+}
+
 /* The current card fills the stack. */
 .front {
   height: 100%;

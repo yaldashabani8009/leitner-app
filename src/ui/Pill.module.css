@@ -38,6 +38,12 @@
   background: var(--color-aqua);
 }
 
+/* Phrases tag "what does it mean?" (canvas P8). */
+.terracottaPale {
+  background: var(--color-terracotta-pale);
+  color: var(--color-text-secondary);
+}
+
 /* Extra practice tag "today's new words" (canvas N11). */
 .aquaPale {
   background: var(--color-aqua-pale);

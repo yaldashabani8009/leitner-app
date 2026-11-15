@@ -121,9 +121,18 @@ Laptop (built in 7.13; v3 keys in 11.10): Space flips, ← / → answer, E edits
 
 ## Decks (v3, ADR-019)
 
-- One `cards` table with a `deck`: `vocab | spelling | phrases`; old cards are vocab. Decks come from a registry (`src/domain/decks`), each with a label, icon, colours, limits and `enabled`. **Only Vocab is enabled** until the spelling (step 5) and phrases (step 6) cards are designed; every screen works with any number of enabled decks.
+- One `cards` table with a `deck`: `vocab | spelling | phrases`; old cards are vocab. Decks come from a registry (`src/domain/decks`), each with a label, icon, colours, limits and `enabled`. All three decks are enabled since 2026-11-15 (Spelling since 12.6, Phrases since 12.9); every screen works with any number of enabled decks.
 - The Leitner engine (boxes, gaps) is the same for every deck; what a miss does is set per deck (ADR-022): Vocab and Spelling go back to box 1, Phrases step back one box.
 - Each card stores `added_on`: the day it was added, or re-added with "Save & start over" (profile time zone).
+
+## Phrases (v3 step 6, canvas P8–P11)
+
+- **Adding:** + → Phrases opens "New phrase" with the Phrases chip: **The phrase** (required, up to 80 characters), **In Persian** (optional, commas allowed), **In a sentence** (optional, each with its optional Persian). "Save phrase"; the sheet stays open with a toast; duplicates are checked per deck ("Already in your Phrases box", Save & start over).
+- **Direction:** phrase → meaning only.
+- **Front (P8):** the tag "what does it mean?", the phrase, "tap to flip"; a white and a pale terracotta card behind; no panel, one line "Think first, then tap the card"; the Phrases chip by a sand progress bar.
+- **Back (P9, P10):** every phrase card flips. The phrase and the pencil, then only what exists: Persian meanings as pale terracotta chips, sentences with hidden-until-tap Persian. With neither: the phrase again in the middle and "No meaning yet" (no add link during the session).
+- **Answers:** "Show me sooner" (cream) and "Got it" (aqua); swipe left / right; stamps SOONER / GOT IT!. Soft boxes (ADR-022): Got it moves up one box, Show me sooner steps back one box only.
+- **Session complete (P11):** "You went through N phrases. Nice work." When phrases from the session have no meaning and no sentence: one line "2 phrases have no meaning yet · Add". Add opens their edit sheets one after another ("1 of 2" under the title); Save goes to the next, ✕ stops; the line updates as they get a meaning.
 
 ## Today (v3, canvas N1, N3)
 

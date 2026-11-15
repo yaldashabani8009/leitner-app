@@ -6,63 +6,92 @@ import { PencilIcon } from '../../ui/icons';
 import { Pill } from '../../ui/Pill';
 import styles from './CardBack.module.css';
 
-/** The answer side of a card: the word, similar words, Persian and sentences (canvas 03). */
+/**
+ * The answer side of a card: the word, similar words, Persian and sentences (canvas 03).
+ * Phrases (canvas P9, P10): no similar words; only the parts that exist, with no empty slots;
+ * with neither Persian nor a sentence, the phrase again in the middle and "No meaning yet".
+ */
 export function CardBack({ card, onEdit }: { card: CardWithEntries; onEdit?: () => void }) {
   const word = card.card.word;
+  const phrase = card.card.deck === 'phrases';
+  const pencil = onEdit && (
+    <IconButton
+      label={phrase ? 'Edit phrase' : 'Edit word'}
+      variant="cream"
+      icon={<PencilIcon />}
+      onClick={onEdit}
+      aria-keyshortcuts="E"
+    />
+  );
+
+  if (phrase && card.meanings.length === 0 && card.sentences.length === 0) {
+    return (
+      <div className={styles.empty}>
+        {pencil && <div className={styles.emptyPencil}>{pencil}</div>}
+        <h1 className={styles.emptyPhrase}>
+          <FitText className={styles.backWordText} text={word} max={36} min={22} />
+        </h1>
+        <p className={styles.emptyLine}>No meaning yet</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className={styles.backHeader}>
         <h1 className={styles.backWord}>
           <FitText className={styles.backWordText} text={word} max={28} min={20} />
         </h1>
-        {onEdit && (
-          <IconButton
-            label="Edit word"
-            variant="cream"
-            icon={<PencilIcon />}
-            onClick={onEdit}
-            aria-keyshortcuts="E"
-          />
-        )}
+        {pencil}
       </div>
-      <section className={styles.section} aria-label="Similar words">
-        <h2 className={styles.label}>similar words</h2>
-        <div className={styles.tags}>
-          {card.synonyms.map((entry) => (
-            <Pill key={entry.id} variant="tag">
-              {entry.text}
-            </Pill>
-          ))}
-        </div>
-      </section>
-      <section className={styles.section} aria-label="In Persian">
-        <h2 className={styles.label}>in Persian</h2>
-        {/* One chip per meaning, like the similar words (Yali, 2026-11-09). */}
-        <ul lang="fa" dir="rtl" className={styles.persian}>
-          {card.meanings.map((entry) => (
-            <li key={entry.id} className={styles.persianChip}>
-              {entry.text}
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section className={styles.section} aria-label="In a sentence">
-        <h2 className={styles.label}>in a sentence</h2>
-        {card.sentences.map((entry) =>
-          entry.translation ? (
-            <SentenceWithPersian
-              key={entry.id}
-              text={entry.text}
-              translation={entry.translation}
-              word={word}
-            />
-          ) : (
-            <p key={entry.id} className={`${styles.sentence} ${styles.plainSentence}`}>
-              “<Highlight text={entry.text} word={word} />”
-            </p>
-          ),
-        )}
-      </section>
+      {!phrase && (
+        <section className={styles.section} aria-label="Similar words">
+          <h2 className={styles.label}>similar words</h2>
+          <div className={styles.tags}>
+            {card.synonyms.map((entry) => (
+              <Pill key={entry.id} variant="tag">
+                {entry.text}
+              </Pill>
+            ))}
+          </div>
+        </section>
+      )}
+      {card.meanings.length > 0 && (
+        <section className={styles.section} aria-label="In Persian">
+          <h2 className={styles.label}>in Persian</h2>
+          {/* One chip per meaning, like the similar words (Yali, 2026-11-09). */}
+          <ul lang="fa" dir="rtl" className={styles.persian}>
+            {card.meanings.map((entry) => (
+              <li
+                key={entry.id}
+                className={`${styles.persianChip} ${phrase ? styles.persianChipPhrase : ''}`}
+              >
+                {entry.text}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {card.sentences.length > 0 && (
+        <section className={styles.section} aria-label="In a sentence">
+          <h2 className={styles.label}>in a sentence</h2>
+          {card.sentences.map((entry) =>
+            entry.translation ? (
+              <SentenceWithPersian
+                key={entry.id}
+                text={entry.text}
+                translation={entry.translation}
+                word={word}
+                phrase={phrase}
+              />
+            ) : (
+              <p key={entry.id} className={`${styles.sentence} ${styles.plainSentence}`}>
+                “<Highlight text={entry.text} word={word} phrase={phrase} />”
+              </p>
+            ),
+          )}
+        </section>
+      )}
     </>
   );
 }
@@ -71,6 +100,7 @@ interface SentenceWithPersianProps {
   text: string;
   translation: string;
   word: string;
+  phrase: boolean;
 }
 
 /**
@@ -80,7 +110,7 @@ interface SentenceWithPersianProps {
  * (the swipe ignores taps, filterTaps), so only a real drag moves the card.
  * Every card starts hidden again: the card back is drawn fresh for each card.
  */
-function SentenceWithPersian({ text, translation, word }: SentenceWithPersianProps) {
+function SentenceWithPersian({ text, translation, word, phrase }: SentenceWithPersianProps) {
   const [open, setOpen] = useState(false);
   return (
     <button
@@ -95,7 +125,7 @@ function SentenceWithPersian({ text, translation, word }: SentenceWithPersianPro
     >
       <span className={styles.sentenceLine}>
         <span className={styles.sentence}>
-          “<Highlight text={text} word={word} />”
+          “<Highlight text={text} word={word} phrase={phrase} />”
         </span>
         {!open && (
           <span className={styles.fa} aria-hidden="true">
@@ -112,8 +142,16 @@ function SentenceWithPersian({ text, translation, word }: SentenceWithPersianPro
   );
 }
 
-/** Marks the card's word inside a sentence (canvas: soft cream highlight). */
-export function Highlight({ text, word }: { text: string; word: string }) {
+/** Marks the card's word inside a sentence (canvas: soft cream highlight; pale terracotta for a phrase, P9). */
+export function Highlight({
+  text,
+  word,
+  phrase = false,
+}: {
+  text: string;
+  word: string;
+  phrase?: boolean;
+}) {
   const needle = word.trim();
   if (!needle) return <>{text}</>;
   const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -122,7 +160,7 @@ export function Highlight({ text, word }: { text: string; word: string }) {
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === needle.toLowerCase() ? (
-          <mark key={i} className={styles.mark}>
+          <mark key={i} className={`${styles.mark} ${phrase ? styles.markPhrase : ''}`}>
             {part}
           </mark>
         ) : (

@@ -880,3 +880,62 @@ describe('Mix them all with spelling chunks (v3 brief 1.4)', () => {
     expect(await screen.findByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
   });
 });
+
+describe('Phrases (v3 brief 1.5, canvas P8–P11)', () => {
+  async function addPhrase(word: string, meaning?: string) {
+    const result = await repo.addCard(
+      { word, synonyms: [], meanings: meaning ? [{ text: meaning }] : [], sentences: [] },
+      'phrases',
+    );
+    if (result.status !== 'created') throw new Error('not created');
+  }
+
+  it('front, back, soft boxes, and "no meaning yet · Add" with edits one after another', async () => {
+    await addPhrase('break the ice', 'یخ را شکستن');
+    await addPhrase('on cloud nine');
+    await addPhrase('a piece of cake');
+    now = DAY_2;
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await userEvent.click(
+      await screen.findByRole('button', { name: /^Phrases, .*(Start|Continue)$/ }),
+    );
+
+    for (let i = 0; i < 3; i++) {
+      expect(await screen.findByText('what does it mean?')).toBeInTheDocument();
+      const front = screen.getByRole('button', { name: /tap to flip/ });
+      const phrase = ['break the ice', 'on cloud nine', 'a piece of cake'].find((p) =>
+        front.textContent?.includes(p),
+      )!;
+      await userEvent.click(front);
+      await screen.findByLabelText(`Answer for ${phrase}`);
+      if (phrase === 'break the ice') {
+        expect(screen.getByText('یخ را شکستن')).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Got it' }));
+      } else {
+        // Nothing on the back: the phrase again and one soft line (P10).
+        expect(screen.getByText('No meaning yet')).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Show me sooner' }));
+      }
+    }
+
+    expect(await screen.findByRole('heading', { name: 'Session complete!' })).toBeInTheDocument();
+    expect(screen.getByText('You went through 3 phrases. Nice work.')).toBeInTheDocument();
+    // Soft boxes: Got it moves up; Show me sooner never goes below box 1 (ADR-022).
+    expect(await boxOf('break the ice')).toBe(2);
+    expect(await boxOf('on cloud nine')).toBe(1);
+
+    expect(await screen.findByText(/2 phrases have no meaning yet/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Add' }));
+    let sheet = await screen.findByRole('dialog', { name: 'Edit phrase' });
+    expect(within(sheet).getByText('1 of 2')).toBeInTheDocument();
+    await userEvent.type(within(sheet).getByLabelText('In Persian'), 'خیلی خوشحال');
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Save changes' }));
+
+    expect(await screen.findByText('2 of 2', {}, { timeout: 4000 })).toBeInTheDocument();
+    sheet = screen.getByRole('dialog', { name: 'Edit phrase' });
+    // ✕ stops at any time; the line now counts only the one left.
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Close' }));
+    expect(await screen.findByText(/1 phrase has no meaning yet/)).toBeInTheDocument();
+  });
+});

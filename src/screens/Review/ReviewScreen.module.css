@@ -259,6 +259,12 @@
   flex: 1;
 }
 
+/* "Show me sooner" stays on one line, as on canvas P9 (less side padding). */
+.answers > button {
+  padding-inline: var(--space-2);
+  white-space: nowrap;
+}
+
 /* 0–35%: pull back while the stamp lands · 35–46%: hold · 46–100%: fly off (ease-in). */
 @keyframes flick-right {
   0% {
@@ -359,4 +365,24 @@
   font-size: 16px;
   font-weight: 700;
   text-align: center;
+}
+
+/* ---------- Phrases (canvas P8–P10) ---------- */
+
+.phraseWord {
+  line-height: 1.15;
+}
+
+/* The front has no panel: one quiet line near the bottom. */
+.phraseHint {
+  margin: 0 0 70px;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* The progress bar of a phrase card fills with the deck's sand colour. */
+.progressFillPhrases {
+  background: var(--color-deck-phrases-edge);
 }

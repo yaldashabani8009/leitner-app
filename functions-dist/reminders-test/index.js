@@ -34,7 +34,7 @@ var DECKS = [
     edgeColor: "--color-deck-phrases-edge",
     tileColor: "--color-deck-phrases-tile",
     limits: DECK_LIMITS.phrases,
-    enabled: false
+    enabled: true
   }
 ];
 function deckById(id, decks = DECKS) {
