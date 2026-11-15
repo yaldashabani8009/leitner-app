@@ -70,6 +70,7 @@ type StudyRepo = Pick<
   | 'todayDate'
   | 'recordAnswer'
   | 'cardWords'
+  | 'phrasesWithoutMeaning'
   | 'addCard'
   | 'editCard'
   | 'findCardIdByWord'
@@ -175,6 +176,8 @@ export function StudyFlow({
   /** The last answer came while something on the card had focus (keyboard, screen reader). */
   const [focusNextCard, setFocusNextCard] = useState(false);
   const [editor, setEditor] = useState<Editor | null>(null);
+  /** "Add" on "2 phrases have no meaning yet": their edit sheets, one after another (P11). */
+  const [meaningQueue, setMeaningQueue] = useState<{ ids: string[]; index: number } | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   /** Goes up each time N is pressed; the + on screen opens (laptop, v3 brief 1.12). */
   const [addSignal, setAddSignal] = useState(0);
@@ -213,6 +216,14 @@ export function StudyFlow({
   const words = useLiveQuery(
     async (): Promise<Record<string, string>> => (runIds ? repo.cardWords(runIds.split(',')) : {}),
     [repo, runIds],
+  );
+  // Session complete (canvas P11): the session's phrases still without a meaning; live, so the
+  // line goes away as they get one.
+  const completedIds = view === 'complete' ? (session?.scheduled.join(',') ?? '') : '';
+  const noMeaning = useLiveQuery(
+    async (): Promise<string[]> =>
+      completedIds ? repo.phrasesWithoutMeaning(completedIds.split(',')) : [],
+    [repo, completedIds],
   );
 
   // Until the saved profile is read there is no name: show only the cream page, so the one
@@ -351,7 +362,30 @@ export function StudyFlow({
       addSignal={addSignal}
     />
   );
-  const sheet = <AddEditSheet repo={repo} editor={editor} onClose={() => setEditor(null)} />;
+  /** Edit the phrases from `ids` one after another, "1 of 2" (canvas P11). */
+  function editInTurn(ids: readonly string[], index: number) {
+    if (index >= ids.length) {
+      setMeaningQueue(null);
+      setEditor(null);
+      return;
+    }
+    setMeaningQueue({ ids: [...ids], index });
+    setEditor({ mode: 'edit', cardId: ids[index], step: { index, count: ids.length } });
+  }
+  const sheet = (
+    <AddEditSheet
+      repo={repo}
+      editor={editor}
+      onClose={() => {
+        // ✕ stops a row of edits at any time.
+        setMeaningQueue(null);
+        setEditor(null);
+      }}
+      onSaved={
+        meaningQueue ? () => editInTurn(meaningQueue.ids, meaningQueue.index + 1) : undefined
+      }
+    />
+  );
   // Every screen after loading goes through here, even the in-between empty frames, so the
   // sheets and backup modals stay mounted (and keep their state) while screens change.
   const withSheet = (screen: ReactNode) => (
@@ -532,6 +566,9 @@ export function StudyFlow({
     return withSheet(
       <SessionComplete
         wordCount={session.scheduled.length}
+        unit={run.kind === 'deck' && run.deck.id === 'phrases' ? 'phrase' : 'word'}
+        noMeaning={noMeaning?.length ?? 0}
+        onAddMeanings={() => editInTurn(noMeaning ?? [], 0)}
         missed={session.missed.length}
         onPractice={() =>
           // The words missed in this session, as extra practice: boxes never move.
@@ -625,8 +662,13 @@ export function StudyFlow({
       key={session.answered}
       card={card}
       progress={sessionProgress}
+      // The deck chip: in Mix them all, and always for Phrases (canvas P8), as for Spelling.
       deck={
-        run.kind === 'mix' ? decks.find((deck) => deck.id === run.deckOf[card.card.id]) : undefined
+        run.kind === 'mix'
+          ? decks.find((deck) => deck.id === run.deckOf[card.card.id])
+          : run.deck.id === 'phrases'
+            ? run.deck
+            : undefined
       }
       reaction={reaction}
       onAnswer={handleAnswer}

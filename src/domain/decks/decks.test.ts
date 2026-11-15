@@ -23,8 +23,8 @@ describe('deck registry', () => {
     }
   });
 
-  it('vocab and spelling are on (phrases comes in step 12.9)', () => {
-    expect(enabledDecks().map((d) => d.id)).toEqual(['vocab', 'spelling']);
+  it('all three decks are on (since step 12.9)', () => {
+    expect(enabledDecks().map((d) => d.id)).toEqual(['vocab', 'spelling', 'phrases']);
   });
 
   it('works with every deck enabled (test fixture)', () => {

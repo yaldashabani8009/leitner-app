@@ -13,16 +13,25 @@ export function Card({ className, ...rest }: CardProps) {
 
 interface CardStackProps {
   className?: string;
+  /** "phrases" (canvas P8): a white and a pale terracotta card behind, instead of aqua + peach. */
+  tone?: 'default' | 'phrases';
   /** The current card, usually a <Card>. */
   children: ReactNode;
 }
 
 /** Tilted aqua + peach cards peeking out behind the current card (docs/design). */
-export function CardStack({ className, children }: CardStackProps) {
+export function CardStack({ className, tone = 'default', children }: CardStackProps) {
+  const phrases = tone === 'phrases';
   return (
     <div className={[styles.stack, className].filter(Boolean).join(' ')}>
-      <div className={`${styles.behind} ${styles.behindAqua}`} aria-hidden="true" />
-      <div className={`${styles.behind} ${styles.behindCream}`} aria-hidden="true" />
+      <div
+        className={`${styles.behind} ${styles.behindAqua} ${phrases ? styles.behindWhite : ''}`}
+        aria-hidden="true"
+      />
+      <div
+        className={`${styles.behind} ${styles.behindCream} ${phrases ? styles.behindTerracotta : ''}`}
+        aria-hidden="true"
+      />
       <div className={styles.front}>{children}</div>
     </div>
   );

@@ -28,13 +28,18 @@ type AddEditRepo = Pick<
   | 'spellingKeys'
 >;
 
-export type Editor = { mode: 'add'; deck: Deck } | { mode: 'edit'; cardId: string };
+export type Editor =
+  | { mode: 'add'; deck: Deck }
+  /** `step`: one of several edits in a row ("1 of 2", canvas P11). */
+  | { mode: 'edit'; cardId: string; step?: { index: number; count: number } };
 
 interface AddEditSheetProps {
   repo: AddEditRepo;
   /** null = closed. */
   editor: Editor | null;
   onClose: () => void;
+  /** After an edit is saved; without it the sheet closes. Lets a row of edits go to the next. */
+  onSaved?: () => void;
 }
 
 const FORM_ID = 'word-form';
@@ -76,7 +81,7 @@ const EMPTY: FormState = { key: 0, focusWord: false };
  * and counts as added today. "Add another word" empties the form; ✕ changes nothing.
  * The same word in another deck is not a duplicate.
  */
-export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
+export function AddEditSheet({ repo, editor, onClose, onSaved }: AddEditSheetProps) {
   const editingId = editor?.mode === 'edit' ? editor.cardId : null;
   const editing = useLiveQuery(
     async () => (editingId ? ((await repo.getCard(editingId)) ?? null) : null),
@@ -160,7 +165,10 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
       if (editor.mode === 'edit') {
         const result = await repo.editCard(editor.cardId, draft);
         if (result.status === 'invalid') setErrors(result.errors);
-        else close();
+        else if (onSaved) {
+          setErrors({});
+          onSaved();
+        } else close();
         return;
       }
 
@@ -192,29 +200,39 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
 
   const isEdit = editor.mode === 'edit';
   const duplicate = !isEdit && form.duplicateOf !== undefined;
+  const deck = isEdit ? deckById(editing!.card.deck) : editor.deck;
+  // Phrases (v3 brief 1.5): "New phrase", "Save phrase", "Type the next phrase".
+  const thing = deck.id === 'phrases' ? 'phrase' : 'word';
   return (
     <Sheet
       open
       onClose={close}
-      title={isEdit ? 'Edit word' : 'New word'}
+      title={isEdit ? `Edit ${thing}` : `New ${thing}`}
       // Canvas N4 (add) and P1 (edit): the deck chip, no mascot.
-      titleAddon={<DeckChip deck={isEdit ? deckById(editing!.card.deck) : editor.deck} />}
+      titleAddon={<DeckChip deck={deck} />}
+      // Several edits in a row (canvas P11): "1 of 2" under the title.
+      subtitle={
+        isEdit && editor.step ? `${editor.step.index + 1} of ${editor.step.count}` : undefined
+      }
       closeOnOverlay={isEdit}
       toast={<Toast messageId={toast?.id}>{toast?.message ?? null}</Toast>}
     >
-      {isEdit && <p className={styles.note}>Editing won't change when you see this word next.</p>}
+      {isEdit && (
+        <p className={styles.note}>Editing won't change when you see this {thing} next.</p>
+      )}
       <WordForm
         key={isEdit ? editor.cardId : form.key}
         id={FORM_ID}
         mode={editor.mode}
         initial={isEdit ? draftOf(editing!) : form.initial}
         wordOnly={isEdit && editing!.card.deck === 'spelling'}
+        deck={deck.id}
         errors={errors}
         onClearError={clearError}
         onSubmit={(draft) => void save(draft)}
         onWordBlur={isEdit ? undefined : (draft) => void checkDuplicate(editor.deck, draft)}
         focusWord={!isEdit && form.focusWord}
-        wordPlaceholder={!isEdit && savedOnce ? 'Type the next word' : undefined}
+        wordPlaceholder={!isEdit && savedOnce ? `Type the next ${thing}` : undefined}
         wordNote={
           duplicate && (
             <div role="status" className={styles.duplicate}>
@@ -224,7 +242,7 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
               </svg>
               <span className={styles.duplicateText}>Already in your {editor.deck.label} box</span>
               <button type="button" className={styles.another} onClick={() => freshForm(true)}>
-                Add another word
+                Add another {thing}
               </button>
             </div>
           )
@@ -232,7 +250,7 @@ export function AddEditSheet({ repo, editor, onClose }: AddEditSheetProps) {
       />
       {/* At the end of the form, scrolling with it (not pinned; Yali, 2026-10-29). */}
       <Button type="submit" form={FORM_ID} className={styles.save}>
-        {isEdit ? 'Save changes' : duplicate ? 'Save & start over' : 'Save word'}
+        {isEdit ? 'Save changes' : duplicate ? 'Save & start over' : `Save ${thing}`}
       </Button>
       {duplicate && <p className={styles.startOver}>It goes back to the start of your box.</p>}
     </Sheet>

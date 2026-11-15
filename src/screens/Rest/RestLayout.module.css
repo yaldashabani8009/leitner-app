@@ -170,3 +170,31 @@
     rotate: -1deg;
   }
 }
+
+/* "2 phrases have no meaning yet · Add" (canvas P11): one quiet line above the buttons.
+   Ink, not brown: brown on the orange panel is too faint to read. */
+.noMeaning {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.noMeaningAdd {
+  min-height: 44px;
+  padding: 0 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: var(--weight-black);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}

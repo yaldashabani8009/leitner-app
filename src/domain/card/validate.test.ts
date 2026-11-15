@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   cleanTranslation,
   looksNotPersian,
+  maxWordLength,
   MAX_ENTRY_LENGTH,
   MAX_WORD_LENGTH,
   normalizeWord,
@@ -174,5 +175,19 @@ describe('looksNotPersian (bug 5, 2026-11-09)', () => {
     ['123, 456', false],
   ])('%j → %s', (text, expected) => {
     expect(looksNotPersian(text)).toBe(expected);
+  });
+});
+
+describe('phrases (v3 brief 1.5)', () => {
+  it('a phrase alone is enough; up to 80 characters', () => {
+    const bare = { word: 'break the ice', synonyms: [], meanings: [], sentences: [] };
+    expect(validateCard(bare, 'phrases').ok).toBe(true);
+    expect(validateCard({ ...bare, word: 'a'.repeat(80) }, 'phrases').ok).toBe(true);
+    expect(validateCard({ ...bare, word: 'a'.repeat(81) }, 'phrases')).toEqual({
+      ok: false,
+      errors: { word: 'tooLong' },
+    });
+    expect(maxWordLength('phrases')).toBe(80);
+    expect(maxWordLength('vocab')).toBe(MAX_WORD_LENGTH);
   });
 });
