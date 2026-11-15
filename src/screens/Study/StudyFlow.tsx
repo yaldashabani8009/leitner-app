@@ -36,9 +36,16 @@ import { KeyboardKeeper } from '../../ui/KeyboardKeeper';
 /** A round of extra practice: the cards it may repeat, this round's order and answers. */
 interface Extra {
   cards: readonly PracticeCard[];
+  /** The tag on the card front: where these cards come from (canvas N11: "today's new words"). */
+  tag: string;
   order: string[];
   index: number;
   answers: Map<string, boolean>;
+}
+
+/** "today's words" when today's practice includes cards missed today; else "today's new words". */
+function practiceTag(cards: readonly { missed?: boolean }[]): string {
+  return cards.some((card) => card.missed) ? "today's words" : "today's new words";
 }
 
 /** The open session: one deck's, or "Mix them all" with each card's deck. */
@@ -67,6 +74,7 @@ type StudyRepo = Pick<
   | 'closeMixSession'
   | 'mixPausedLeft'
   | 'cardsAddedOn'
+  | 'todaysPractice'
   | 'todayDate'
   | 'recordAnswer'
   | 'cardWords'
@@ -255,15 +263,18 @@ export function StudyFlow({
     const ids = decks.map((deck) => deck.id);
     const opened = await repo.openMixSession(ids);
     if (opened) begin(opened.session, { kind: 'mix', deckOf: opened.deckOf });
-    // Nothing due in any deck: practise today's new words from all decks instead.
-    else startExtra(await repo.cardsAddedOn(ids));
+    // Nothing due in any deck: practise today's new and missed words from all decks instead.
+    else {
+      const cards = await repo.todaysPractice(ids);
+      startExtra(cards, false, practiceTag(cards));
+    }
   }
 
   /**
    * One round of extra practice over these cards, shuffled again; none → "All done for today".
    * `fromTap`: called right inside a tap, so a spelling card first is said at once.
    */
-  function startExtra(cards: readonly PracticeCard[], fromTap = false) {
+  function startExtra(cards: readonly PracticeCard[], fromTap = false, tag = "today's new words") {
     const order = practiceOrder(cards, Math.random);
     if (order.length === 0) {
       setView('allDone');
@@ -280,7 +291,7 @@ export function StudyFlow({
     setRun(null);
     setSoundOn(sayFirst);
     setFocusNextCard(false);
-    setExtra({ cards, order, index: 0, answers: new Map() });
+    setExtra({ cards, tag, order, index: 0, answers: new Map() });
     setView('extra');
   }
 
@@ -441,12 +452,16 @@ export function StudyFlow({
         }}
         onPracticeCards={(cards) => {
           setAllWordsOpen(false);
-          startExtra(cards, true);
+          startExtra(cards, true, 'most missed');
         }}
         onPracticeDay={(day, deckIds) =>
           void repo.cardsAddedOn(deckIds, day).then((cards) => {
             setAllWordsOpen(false);
-            startExtra(cards);
+            startExtra(
+              cards,
+              false,
+              day === todayDate ? "today's new words" : 'words from that day',
+            );
           })
         }
         toast={
@@ -483,7 +498,11 @@ export function StudyFlow({
         onMix={() => void mix()}
         onStudy={(deck) => void openDeck(deck)}
         onAdd={(deck) => setEditor({ mode: 'add', deck })}
-        onPractice={(deck) => void repo.cardsAddedOn([deck.id]).then(startExtra)}
+        onPractice={(deck) =>
+          void repo
+            .todaysPractice([deck.id])
+            .then((cards) => startExtra(cards, false, practiceTag(cards)))
+        }
       />,
     );
   }
@@ -493,7 +512,13 @@ export function StudyFlow({
     return withSheet(
       <PracticeDone
         missed={missed.length}
-        onAgain={() => startExtra(extra.cards.filter((card) => missed.includes(card.id)))}
+        onAgain={() =>
+          startExtra(
+            extra.cards.filter((card) => missed.includes(card.id)),
+            false,
+            extra.tag,
+          )
+        }
         onDone={goHome}
       />,
     );
@@ -544,7 +569,7 @@ export function StudyFlow({
         key={`extra-${current.order.length}-${current.index}`}
         card={extraCard}
         progress={0}
-        extra={{ left: current.order.length - current.index }}
+        extra={{ left: current.order.length - current.index, tag: current.tag }}
         reaction={null}
         onAnswer={(correct) => void answerExtra(correct)}
         onCommit={() => intoSpellingChunk(current.order[current.index + 1])}
@@ -582,6 +607,7 @@ export function StudyFlow({
               return deck ? [{ id, deck }] : [];
             }),
             true,
+            'words you missed',
           )
         }
         nextCount={nextCount}

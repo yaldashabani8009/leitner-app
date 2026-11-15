@@ -33,7 +33,7 @@ interface ReviewScreenProps {
    * boxes stay the same" with the cards left, the tag "today's new words", one quiet line under
    * the card and no coloured panel. Answers are logged as practice and never move the card.
    */
-  extra?: { left: number };
+  extra?: { left: number; tag?: string };
   /** The mascot's short reaction to the previous answer. */
   reaction: 'happy' | 'cheer' | null;
   onAnswer: (correct: boolean) => void;
@@ -192,7 +192,11 @@ export function ReviewScreen({
                   variant="label"
                   tone={extra ? 'aquaPale' : phrase ? 'terracottaPale' : 'cream'}
                 >
-                  {extra ? "today's new words" : phrase ? 'what does it mean?' : 'do you know it?'}
+                  {extra
+                    ? (extra.tag ?? "today's new words")
+                    : phrase
+                      ? 'what does it mean?'
+                      : 'do you know it?'}
                 </Pill>
                 <FitText
                   className={`${styles.word} ${phrase ? styles.phraseWord : ''}`}

@@ -47,9 +47,30 @@ describe('deckStatuses (Today screen, v3 brief 1.4)', () => {
     await add('vocab', 'brave', 'calm');
     await add('spelling', 'receive');
     expect(await repo.deckStatuses(ALL)).toEqual([
-      { deck: 'vocab', cardCount: 2, waiting: 0, pausedLeft: null, addedToday: 2 },
-      { deck: 'spelling', cardCount: 1, waiting: 0, pausedLeft: null, addedToday: 1 },
-      { deck: 'phrases', cardCount: 0, waiting: 0, pausedLeft: null, addedToday: 0 },
+      {
+        deck: 'vocab',
+        cardCount: 2,
+        waiting: 0,
+        pausedLeft: null,
+        addedToday: 2,
+        practiceToday: 2,
+      },
+      {
+        deck: 'spelling',
+        cardCount: 1,
+        waiting: 0,
+        pausedLeft: null,
+        addedToday: 1,
+        practiceToday: 1,
+      },
+      {
+        deck: 'phrases',
+        cardCount: 0,
+        waiting: 0,
+        pausedLeft: null,
+        addedToday: 0,
+        practiceToday: 0,
+      },
     ]);
     now = DAY_2;
     expect(await repo.deckStatuses(ALL)).toMatchObject([
@@ -362,5 +383,23 @@ describe('soft boxes in the repository (ADR-022)', () => {
     expect(await db.cards.get(word)).toMatchObject({ box: 1, dueDate: '2026-03-12' });
     const logs = await db.reviewLogs.toArray();
     expect(logs.find((log) => log.cardId === phrase)).toMatchObject({ boxBefore: 3, boxAfter: 2 });
+  });
+});
+
+describe("today's practice: new and missed words (13.3, 2026-11-15)", () => {
+  it('adds the cards missed today to the ones added today, each once', async () => {
+    const [a, b] = await add('vocab', 'a', 'b');
+    now = DAY_2;
+    const [c] = await add('vocab', 'c'); // added on day 2
+    await repo.recordAnswer(a, false, 'scheduled'); // missed today
+    await repo.recordAnswer(b, true, 'scheduled'); // known: not included
+    await repo.recordAnswer(a, false, 'practice'); // practice never counts as a miss again
+    const picked = await repo.todaysPractice(['vocab']);
+    expect(picked.map((card) => card.id).sort()).toEqual([a, c].sort());
+    expect((await repo.deckStatuses(['vocab']))[0]).toMatchObject({
+      addedToday: 1,
+      practiceToday: 2,
+    });
+    expect(await repo.todaysPractice(['spelling'])).toEqual([]);
   });
 });
