@@ -116,6 +116,24 @@ export function listItems(
   return items;
 }
 
+/** At most this many cards in one "Needs work" practice (Yali, 2026-11-15). */
+export const NEEDS_WORK_PRACTICE_MAX = 20;
+
+/**
+ * "Needs work" → Practice: the most-missed cards of the rows shown (only ones missed at least
+ * once, not mastered), in the Needs work order, at most 20. Extra practice: boxes never move.
+ */
+export function needsWorkPractice(
+  rows: readonly WordRow[],
+): { id: string; deck: WordRow['deck'] }[] {
+  return sortRows(
+    rows.filter((row) => row.misses > 0 && !row.mastered),
+    'needsWork',
+  )
+    .slice(0, NEEDS_WORK_PRACTICE_MAX)
+    .map((row) => ({ id: row.id, deck: row.deck }));
+}
+
 /** Spoken label of the progress dots: "Box 3 of 5" or "Mastered". */
 export function progressLabel(row: Pick<WordRow, 'box' | 'mastered'>): string {
   return row.mastered ? 'Mastered' : `Box ${row.box} of ${BOX_COUNT}`;

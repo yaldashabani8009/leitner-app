@@ -439,6 +439,10 @@ export function StudyFlow({
           void repo.deleteCard(row.id);
           setDeleted({ id: row.id, word: row.word, at: Date.now() });
         }}
+        onPracticeCards={(cards) => {
+          setAllWordsOpen(false);
+          startExtra(cards, true);
+        }}
         onPracticeDay={(day, deckIds) =>
           void repo.cardsAddedOn(deckIds, day).then((cards) => {
             setAllWordsOpen(false);

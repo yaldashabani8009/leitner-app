@@ -154,7 +154,7 @@ Laptop (built in 7.13; v3 keys in 11.10): Space flips, ← / → answer, E edits
 ## All words (v3, canvas N8–N10, L4)
 
 - Opens from the box badge: back, "In your box" with the total, +. Deck chips (All + each enabled deck, with counts) scroll sideways; on a laptop they wrap.
-- Search matches the word, its similar words (deep search, 2026-11-15: "enhance" finds a card that has it as a similar word), its Persian meanings and sentence translations as you type (ي = ی, ك = ک, the half-space ignored). Sorts: **By day** (newest first, under TODAY / YESTERDAY / 14 SEP headings, each with Practice), **A–Z**, **Needs work** (most real "Not yet" answers first, ties by lowest box).
+- Search matches the word, its similar words (deep search, 2026-11-15: "enhance" finds a card that has it as a similar word), its Persian meanings and sentence translations as you type (ي = ی, ك = ک, the half-space ignored). Sorts: **By day** (newest first, under TODAY / YESTERDAY / 14 SEP headings, each with Practice), **A–Z**, **Needs work** (most real "Not yet" answers first, ties by lowest box), with a **Practice N** button over the list (2026-11-15): extra practice of the up to 20 most-missed cards shown (missed at least once, not mastered); boxes stay the same.
 - Rows: no boxes, a thin divider; the deck icon on the All view only; the word and its Persian; progress dots (the only place box progress shows). Tap: the card with Edit. Swipe left: red Delete; tap it to delete (soft delete, synced); a toast "reluctant deleted" with **Undo** for about 5 s.
 - Virtualised (smooth with thousands of words), reads only the device (works offline). Empty: the mascot and "Your box is empty".
 

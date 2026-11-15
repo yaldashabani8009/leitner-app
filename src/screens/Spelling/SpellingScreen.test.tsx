@@ -143,9 +143,10 @@ describe('SpellingScreen: not quite (canvas P6)', () => {
       'g',
       'h',
     ]);
-    expect(
-      [...region.querySelectorAll('[class*="missing"]')].map((el) => el.textContent),
-    ).toEqual(['e', 'w']);
+    expect([...region.querySelectorAll('[class*="missing"]')].map((el) => el.textContent)).toEqual([
+      'e',
+      'w',
+    ]);
   });
 
   it('marks extra and missing letters', async () => {
