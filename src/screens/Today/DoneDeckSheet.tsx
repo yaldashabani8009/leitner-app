@@ -9,8 +9,13 @@ interface DoneDeckSheetProps {
   deck: Deck | null;
   onClose: () => void;
   onAdd: (deck: Deck) => void;
-  /** Cards added to this deck today; "Practice today's new words" shows only when > 0. */
+  /** Cards added to this deck today. */
   addedToday: number;
+  /**
+   * Cards added or missed today (13.3); the practice button shows when > 0. With misses it
+   * says "Practice today's words", with new words only "Practice today's new words".
+   */
+  practiceToday: number;
   onPractice: (deck: Deck) => void;
 }
 
@@ -23,6 +28,7 @@ export function DoneDeckSheet({
   onClose,
   onAdd,
   addedToday,
+  practiceToday,
   onPractice,
 }: DoneDeckSheetProps) {
   return (
@@ -39,13 +45,13 @@ export function DoneDeckSheet({
         )
       }
     >
-      {deck && addedToday > 0 && (
+      {deck && practiceToday > 0 && (
         <button type="button" className={styles.practice} onClick={() => onPractice(deck)}>
           <span className={styles.practiceLabel}>
             <RetryIcon size={20} />
-            Practice today's new words
+            {practiceToday > addedToday ? "Practice today's words" : "Practice today's new words"}
           </span>
-          <span className={styles.count}>{addedToday}</span>
+          <span className={styles.count}>{practiceToday}</span>
         </button>
       )}
       {deck && (

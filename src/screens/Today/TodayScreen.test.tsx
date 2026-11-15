@@ -13,6 +13,7 @@ const status = (deck: DeckStatus['deck'], over: Partial<DeckStatus> = {}): DeckS
   waiting: 0,
   pausedLeft: null,
   addedToday: 0,
+  practiceToday: over.addedToday ?? 0,
   ...over,
 });
 

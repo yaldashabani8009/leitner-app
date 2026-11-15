@@ -83,6 +83,11 @@ export interface DeckStatus {
   pausedLeft: number | null;
   /** Live cards added (or re-added) today: extra practice is offered when > 0. */
   addedToday: number;
+  /**
+   * Live cards added today or missed today (a real "Not yet"), each once: what "Practice today's
+   * words" practises (13.3, Yali 2026-11-15). Always ≥ addedToday.
+   */
+  practiceToday: number;
 }
 
 /** A "Mix them all" session, with each card's deck for the chip by the progress bar (N6). */
@@ -276,6 +281,7 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
         waiting: waitingInDeck(due, reviewsDoneToday(logs, now, zone, deck), deck),
         pausedLeft,
         addedToday: live.filter((card) => card.addedOn === date).length,
+        practiceToday: todaysPracticeIds(live, todayLogs, date).length,
       };
     });
   }
@@ -896,6 +902,32 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
       return phrases.filter((card) => !withMeaning.has(card.id)).map((card) => card.id);
     },
 
+    /**
+     * Today's practice (13.3): the live cards of `decks` added today plus the ones missed today
+     * (real "Not yet" answers), each once. "Practice today's words" and Mix them all with
+     * nothing due run these as extra practice.
+     */
+    async todaysPractice(
+      decks: readonly DeckId[],
+    ): Promise<{ id: string; deck: DeckId; missed: boolean }[]> {
+      const now = deps.now();
+      const [profile, cards, recent] = await Promise.all([
+        db.profile.toCollection().first(),
+        db.cards.filter((card) => card.deletedAt === null && decks.includes(card.deck)).toArray(),
+        recentLogs(now),
+      ]);
+      const zone = resolveTimeZone(profile?.timeZone);
+      const date = dateInZone(now, zone);
+      const todayLogs = recent.filter((log) => dateInZone(log.reviewedAt, zone) === date);
+      const ids = new Set(todaysPracticeIds(cards, todayLogs, date));
+      const missed = new Set(
+        todayLogs.filter((log) => !log.correct && !log.isPractice).map((log) => log.cardId),
+      );
+      return cards
+        .filter((card) => ids.has(card.id))
+        .map((card) => ({ id: card.id, deck: card.deck, missed: missed.has(card.id) }));
+    },
+
     /** The words of these cards (spelling sessions say the next word from a tap, ADR-021). */
     async cardWords(cardIds: readonly string[]): Promise<Record<string, string>> {
       const cards = await db.cards.bulkGet([...cardIds]);
@@ -948,6 +980,20 @@ export function createRepository(db: LeitnerDb, deps: RepositoryDeps = browserDe
   }
 
   /** Review logs recent enough to include the whole of "today" in any time zone. */
+  /** Ids of these cards added on `date` or missed (real "Not yet") in `todayLogs`, each once. */
+  function todaysPracticeIds(
+    cards: readonly CardRow[],
+    todayLogs: readonly { cardId: string; correct: boolean; isPractice: boolean }[],
+    date: string,
+  ): string[] {
+    const missed = new Set(
+      todayLogs.filter((log) => !log.correct && !log.isPractice).map((log) => log.cardId),
+    );
+    return cards
+      .filter((card) => card.addedOn === date || missed.has(card.id))
+      .map((card) => card.id);
+  }
+
   function recentLogs(now: string) {
     const since = new Date(Date.parse(now) - LOOKBACK_MS).toISOString();
     return db.reviewLogs.where('reviewedAt').aboveOrEqual(since).toArray();

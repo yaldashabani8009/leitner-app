@@ -137,7 +137,7 @@ Laptop (built in 7.13; v3 keys in 11.10): Space flips, ← / → answer, E edits
 ## Today (v3, canvas N1, N3)
 
 - Top bar: settings (top left), box badge, streak, +. "Hi Yali!" and "What shall we study today?". The DJ mascot (the only playful element: no confetti on Today) with **Mix them all** and "27 cards from all decks" (or "Paused · N left" while a mix is paused).
-- One card per enabled deck hangs from a wheel on the left (top −9°, middle 0°, bottom +9°); drag up or down to spin it. Each card has one status line: **Paused · 7 left** (play: continue), **20 waiting** (play: start), **All done for today** (✓: a small sheet with "Practice today's new words" when words were added today, and "Add …"), **Empty** (opens the deck's add sheet).
+- One card per enabled deck hangs from a wheel on the left (top −9°, middle 0°, bottom +9°); drag up or down to spin it. Each card has one status line: **Paused · 7 left** (play: continue), **20 waiting** (play: start), **All done for today** (✓: a small sheet with "Practice today's words" (the cards added or missed today; "Practice today's new words" when nothing was missed, 2026-11-15) and "Add …"), **Empty** (opens the deck's add sheet).
 
 ## Mix them all (v3, canvas N6)
 
@@ -146,7 +146,7 @@ Laptop (built in 7.13; v3 keys in 11.10): Space flips, ← / → answer, E edits
 
 ## Extra practice (v3, canvas N11, N12)
 
-- The cards added on a day, each once, shuffled again every time; mixed decks come in chunks of 3–9. Ways in: a finished deck ("Practice today's new words"); Mix them all with nothing due; a day heading's **Practice** on the all-words page.
+- The cards added on a day, each once, shuffled again every time; mixed decks come in chunks of 3–9. Ways in: a finished deck ("Practice today's words": today's new cards plus the ones missed today, 13.3); Mix them all with nothing due (the same, all decks); a day heading's **Practice** on the all-words page; **Practice N** on Needs work; "Practice the N you missed" on Session complete. The tag on the card says where the cards come from: "today's new words", "today's words", "words from that day", "most missed" or "words you missed".
 - Never moves a card, never counts toward daily limits or the streak (logged as practice).
 - Calm look: a white banner "Practice · your boxes stay the same" with the count, the tag "today's new words", one quiet line "Just for fun: answers here never move your cards", no coloured panel, no confetti.
 - End: "Practice done! You missed 4. Want one more go at just those?" with **Practice the 4 again** / **Done**, repeating with the smaller list until nothing is missed ("You knew every one.").

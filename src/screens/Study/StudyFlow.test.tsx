@@ -69,7 +69,7 @@ async function frontWord() {
   return within(button).getByText(
     (_, el) =>
       el?.tagName === 'SPAN' &&
-      /^word|^brave|^calm|^quiet/.test(el.textContent ?? '') &&
+      /^word\d|^brave|^calm|^quiet/.test(el.textContent ?? '') &&
       el.children.length === 0,
   ).textContent;
 }
@@ -961,5 +961,26 @@ describe('Needs work → Practice (13.2, 2026-11-15)', () => {
     await flipAndAnswer('Knew it!');
     expect(await screen.findByText('You knew every one.')).toBeInTheDocument();
     expect(await boxOf(missed.word)).toBe(1);
+  });
+});
+
+describe("Practice today's words: new and missed (13.3, 2026-11-15)", () => {
+  it('a finished deck offers the cards missed today along with the new ones', async () => {
+    await addCards('brave', 'calm');
+    now = DAY_2;
+    await addCards('quiet'); // new today
+    render(<StudyFlow repo={repo} minLoadingMs={0} />);
+    await startVocab();
+    await flipAndAnswer('Not yet');
+    await flipAndAnswer('Knew it!');
+    await userEvent.click(await screen.findByRole('button', { name: 'Done for today' }));
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Vocab, all done for today' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Vocab' });
+    const practice = within(sheet).getByRole('button', { name: /Practice today's words/ });
+    expect(practice).toHaveTextContent('2'); // quiet (new) + the missed one
+    await userEvent.click(practice);
+    expect(await screen.findByText("today's words")).toBeInTheDocument();
+    expect(screen.getByText('2 left')).toBeInTheDocument();
   });
 });

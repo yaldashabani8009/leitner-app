@@ -120,9 +120,30 @@ export function KitPage() {
         name="Yali"
         decks={all}
         statuses={[
-          { deck: 'vocab', cardCount: 120, waiting: 20, pausedLeft: null, addedToday: 0 },
-          { deck: 'spelling', cardCount: 167, waiting: 7, pausedLeft: 7, addedToday: 0 },
-          { deck: 'phrases', cardCount: 25, waiting: 0, pausedLeft: null, addedToday: 5 },
+          {
+            deck: 'vocab',
+            cardCount: 120,
+            waiting: 20,
+            pausedLeft: null,
+            addedToday: 0,
+            practiceToday: 0,
+          },
+          {
+            deck: 'spelling',
+            cardCount: 167,
+            waiting: 7,
+            pausedLeft: 7,
+            addedToday: 0,
+            practiceToday: 0,
+          },
+          {
+            deck: 'phrases',
+            cardCount: 25,
+            waiting: 0,
+            pausedLeft: null,
+            addedToday: 5,
+            practiceToday: 5,
+          },
         ]}
         top={<TopBar cardCount={312} streak={13} onAdd={() => {}} decks={all} />}
         onMix={() => {}}

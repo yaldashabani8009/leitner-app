@@ -205,6 +205,11 @@ export function TodayScreen({
         addedToday={
           doneDeck ? (statuses[decks.findIndex((d) => d.id === doneDeck.id)]?.addedToday ?? 0) : 0
         }
+        practiceToday={
+          doneDeck
+            ? (statuses[decks.findIndex((d) => d.id === doneDeck.id)]?.practiceToday ?? 0)
+            : 0
+        }
         onPractice={(deck) => {
           setDoneDeck(null);
           onPractice(deck);
