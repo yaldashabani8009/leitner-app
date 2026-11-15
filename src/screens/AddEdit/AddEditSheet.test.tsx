@@ -164,11 +164,13 @@ describe('Add word', () => {
     await toastSays('on cloud nine saved');
 
     const cards = await db.cards.toArray();
-    expect(cards.map((card) => [card.word, card.deck])).toEqual([
+    // Stored by random id: compare in a fixed order.
+    expect(cards.map((card) => [card.word, card.deck]).sort()).toEqual([
       ['break the ice', 'phrases'],
       ['on cloud nine', 'phrases'],
     ]);
-    const entries = await db.entries.where('cardId').equals(cards[0].id).toArray();
+    const ice = cards.find((card) => card.word === 'break the ice')!;
+    const entries = await db.entries.where('cardId').equals(ice.id).toArray();
     expect(entries).toHaveLength(0);
   });
 
