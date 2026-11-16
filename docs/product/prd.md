@@ -89,7 +89,7 @@ A flashcard app for learning English vocabulary with the Leitner method. It's a 
   1. 20 scheduled reviews were done that day in total, across sessions and decks (practice doesn't count);
   2. every card due that day, in all decks, was reviewed;
   3. no cards were due at all, and a new card was added.
-  - The day is saved the moment it counts and never removed (ADR-015). Until today counts, the streak shows the run up to yesterday; a whole missed day resets it (decided 2026-10-29).
+  - The day is saved the moment it counts and never removed (ADR-015). Until today counts, the streak shows the run up to yesterday. **Streak freeze (2026-11-15, ADR-023):** a single missed day is covered automatically (the run goes on; the frozen day isn't counted); the freeze is ready again 7 days later, or after 4 days in a row; two missed days in a row reset the streak.
   - The streak pill on Loading and the bubble on Session complete are hidden while the streak is 0; the top-bar pill always shows.
 - **Words learned** (still worked out in the code, no longer shown): cards that have passed box 1 at least once.
 - Session progress: chunky pill bar, no numbers.

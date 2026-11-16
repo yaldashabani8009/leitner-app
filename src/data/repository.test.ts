@@ -557,10 +557,12 @@ describe('streak and words learned (roadmap 7.11, ADR-015)', () => {
     await db.streakDays.bulkAdd(
       ['2026-03-06', '2026-03-08', '2026-03-09'].map((day) => ({ day, id: day, createdAt: now })),
     );
-    expect((await repo.progress()).streak).toBe(2); // the 10th is not earned yet
-    await addCard('brave'); // nothing due: rule 3 earns the 10th
+    // The 7th is covered by the streak freeze (ADR-023); the 10th is not earned yet.
     expect((await repo.progress()).streak).toBe(3);
-    now = '2026-03-12T08:00:00.000Z'; // the 11th was missed
+    await addCard('brave'); // nothing due: rule 3 earns the 10th
+    expect((await repo.progress()).streak).toBe(4);
+    // The 11th was missed and the freeze isn't ready again yet (only 3 days in a row since).
+    now = '2026-03-12T08:00:00.000Z';
     expect((await repo.progress()).streak).toBe(0);
   });
 
