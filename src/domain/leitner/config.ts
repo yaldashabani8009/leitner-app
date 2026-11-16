@@ -51,6 +51,13 @@ export function gapForBox(box: Box): number {
 /** Scheduled reviews in one day, across ALL decks, that always earn a streak day (Yali's decision, 2026-10-28; v3 brief 1.2). */
 export const STREAK_DAILY_REVIEWS = 20;
 
+/**
+ * Streak freeze (Yali, 2026-11-15, ADR-023): one freeze, used automatically for a single missed
+ * day. Once used it is ready again 7 days later, or sooner after 4 earned days in a row.
+ */
+export const STREAK_FREEZE_REFILL_DAYS = 7;
+export const STREAK_FREEZE_REFILL_RUN = 4;
+
 /** Days without reaching the cloud (with unsent changes) before the "save a copy" modal (7.12). */
 export const BACKUP_REMINDER_AFTER_DAYS = 14;
 /** After "Not now" or a saved copy, the backup modals wait this long before asking again (7.12). */

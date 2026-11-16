@@ -6,6 +6,8 @@ var DECK_LIMITS = {
 };
 var SESSION_SIZE = DECK_LIMITS.vocab.sessionSize;
 var DAILY_REVIEW_CAP = DECK_LIMITS.vocab.dailyLimit;
+var STREAK_FREEZE_REFILL_DAYS = 7;
+var STREAK_FREEZE_REFILL_RUN = 4;
 var REMINDER_LATE_LIMIT_HOURS = 4;
 
 // src/domain/decks/decks.ts
@@ -67,6 +69,9 @@ function assertCalendarDate(date) {
 function addDays(date, days) {
   if (!Number.isInteger(days)) throw new RangeError(`Days must be a whole number: ${days}`);
   return new Date(toUtcMs(date) + days * MS_PER_DAY).toISOString().slice(0, 10);
+}
+function isOnOrBefore(a, b) {
+  return toUtcMs(a) <= toUtcMs(b);
 }
 
 // src/domain/time/zonedDate.ts
@@ -148,15 +153,42 @@ import postgres from "npm:postgres@3.4.5";
 import * as webpush from "jsr:@negrel/webpush@0.5.0";
 
 // src/domain/progress/progress.ts
-function currentStreak(earnedDays, today) {
+function streakState(earnedDays, today) {
   const earned = new Set(earnedDays);
-  let day = earned.has(today) ? today : addDays(today, -1);
+  const first = [...earned].sort()[0];
   let streak = 0;
-  while (earned.has(day)) {
-    streak += 1;
-    day = addDays(day, -1);
+  let freezeReady = true;
+  let usedOn = null;
+  let run = 0;
+  let frozenDays = [];
+  if (first === void 0) return { streak, freezeReady, frozenDays };
+  for (let day = first; isOnOrBefore(day, today); day = addDays(day, 1)) {
+    if (earned.has(day)) {
+      streak += 1;
+      run += 1;
+    } else if (day !== today) {
+      const next = addDays(day, 1);
+      const nextMissedToo = next !== today && !earned.has(next);
+      if (streak > 0 && freezeReady && !nextMissedToo) {
+        freezeReady = false;
+        usedOn = day;
+        run = 0;
+        frozenDays = [...frozenDays, day];
+      } else {
+        streak = 0;
+        run = 0;
+        frozenDays = [];
+      }
+    }
+    if (!freezeReady && usedOn !== null && (run >= STREAK_FREEZE_REFILL_RUN || isOnOrBefore(addDays(usedOn, STREAK_FREEZE_REFILL_DAYS), day))) {
+      freezeReady = true;
+      usedOn = null;
+    }
   }
-  return streak;
+  return { streak, freezeReady, frozenDays };
+}
+function currentStreak(earnedDays, today) {
+  return streakState(earnedDays, today).streak;
 }
 
 // supabase/functions/_shared/reminders.ts
